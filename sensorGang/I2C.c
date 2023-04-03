@@ -8,25 +8,28 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <stdio.h>
+#include <util/delay.h>
+#include <compat/twi.h>
 
 #define I2C_BUFF_SIZE 2
 #define TW_MT_DATA_ACK     0x28
 
 volatile uint8_t I2C_read_buffer[I2C_BUFF_SIZE];
 
-static volatile int pulseCnt = 0; //Ska skickas, antal pulser från halleffect
+static volatile int pulseCnt = 0; //Ska skickas, antal pulser frÃ¥n halleffect
 static volatile int i = 0;
-static volatile int pulse = 0; //Ska skickas pulsbredden från ultrasonic
+static volatile int pulse = 0; //Ska skickas pulsbredden frÃ¥n ultrasonic
 
 
+uint8_t brapp = 16;
 
 void i2c_init()
 {
-	TWAR = 0xD4; //Adress
+	TWAR = 0xD4; //Adress for the slave which is at 0x6a
 	
-	//TWCR = (1<<TWEN)|(1<<TWEA)|(1<<TWINT);
+	TWCR = (1<<TWEN)|(1<<TWEA)|(1<<TWIE);
 	
-	TWCR = 0xC5;
+	//TWCR = 0xC5;
 }
 
 void port_init()
@@ -50,11 +53,11 @@ void timer0_init()
 	TCCR0A = (1<<WGM01); //CTC mode
 	TCCR0B = (1<<CS02) | (1<<CS00); //Prescaler 1024
 	
-	OCR0A = 255; //Hur ofta vi vill generera avbrott på A
+	OCR0A = 255; //Hur ofta vi vill generera avbrott pÃ¥ A
 	
-	OCR0B = 1; //Hur ofta vi vill generera avbrott på A
+	OCR0B = 1; //Hur ofta vi vill generera avbrott pÃ¥ A
 	
-	TIMSK0 = (1<<OCIE0A) | (1<<OCIE0B); //Enable interrupt på A och B
+	TIMSK0 = (1<<OCIE0A) | (1<<OCIE0B); //Enable interrupt pÃ¥ A och B
 }
 
 //TIMER TILL HALLEFFECT
@@ -66,7 +69,7 @@ void timer1_init()
 
 	OCR1A = 15625; //Hur ofta avbrott
 	
-	TIMSK1 = 1 << OCIE1A; //Aktiverar avbrott på A
+	TIMSK1 = 1 << OCIE1A; //Aktiverar avbrott pÃ¥ A
 }
 
 //INTERRUPT TILL HALLEFFECT
@@ -104,6 +107,7 @@ int main(void)
 	while (1)
 	{
 		printf(1);
+		
 	}
 }
 
@@ -142,15 +146,15 @@ ISR(INT0_vect)
 {
 	if(i) //Disable counter
 	{
-		TCCR3B = 0;  //Stänger av timer
+		TCCR3B = 0;  //StÃ¤nger av timer
 		
-		pulse = TCNT3; //Sparar värdet från timern
+		pulse = TCNT3; //Sparar vÃ¤rdet frÃ¥n timern
 		
 		I2C_read_buffer[0] = TCNT3;
 		
-		PORTA = TCNT3;
+		//PORTA = TCNT3;
 		
-		TCNT3 = 0; //Nollställer timer
+		TCNT3 = 0; //NollstÃ¤ller timer
 		
 		i = 0;
 	}
@@ -165,24 +169,33 @@ ISR(INT0_vect)
 
 ISR(TWI_vect)
 {
-	switch((TWSR & 0xF8)) {
+	PORTA = TWSR;
+	uint8_t status = TWSR & 0xF8;
+	switch (status) {
+		case TW_SR_DATA_ACK:
+			brapp = TWDR;
+			break;
+		case TW_ST_SLA_ACK:
+			switch(brapp){
+				case 0:
+					TWDR = I2C_read_buffer[0];
+					break;
+				case 1:
+					TWDR = I2C_read_buffer[1];
+					break;
+				case 2:
+					TWDR = 2;
+					break;
+				default:
+					break;}
+			break;
+		case TW_SR_STOP:
+			break;
 		
-		case 0x60: //SLA+W has been recieved, ACK has been returned
+		default:
 			break;
 		 
 	}
-	
-	/*for (i = 0; i < 2; i++)
-	{
-		TWDR = I2C_read_buffer[i];
-		TWCR = (1<<TWEN) | (1<<TWINT);
-		while (!(TWCR & (1<<TWINT)));
-		if ((TWSR & 0xF8) != TW_MT_DATA_ACK) return -1;
-	}*/
-
-	//TWCR = (1<<TWEN) | (1<<TWINT) | (1<<TWSTO);
-	
-	//TWDR = pulse;
-	//TWCR = 0xC5;
+	TWCR = (1 << TWINT) | (1 << TWEA) | (1 << TWEN) | (1 << TWIE);
 }
 
