@@ -9,14 +9,18 @@ threadStream.start()
 time.sleep(2)
 
 def frameFromStream():
-    t1 = time.time()
-    image = threadStream.read()
-    t2 = time.time()
+    for i in range(20):
+        t1 = time.time()
+        image = threadStream.read()
+        t2 = time.time()
 
-    print((t2-t1)*1000)
+        print((t2-t1)*1000)
 
-    time.sleep(1)
+        cv2.imshow("Image", image)
+        time.sleep(1)
 
+    cv2.destroyAllWindows()
+    threadStream.stop()
 
 
 
