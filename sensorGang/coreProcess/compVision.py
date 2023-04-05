@@ -116,10 +116,20 @@ class compVision:
         lineSegments = cv2.HoughLinesP(self.img, self.rho, self.angle, self.minThreshold, np.array([]),
                                  minLineLength=self.minLineLength, maxLineGap=self.minLineLength)
 
-        lineCenter = self.lineIntercept(lineSegments)
+        self.lineCenter = self.lineIntercept(lineSegments)
         
         print(lineCenter - self.center)
 
         #return (lineCenter - self.center)
+
+    def addLines(self):
+        lineImage = np.zeros_like(self.img)
+        if self.laneLines is not None:
+            for line in self.laneLines:
+                for x1, y1, x2, y2 in line:
+                    cv2.line(lineImage, (x1, y1), (x2, y2), (0,0,255), 2)
+        cv2.line(lineImage, (self.lineCenter, 0), (self.lineCenter, self.height), (0,255,0), 2)
+        cv2.line(lineImage, (self.center, 0), (self.center, self.height), (255,0,0), 2)
+        self.img = cv2.addWeighted(self.img, 0.8, lineImage, 1, 1)
 
 

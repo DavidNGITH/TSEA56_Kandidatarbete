@@ -11,13 +11,25 @@ savedImageTest = compVision.compVision((640,480))
 
 #savedImageTest.regionOfInterest()
 
-savedImageTest.getCenterOffset()
 
-savedImageTest.displayImage()
+
+def takePicture():
+    
+    savedImageTest.getCenterOffset()
+
+    savedImageTest.addLines()
+
+    savedImageTest.displayImage()
+
 
 #Main-loop
-#while(True):
+while(True):
 
+    if key == ord("q"):
+        break
+    if key == ord("c"):
+        takePicture()
+        
     #Retrieve inputs from Computer
 
     #Collect data from camera and calculate center off-set
