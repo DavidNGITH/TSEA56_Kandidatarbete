@@ -1,5 +1,6 @@
 #import multiprocessing as mp
 import compVision
+import time
 
 #Initializing functions
 
@@ -14,8 +15,12 @@ savedImageTest = compVision.compVision((640,480))
 
 
 def takePicture():
-    
+    start = time.time()
+
     savedImageTest.getCenterOffset()
+
+    finished = time.time()
+    print("Tidsåtgång i ms {}".format((finished-start)*1000))
 
     savedImageTest.addLines()
 
@@ -23,13 +28,12 @@ def takePicture():
 
 
 #Main-loop
-while(True):
+i=0
+while(i < 10):
+    takePicture()
+    i += 1
 
-    if key == ord("q"):
-        break
-    if key == ord("c"):
-        takePicture()
-        
+savedImageTest.stopProcess()    
     #Retrieve inputs from Computer
 
     #Collect data from camera and calculate center off-set

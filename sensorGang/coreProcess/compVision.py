@@ -3,6 +3,7 @@ from picamera.array import PiRGBArray
 from time import sleep
 import numpy as np
 import cv2
+from videoStream import VideoStream
 
 
 class compVision:
@@ -29,13 +30,14 @@ class compVision:
         self.maxLineGap = 4
 
         self.laneLines = []
+
+        self.threadStream = VideoStream()
+        self.threadStream.start()
+
     def displayImage(self):
         cv2.imshow("Bild", self.img)
         cv2.waitKey(0)
         cv2.destroyAllWindows()
-
-    def takePicture(self):
-        self.camera.capture(self.img, 'rgb')
     
     def regionOfInterest(self):
         
@@ -70,7 +72,7 @@ class compVision:
         self.laneLines = []
         if lineSegments is None:
             print('No line_segment segments detected')
-            return laneLines
+            return self.laneLines
 
         leftFit = []
         rightFit = []
@@ -100,14 +102,18 @@ class compVision:
         rightFitAverage = np.average(rightFit, axis=0)
         if len(rightFit) > 0:
             self.laneLines.append(self.makePoints(rightFitAverage))
+        try:
+            lineCenter = (rightFitAverage[1]-leftFitAverage[1])/(leftFitAverage[0]-rightFitAverage[0])
+            return(lineCenter)
+        except:
+            print("Not enough lines captured")
+            return
 
-        lineCenter = (rightFitAverage[1]-leftFitAverage[1])/(leftFitAverage[0]-rightFitAverage[0])
-
-        return(lineCenter)
     
 
     def getCenterOffset(self):
-        self.takePicture()
+        self.img = self.threadStream.read()
+        self.orgImg = self.img
 
         self.img = cv2.Canny(self.img, self.lowerThreshold, self.upperThreshold, self.appetureSize)
 
@@ -118,7 +124,7 @@ class compVision:
 
         self.lineCenter = self.lineIntercept(lineSegments)
         
-        print(lineCenter - self.center)
+        print(self.lineCenter - self.center)
 
         #return (lineCenter - self.center)
 
@@ -130,6 +136,9 @@ class compVision:
                     cv2.line(lineImage, (x1, y1), (x2, y2), (0,0,255), 2)
         cv2.line(lineImage, (self.lineCenter, 0), (self.lineCenter, self.height), (0,255,0), 2)
         cv2.line(lineImage, (self.center, 0), (self.center, self.height), (255,0,0), 2)
-        self.img = cv2.addWeighted(self.img, 0.8, lineImage, 1, 1)
+        self.img = cv2.addWeighted(self.orgImg, 0.8, lineImage, 1, 1)
+
+    def stopProcess(self):
+        self.threadStream.stop()
 
 
