@@ -10,7 +10,7 @@ time.sleep(2)
 
 def frameFromStream():
     t1 = time.time()
-    image = thread_stream.read()
+    image = threadStream.read()
     t2 = time.time()
 
     print((t2-t1)*1000)
