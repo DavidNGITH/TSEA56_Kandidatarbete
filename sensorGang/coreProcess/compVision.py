@@ -7,15 +7,16 @@ import cv2
 
 class compVision:
     def __init__(self, resolution):
-        self.resoultion = resolution
-        self.width = resolution(0)
-        self.height = resolution(1)
+        self.resolution = resolution
+        self.width = resolution[0]
+        self.height = resolution[1]
         self.center = self.width/2
         self.camera = PiCamera()
-        self.cameraRaw = PiRGBArray(self.camera, self.resoultion)
+        self.camera.resolution = resolution
+        self.cameraRaw = PiRGBArray(self.camera, self.resolution)
         self.img = np.empty((self.height, self.width, 3), dtype=np.uint8)
 
-        self.roiDim = [(0,0), (self.width,0), (self.width,self.height), (0,self.height)]
+        self.roiDim = [(122,161), (490,161), (490,640), (122,640)]
 
         self.lowerThreshold = 200
         self.upperThreshold = 300
@@ -37,6 +38,11 @@ class compVision:
         self.camera.capture(self.img, 'rgb')
     
     def regionOfInterest(self):
+        
+        #roi = cv2.selectROI(self.img)
+        
+        #print(roi)
+        
         mask = np.zeros_like(self.img)
 
         #Vänster topp, Höger topp, Höger botten, Vänster botten
@@ -44,7 +50,7 @@ class compVision:
         cv2.fillPoly(mask, polygon, 255)
         # applying mask on original image
     
-        self.image = cv2.bitwise_and(self.img, mask) 
+        self.img = cv2.bitwise_and(self.img, mask) 
     
     def makePoints(self, line):
 
@@ -59,7 +65,7 @@ class compVision:
         return [[x1, y1, x2, y2]]
 
     
-    def LineIntercept(self, lineSegments):
+    def lineIntercept(self, lineSegments):
 
         self.laneLines = []
         if lineSegments is None:
@@ -111,7 +117,9 @@ class compVision:
                                  minLineLength=self.minLineLength, maxLineGap=self.minLineLength)
 
         lineCenter = self.lineIntercept(lineSegments)
+        
+        print(lineCenter - self.center)
 
-        return (lineCenter - self.center)
+        #return (lineCenter - self.center)
 
 

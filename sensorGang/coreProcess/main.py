@@ -5,7 +5,13 @@ import compVision
 
 savedImageTest = compVision.compVision((640,480))
 
-savedImageTest.takePicture()
+#savedImageTest.takePicture()
+
+#savedImageTest.getCenterOffset()
+
+#savedImageTest.regionOfInterest()
+
+savedImageTest.getCenterOffset()
 
 savedImageTest.displayImage()
 
