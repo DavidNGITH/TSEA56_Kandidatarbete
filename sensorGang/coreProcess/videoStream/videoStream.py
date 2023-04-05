@@ -20,7 +20,7 @@ class VideoStream:
 
     def update(self):
         for frame in self.stream:
-            self.img = self.stream
+            self.img = frame.array
             self.cameraRaw.truncate(0)
 
             if self.stopped:
