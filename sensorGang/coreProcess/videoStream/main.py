@@ -1,6 +1,6 @@
 from videoStream import VideoStream
 import cv2
-import picamera.array import PiRGBArray
+from picamera.array import PiRGBArray
 from picamera import PiCamera
 import time
 
