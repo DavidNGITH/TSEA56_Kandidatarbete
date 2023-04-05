@@ -25,4 +25,7 @@ def frameFromStream():
 
 
 if __name__ == "__main__":
-    frameFromStream()
+    try:
+        frameFromStream()
+    except:
+        threadStream.stop()
