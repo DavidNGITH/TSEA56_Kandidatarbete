@@ -6,13 +6,12 @@ import cv2
 
 
 class compVision:
-    def __init__(self, resolution, frameRate):
+    def __init__(self, resolution):
         self.resoultion = resolution
         self.width = resolution(0)
         self.height = resolution(1)
         self.center = self.width/2
         self.camera = PiCamera()
-        self.camera.framerate = frameRate
         self.cameraRaw = PiRGBArray(self.camera, self.resoultion)
         self.img = np.empty((self.height, self.width, 3), dtype=np.uint8)
 
@@ -29,7 +28,11 @@ class compVision:
         self.maxLineGap = 4
 
         self.laneLines = []
-    
+    def displayImage(self):
+        cv2.imshow("Bild", self.img)
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
+
     def takePicture(self):
         self.camera.capture(self.img, 'rgb')
     
@@ -98,6 +101,8 @@ class compVision:
     
 
     def getCenterOffset(self):
+        self.takePicture()
+
         self.img = cv2.Canny(self.img, self.lowerThreshold, self.upperThreshold, self.appetureSize)
 
         self.regionOfInterest()
