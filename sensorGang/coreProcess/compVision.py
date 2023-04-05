@@ -11,11 +11,8 @@ class compVision:
         self.resolution = resolution
         self.width = resolution[0]
         self.height = resolution[1]
-        self.center = self.width/2
-        self.camera = PiCamera()
-        self.camera.resolution = resolution
-        self.cameraRaw = PiRGBArray(self.camera, self.resolution)
-        self.img = np.empty((self.height, self.width, 3), dtype=np.uint8)
+
+        self.img = None
 
         self.roiDim = [(122,161), (490,161), (490,640), (122,640)]
 
