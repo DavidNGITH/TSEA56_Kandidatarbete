@@ -16,7 +16,7 @@ class compVision:
 
         self.img = None
         #ROIDIM: Upperleft, UpperRight, LowerRight, LowerLeft 
-        self.roiDim = [(0,143), (640,143), (0,337), (640,337)]
+        self.roiDim = [(0,62), (640,62), (0,355), (640,355)]
 
         self.lowerThreshold = 200
         self.upperThreshold = 300
@@ -24,7 +24,7 @@ class compVision:
 
         self.rho = 1
         self.angle = np.pi / 180
-        self.minThreshold = 100
+        self.minThreshold = 0
         self.minLineLength = 8
         self.maxLineGap = 4
 
@@ -127,11 +127,13 @@ class compVision:
         #print(self.lineCenter - self.center)
 
         #return (lineCenter - self.center)
-
-        if((self.lineCenter - self.center) > 0):
-            print("Turn Right")
-        else:
-            print("Turn Left")
+        try:
+            if((self.lineCenter - self.center) > 0):
+                print("Turn Right")
+            else:
+                print("Turn Left")
+        except:
+            print("No lines detected")
            
 
     def addLines(self):
