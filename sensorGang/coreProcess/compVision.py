@@ -7,46 +7,50 @@ from videoStream import VideoStream
 
 
 class compVision:
-    def __init__(self, resolution):
-        print(cv2.useOptimized())
+    def __init__(self, resolution=(640,480)):
+
+        #Variables
         self.resolution = resolution
         self.width = resolution[0]
         self.height = resolution[1]
         self.center = self.width/2
 
         self.img = None
+        self.laneLines = []
+        self.lineCenter = None
+
         #ROIDIM: Upperleft, UpperRight, LowerRight, LowerLeft 
         self.roiDim = [(0,62), (640,62), (0,355), (640,355)]
 
+        #Canny settings
         self.lowerThreshold = 200
         self.upperThreshold = 300
         self.appetureSize = 3
 
+        #Rho settings
         self.rho = 1
         self.angle = np.pi / 180
         self.minThreshold = 0
         self.minLineLength = 8
         self.maxLineGap = 4
 
-        self.laneLines = []
-        self.lineCenter = None
-        self.threadStream = VideoStream()
+        #Starting Video stream
+        self.threadStream = VideoStream(resolution)
         self.threadStream.start()
 
+    #Displays image stored in self.img
     def displayImage(self):
         cv2.imshow("Bild", self.img)
         cv2.waitKey(0)
         cv2.destroyAllWindows()
 
     def regionOfInterest(self):
-        
-        #roi = cv2.selectROI(self.img)
-        
-        #print(roi)
 
         mask = np.zeros_like(self.img)
 
-        #Vänster topp, Höger topp, Höger botten, Vänster botten
+        #(Left Top) (Right 
+        # 
+        # Top) (Right Bottom) (Left Bottom)
         polygon = np.array([self.roiDim], np.int32)
         cv2.fillPoly(mask, polygon, 255)
         # applying mask on original image
