@@ -24,7 +24,7 @@ class compVision:
 
         self.rho = 1
         self.angle = np.pi / 180
-        self.minThreshold = 0
+        self.minThreshold = 100
         self.minLineLength = 8
         self.maxLineGap = 4
 
@@ -127,6 +127,12 @@ class compVision:
         #print(self.lineCenter - self.center)
 
         #return (lineCenter - self.center)
+
+        if((self.lineCenter - self.center) > 0):
+            print("Turn Right")
+        else:
+            print("Turn Left")
+           
 
     def addLines(self):
         lineImage = np.zeros_like(self.orgImg)
