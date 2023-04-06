@@ -28,7 +28,7 @@ class compVision:
         self.maxLineGap = 4
 
         self.laneLines = []
-	self.lineCenter = Null
+	    self.lineCenter = None
         self.threadStream = VideoStream()
         self.threadStream.start()
 
@@ -104,7 +104,7 @@ class compVision:
             self.lineCenter = (rightFitAverage[1]-leftFitAverage[1])/(leftFitAverage[0]-rightFitAverage[0])
             return(lineCenter)
         except:
-	    self.lineCenter = Null
+	        self.lineCenter = None
             print("Not enough lines captured")
             return
 
@@ -133,8 +133,9 @@ class compVision:
             for line in self.laneLines:
                 for x1, y1, x2, y2 in line:
                     cv2.line(lineImage, (x1, y1), (x2, y2), (0,0,255), 2)
-	if (self.lineCenter =! Null):
-        	cv2.line(lineImage, (int(self.lineCenter), 0), (int(self.lineCenter), int(self.height)), (0,255,0), 2)
+        if(self.lineCenter =! None):
+            cv2.line(lineImage, (int(self.lineCenter), 0), (int(self.lineCenter), int(self.height)), (0,255,0), 2)
+
         cv2.line(lineImage, (int(self.center), 0), (int(self.center), int(self.height)), (255,0,0), 2)
         self.img = cv2.addWeighted(self.orgImg, 0.8, lineImage, 1, 1)
 
