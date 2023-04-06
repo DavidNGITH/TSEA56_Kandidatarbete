@@ -16,7 +16,7 @@ class compVision:
 
         self.img = None
         #ROIDIM: Upperleft, UpperRight, LowerRight, LowerLeft 
-        self.roiDim = [(0,161), (640,161), (640,480), (0,480)]
+        self.roiDim = [(0,143), (640,143), (0,337), (640,337)]
 
         self.lowerThreshold = 200
         self.upperThreshold = 300
