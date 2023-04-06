@@ -118,7 +118,7 @@ class compVision:
 
         self.regionOfInterest()
 
-        lineSegments = cv2.HoughLinesP(self.img, self.rho, self.angle, self.minThreshold, np.array([]),
+        lineSegments = cv2.HoughLinesP(self.img, self.rho, self.angle, self.minThreshold, cv2.HOUGH_PROBABILISTIC,
                                  minLineLength=self.minLineLength, maxLineGap=self.minLineLength)
 
         self.lineIntercept(lineSegments)

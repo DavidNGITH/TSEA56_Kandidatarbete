@@ -17,7 +17,7 @@ class VideoStream:
     def start(self):
         t = Thread(target=self.update)
         t.start()
-        time.sleep(1)
+        time.sleep(5)
         print("I have started")
         return
 
