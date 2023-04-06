@@ -14,7 +14,7 @@ class compVision:
         self.center = self.width/2
 
         self.img = None
-
+        #ROIDIM: Upperleft, UpperRight, LowerRight, LowerLeft 
         self.roiDim = [(0,161), (640,161), (640,480), (0,480)]
 
         self.lowerThreshold = 200
@@ -28,7 +28,7 @@ class compVision:
         self.maxLineGap = 4
 
         self.laneLines = []
-
+	self.lineCenter = Null
         self.threadStream = VideoStream()
         self.threadStream.start()
 
@@ -36,7 +36,7 @@ class compVision:
         cv2.imshow("Bild", self.img)
         cv2.waitKey(0)
         cv2.destroyAllWindows()
-    
+
     def regionOfInterest(self):
         
         #roi = cv2.selectROI(self.img)
@@ -101,9 +101,10 @@ class compVision:
         if len(rightFit) > 0:
             self.laneLines.append(self.makePoints(rightFitAverage))
         try:
-            lineCenter = (rightFitAverage[1]-leftFitAverage[1])/(leftFitAverage[0]-rightFitAverage[0])
+            self.lineCenter = (rightFitAverage[1]-leftFitAverage[1])/(leftFitAverage[0]-rightFitAverage[0])
             return(lineCenter)
         except:
+	    self.lineCenter = Null
             print("Not enough lines captured")
             return
 
@@ -120,7 +121,7 @@ class compVision:
         lineSegments = cv2.HoughLinesP(self.img, self.rho, self.angle, self.minThreshold, np.array([]),
                                  minLineLength=self.minLineLength, maxLineGap=self.minLineLength)
 
-        self.lineCenter = self.lineIntercept(lineSegments)
+        self.lineIntercept(lineSegments)
         
         #print(self.lineCenter - self.center)
 
@@ -132,7 +133,8 @@ class compVision:
             for line in self.laneLines:
                 for x1, y1, x2, y2 in line:
                     cv2.line(lineImage, (x1, y1), (x2, y2), (0,0,255), 2)
-        cv2.line(lineImage, (int(self.lineCenter), 0), (int(self.lineCenter), int(self.height)), (0,255,0), 2)
+	if (self.lineCenter =! Null):
+        	cv2.line(lineImage, (int(self.lineCenter), 0), (int(self.lineCenter), int(self.height)), (0,255,0), 2)
         cv2.line(lineImage, (int(self.center), 0), (int(self.center), int(self.height)), (255,0,0), 2)
         self.img = cv2.addWeighted(self.orgImg, 0.8, lineImage, 1, 1)
 
