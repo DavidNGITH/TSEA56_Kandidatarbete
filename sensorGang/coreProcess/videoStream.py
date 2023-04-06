@@ -2,6 +2,7 @@ from picamera.array import PiRGBArray
 from picamera import PiCamera
 from threading import Thread
 import cv2
+import time
 
 class VideoStream:
     def __init__(self, resolution=(640,480), framerate=20):
@@ -16,6 +17,8 @@ class VideoStream:
     def start(self):
         t = Thread(target=self.update)
         t.start()
+        time.sleep(1)
+        print("I have started")
         return
 
     def update(self):

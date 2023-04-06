@@ -30,12 +30,12 @@ def takePicture():
 #Main-loop
 i=0
 
-try:
-    while(i < 10):
-        takePicture()
-        i += 1
-except:
-    savedImageTest.stopProcess()   
+#try:
+while(i < 10):
+    takePicture()
+    i += 1
+#except:
+#savedImageTest.stopProcess()   
 
 savedImageTest.stopProcess()    
     #Retrieve inputs from Computer

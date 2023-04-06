@@ -11,10 +11,11 @@ class compVision:
         self.resolution = resolution
         self.width = resolution[0]
         self.height = resolution[1]
+        self.center = self.width/2
 
         self.img = None
 
-        self.roiDim = [(122,161), (490,161), (490,640), (122,640)]
+        self.roiDim = [(0,161), (640,161), (640,480), (0,480)]
 
         self.lowerThreshold = 200
         self.upperThreshold = 300
@@ -41,7 +42,7 @@ class compVision:
         #roi = cv2.selectROI(self.img)
         
         #print(roi)
-        
+
         mask = np.zeros_like(self.img)
 
         #Vänster topp, Höger topp, Höger botten, Vänster botten
@@ -121,18 +122,18 @@ class compVision:
 
         self.lineCenter = self.lineIntercept(lineSegments)
         
-        print(self.lineCenter - self.center)
+        #print(self.lineCenter - self.center)
 
         #return (lineCenter - self.center)
 
     def addLines(self):
-        lineImage = np.zeros_like(self.img)
+        lineImage = np.zeros_like(self.orgImg)
         if self.laneLines is not None:
             for line in self.laneLines:
                 for x1, y1, x2, y2 in line:
                     cv2.line(lineImage, (x1, y1), (x2, y2), (0,0,255), 2)
-        cv2.line(lineImage, (self.lineCenter, 0), (self.lineCenter, self.height), (0,255,0), 2)
-        cv2.line(lineImage, (self.center, 0), (self.center, self.height), (255,0,0), 2)
+        cv2.line(lineImage, (int(self.lineCenter), 0), (int(self.lineCenter), int(self.height)), (0,255,0), 2)
+        cv2.line(lineImage, (int(self.center), 0), (int(self.center), int(self.height)), (255,0,0), 2)
         self.img = cv2.addWeighted(self.orgImg, 0.8, lineImage, 1, 1)
 
     def stopProcess(self):
