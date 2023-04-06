@@ -8,6 +8,7 @@ from videoStream import VideoStream
 
 class compVision:
     def __init__(self, resolution):
+        print(cv2.useOptimized())
         self.resolution = resolution
         self.width = resolution[0]
         self.height = resolution[1]
@@ -102,7 +103,7 @@ class compVision:
             self.laneLines.append(self.makePoints(rightFitAverage))
         try:
             self.lineCenter = (rightFitAverage[1]-leftFitAverage[1])/(leftFitAverage[0]-rightFitAverage[0])
-            
+
         except:
             self.lineCenter = None
             print("Not enough lines captured")
