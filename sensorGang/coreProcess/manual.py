@@ -39,16 +39,15 @@ class Manual():
         pingTime = time.time()
         while True:
             if not q.empty():
-                match q.get()[0]:
-                    case "stop":
-                        self.stop()
-                        return
-                    case "ping":
-                        pingTime = time.time()
-                    case "steering":
-                        self.qMotors = (0, q.get()[1])
-                    case "speed":
-                        self.qMotors = (1, q.get()[1])
+                if q.get()[0] == "stop":
+                    self.stop()
+                    return
+                elif q.get()[0] == "ping":
+                    pingTime = time.time()
+                elif q.get()[0] == "steering":	
+                    self.qMotors = (0, q.get()[1])
+                elif q.get()[0] == "speed":
+                    self.qMotors = (1, q.get()[1])
 
             if time.time() - pingTime > 2:
                 self.stop()
