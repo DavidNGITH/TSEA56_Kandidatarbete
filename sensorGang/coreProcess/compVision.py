@@ -1,6 +1,6 @@
 from picamera import PiCamera
 from picamera.array import PiRGBArray
-from time import sleep
+import time
 import numpy as np
 import cv2
 from videoStream import VideoStream
@@ -15,7 +15,6 @@ class compVision:
         self.width = resolution[0]
         self.height = resolution[1]
         self.center = self.width/2
-        self.status = True
 
         self.img = None
         self.laneLines = []
@@ -36,9 +35,7 @@ class compVision:
         self.minLineLength = 8
         self.maxLineGap = 4
 
-        #Starting Video stream
-        self.threadStream = VideoStream(resolution)
-        self.threadStream.start()
+
 
         self.my = np.load('mapy.npy')
         self.mx = np.load('mapx.npy')
@@ -49,7 +46,7 @@ class compVision:
     #Displays image stored in self.img
     def displayImage(self):
         cv2.imshow("Bild", self.img)
-        cv2.waitKey(0)
+        cv2.waitKey()
         cv2.destroyAllWindows()
 
     def undistortImage(self):
@@ -86,7 +83,7 @@ class compVision:
 
         self.laneLines = []
         if lineSegments is None:
-            print('No line_segment segments detected')
+            #print('No line_segment segments detected')
             return self.laneLines
 
         leftFit = []
@@ -122,37 +119,58 @@ class compVision:
 
         except:
             self.lineCenter = None
-            print("Not enough lines captured")
+            #print("Not enough lines captured")
             return
 
     
 
-    def getCenterOffset(self, q : multiprocessing.Queue):
-        while self.status:
-            self.img = self.threadStream.read()
+    def getCenterOffset(self, q : multiprocessing.Queue, statusValue : multiprocessing.Value):
+        #Starting Video stream
+        threadStream = VideoStream(self.resolution)
+        threadStream.start()
+        
+        status = statusValue.value
+        
+        while status:
+            print(status)
+            t1 = time.time()
+            self.img = threadStream.read()
             self.orgImg = self.img
             
             self.undistortImage()
-
             self.img = cv2.Canny(self.img, self.lowerThreshold, self.upperThreshold, self.appetureSize)
 
             self.regionOfInterest()
 
             lineSegments = cv2.HoughLinesP(self.img, self.rho, self.angle, self.minThreshold, cv2.HOUGH_PROBABILISTIC,
                                     minLineLength=self.minLineLength, maxLineGap=self.minLineLength)
-
+        
             self.lineIntercept(lineSegments)
             
+            t2 = time.time()
+        
+            #print("Time elapsed: {} in ms".format((t2-t1)*1000))
+            
+            self.addLines()
+            self.displayImage()
             #print(self.lineCenter - self.center)
 
-            q.put(self.lineCenter - self.center)
+            status = statusValue.value
+            
             try:
                 if((self.lineCenter - self.center) > 0):
                     print("Turn Right")
+
                 else:
                     print("Turn Left")
+                    
+                q.put(self.lineCenter - self.center)
             except:
                 print("No lines detected")
+                
+        print("Stopped again compVision")
+        #print(self.status)
+        threadStream.stop()
            
 
     def addLines(self):
@@ -169,7 +187,7 @@ class compVision:
         self.img = cv2.addWeighted(self.orgImg, 0.8, lineImage, 1, 1)
 
     def stopProcess(self):
-        self.status = False
-        self.threadStream.stop()
+        print("Stop compVision")
+        #self.status.value = 0
 
 

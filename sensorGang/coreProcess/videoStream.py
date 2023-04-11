@@ -26,10 +26,12 @@ class VideoStream:
             self.cameraRaw.truncate(0)
 
             if self.stopped:
+                print("update stopped")
                 self.stream.close()
                 self.cameraRaw.close()
                 self.camera.close()
                 return
+            time.sleep(0.01)
 
     def read(self):
         return self.img

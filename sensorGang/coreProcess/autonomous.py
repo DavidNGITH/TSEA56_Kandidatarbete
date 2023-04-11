@@ -19,9 +19,12 @@ class Autonomous():
 
         self.qMessage = multiprocessing.Queue()
         self.qCenterOffset = multiprocessing.Queue()
+        
+        self.statusCenterOffset = multiprocessing.Value('i',1)
+        self.statusHandleMessage = multiprocessing.Value('i',1)
 
-        self.p1 = multiprocessing.Process(target=self.handleMessage, args=(self.qMessage,))
-        self.p2 = multiprocessing.Process(target=self.laneData.getCenterOffset, args =(self.qCenterOffset,))
+        self.p1 = multiprocessing.Process(target=self.handleMessage, args=(self.qMessage,self.statusHandleMessage))
+        self.p2 = multiprocessing.Process(target=self.laneData.getCenterOffset, args =(self.qCenterOffset,self.statusCenterOffset))
 
         self.p1.start()
         self.p2.start()
@@ -34,7 +37,7 @@ class Autonomous():
         except:
             print("Couldn't read mqtt message")
 
-    def handleMessage (self,q):
+    def handleMessage (self,q,status):
         print("In handleMessage autonomous!")
         pingTime = time.time()
         while True:
@@ -47,8 +50,9 @@ class Autonomous():
                 elif q.get()[0] == "ping":
                     print("Recived ping in autonomous")
                     pingTime = time.time()
-
-            if time.time() - pingTime > 30:
+            
+            if time.time() - pingTime > 3000:
+                print("Timed out in autonomous")
                 self.stop()
                 return
             time.sleep(0.01)
@@ -56,13 +60,15 @@ class Autonomous():
     def stop(self):
         #Stop all motors
         self.laneData.stopProcess()
-        self.p2.join()
+        self.statusCenterOffset.value = 0        
         self.mqttClient.disconnect()
-        self.status = False
+        #self.status = False
+        self.statusHandleMessage.value = 0
+        
        
 
     def mainLoop(self):
-        while self.status:
+        while self.statusHandleMessage.value:
             if not self.qCenterOffset.empty():
                 centerOffset = self.qCenterOffset.get()
                 #Send data to PD-controller

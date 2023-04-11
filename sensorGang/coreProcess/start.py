@@ -68,4 +68,4 @@ if not modeSetting == None:
         print("Exception, stopping")
         mode.stop()
 
-mqttClient.disconnect()
+#mqttClient.disconnect()
