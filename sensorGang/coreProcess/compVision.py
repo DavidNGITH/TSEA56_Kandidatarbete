@@ -153,6 +153,7 @@ class compVision:
             #print("Time elapsed: {} in ms".format((t2-t1)*1000))
             
             self.addLines()
+            self.saveImageData()
             self.displayImage()
             #print(self.lineCenter - self.center)
 
@@ -179,24 +180,24 @@ class compVision:
 
         try:
             if((self.lineCenter - self.center) > 0):
-                turnInstruction = "Turn Right"
+                turnInstruction = "TurnRight"
 
             else:
-                turnInstruction = "Turn Left"
+                turnInstruction = "TurnLeft"
         except:
-            turnInstruction = "No lines detected"
+            turnInstruction = "NoLines"
         
         self.img = cv2.putText(
             img = self.img,
             text = turnInstruction,
-            org = (200, 10),
+            org = (50, 430),
             fontFace = cv2.FONT_HERSHEY_DUPLEX,
-            fontScale = 1.5,
+            fontScale = 0.5,
             color = (125, 246, 55),
-            thickness = 3
+            thickness = 1
         )
 
-        cv2.imwrite("Picture_{}.jpeg".format(str(datetime.now())), self.img)
+        cv2.imwrite("savedImages/{}_{}.jpeg".format(turnInstruction,str(datetime.now())), self.img)
                     
 
     def addLines(self):
