@@ -65,6 +65,7 @@ if not modeSetting == None:
 
     except Exception as e:
         print(e)
+        print("Exception, stopping")
         mode.stop()
 
 mqttClient.disconnect()
