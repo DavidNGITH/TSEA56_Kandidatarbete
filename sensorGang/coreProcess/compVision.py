@@ -5,6 +5,7 @@ import numpy as np
 import cv2
 from videoStream import VideoStream
 import multiprocessing
+from datetime import datetime
 
 
 class compVision:
@@ -172,6 +173,31 @@ class compVision:
         #print(self.status)
         threadStream.stop()
            
+
+    def saveImageData(self):
+        turnInstruction = None
+
+        try:
+            if((self.lineCenter - self.center) > 0):
+                turnInstruction = "Turn Right"
+
+            else:
+                turnInstruction = "Turn Left"
+        except:
+            turnInstruction = "No lines detected"
+        
+        self.img = cv2.putText(
+            img = self.img,
+            text = turnInstruction,
+            org = (200, 10),
+            fontFace = cv2.FONT_HERSHEY_DUPLEX,
+            fontScale = 1.5,
+            color = (125, 246, 55),
+            thickness = 3
+        )
+
+        cv2.imwrite("Picture_{}.jpeg".format(str(datetime.now())), self.img)
+                    
 
     def addLines(self):
         lineImage = np.zeros_like(self.orgImg)
