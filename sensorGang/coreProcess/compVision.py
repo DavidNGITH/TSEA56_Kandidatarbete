@@ -15,6 +15,7 @@ class compVision:
         self.width = resolution[0]
         self.height = resolution[1]
         self.center = self.width/2
+        self.status = True
 
         self.img = None
         self.laneLines = []
@@ -127,7 +128,7 @@ class compVision:
     
 
     def getCenterOffset(self, q : multiprocessing.Queue):
-        while True:
+        while self.status:
             self.img = self.threadStream.read()
             self.orgImg = self.img
             
@@ -168,6 +169,7 @@ class compVision:
         self.img = cv2.addWeighted(self.orgImg, 0.8, lineImage, 1, 1)
 
     def stopProcess(self):
+        self.status = False
         self.threadStream.stop()
 
 
