@@ -42,16 +42,16 @@ mqttClient.subscribe(MQTT_TOPIC)
 modeSetting = getMode(mqttClient)
 
 if not modeSetting == None:
-    match modeSetting:
-        case 1:
-            #Manual
-            mode = Manual(mqttClient)
-        case 2:
-            #Semi autonoumous
+    if modeSetting == 1:
+        #Manual
+        mode = Manual(mqttClient)
+    elif modeSetting == 2:
+        #Semi autonoumous
             mode = SemiAutonomous(mqttClient)
-        case 3:
-            #Autonomous
-            mode = Autonomous(mqttClient)
+
+    else:
+        #Autonomous
+        mode = Autonomous(mqttClient)
 
     try:
         mode.mainLoop()
