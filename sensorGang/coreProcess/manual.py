@@ -29,10 +29,11 @@ class Manual():
     def on_message(self,client, userdata, message):
         try:
             m = int(message.payload.decode("utf-8"))
-            t = message.topic.decode("utf-8")
+            t = message.topic
             self.qMessage.put((t,m))
-        except:
+        except Exception as e:
             print("Couldn't read mqtt message")
+            print(e)
 
 
     def handel_message (self,q):
