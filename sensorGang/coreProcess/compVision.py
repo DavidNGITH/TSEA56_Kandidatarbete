@@ -39,11 +39,21 @@ class compVision:
         self.threadStream = VideoStream(resolution)
         self.threadStream.start()
 
+        self.my = np.load('mapy.npy')
+        self.mx = np.load('mapx.npy')
+        self.roiFile = np.load('roiFile.npy')
+
+
+
     #Displays image stored in self.img
     def displayImage(self):
         cv2.imshow("Bild", self.img)
         cv2.waitKey(0)
         cv2.destroyAllWindows()
+
+    def undistortImage(self):
+        self.img = cv2.remap(self.img, self.mx, self.my, cv2.INTER_LINEAR)
+        self.img = self.img[self.roiFile[1]:self.roiFile[1]+ self.roiFile[3],self.roiFile[0]:self.roiFile[0]+ self.roiFile[2]]
 
     def regionOfInterest(self):
 
@@ -120,6 +130,8 @@ class compVision:
         while True:
             self.img = self.threadStream.read()
             self.orgImg = self.img
+            
+            self.undistortImage()
 
             self.img = cv2.Canny(self.img, self.lowerThreshold, self.upperThreshold, self.appetureSize)
 
