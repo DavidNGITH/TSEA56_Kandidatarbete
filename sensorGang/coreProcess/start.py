@@ -5,19 +5,20 @@ import mqttSetup as mq
 from queue import Queue
 
 q = Queue
+MQTT_TOPIC = [("stop",0),("mode",0)]
+
 
 
 def getMode(client, userdata, message):
-    mode = 0
-    topic = "mode"
-    mqttClient.subscribe(topic)
-
     while True:
         if not q.empty():
-            mode = mqttClient.get_message().get()[1]
-            match mode:
+            mode = mqttClient.get_message().get()
+            if mode[0] == "stop":
+                print("Stopping")
+                return None
+            match mode[1]:
                 case 1 | 2 | 3:
-                    mqttClient.unsubscribe(topic)
+                    mqttClient.unsubscribe(MQTT_TOPIC)
                     return mode
                 case _:
                     print("Unvalid mode")
@@ -35,25 +36,28 @@ def on_message(client, userdata, message):
 
 mqttClient = mq.initMqtt
 mqttClient.on_message = on_message
+mqttClient.subscribe(MQTT_TOPIC)
 
 ## Get info from PC with mode car is in
 modeSetting = getMode(mqttClient)
 
-match modeSetting:
-    case 1:
-        #Manual
-        mode = Manual(mqttClient)
-    case 2:
-        #Semi autonoumous
-        mode = SemiAutonomous(mqttClient)
-    case 3:
-        #Autonomous
-        mode = Autonomous(mqttClient)
+if not modeSetting == None:
+    match modeSetting:
+        case 1:
+            #Manual
+            mode = Manual(mqttClient)
+        case 2:
+            #Semi autonoumous
+            mode = SemiAutonomous(mqttClient)
+        case 3:
+            #Autonomous
+            mode = Autonomous(mqttClient)
 
-try:
-    mode.mainLoop()
+    try:
+        mode.mainLoop()
 
-except Exception as e:
-    print(e)
-    mode.stop()
-    mqttClient.disconnect()
+    except Exception as e:
+        print(e)
+        mode.stop()
+
+mqttClient.disconnect()
