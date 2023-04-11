@@ -4,6 +4,7 @@ from time import sleep
 import numpy as np
 import cv2
 from videoStream import VideoStream
+import multiprocessing
 
 
 class compVision:
@@ -115,29 +116,30 @@ class compVision:
 
     
 
-    def getCenterOffset(self):
-        self.img = self.threadStream.read()
-        self.orgImg = self.img
+    def getCenterOffset(self, q : multiprocessing.Queue):
+        while True:
+            self.img = self.threadStream.read()
+            self.orgImg = self.img
 
-        self.img = cv2.Canny(self.img, self.lowerThreshold, self.upperThreshold, self.appetureSize)
+            self.img = cv2.Canny(self.img, self.lowerThreshold, self.upperThreshold, self.appetureSize)
 
-        self.regionOfInterest()
+            self.regionOfInterest()
 
-        lineSegments = cv2.HoughLinesP(self.img, self.rho, self.angle, self.minThreshold, cv2.HOUGH_PROBABILISTIC,
-                                 minLineLength=self.minLineLength, maxLineGap=self.minLineLength)
+            lineSegments = cv2.HoughLinesP(self.img, self.rho, self.angle, self.minThreshold, cv2.HOUGH_PROBABILISTIC,
+                                    minLineLength=self.minLineLength, maxLineGap=self.minLineLength)
 
-        self.lineIntercept(lineSegments)
-        
-        #print(self.lineCenter - self.center)
+            self.lineIntercept(lineSegments)
+            
+            #print(self.lineCenter - self.center)
 
-        #return (lineCenter - self.center)
-        try:
-            if((self.lineCenter - self.center) > 0):
-                print("Turn Right")
-            else:
-                print("Turn Left")
-        except:
-            print("No lines detected")
+            q.put(self.lineCenter - self.center)
+            try:
+                if((self.lineCenter - self.center) > 0):
+                    print("Turn Right")
+                else:
+                    print("Turn Left")
+            except:
+                print("No lines detected")
            
 
     def addLines(self):

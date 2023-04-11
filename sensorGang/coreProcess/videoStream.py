@@ -5,7 +5,7 @@ import cv2
 import time
 
 class VideoStream:
-    def __init__(self, resolution=(640,480), framerate=20):
+    def __init__(self, resolution, framerate=20):
         self.camera = PiCamera()
         self.camera.resolution = resolution
         self.camera.framerate = framerate
