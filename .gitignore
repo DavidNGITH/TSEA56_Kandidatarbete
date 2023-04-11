@@ -1,3 +1,5 @@
 *.DS_Store
 *.vscode
 *.nfs*
+*.pyc
+*__pycache__
