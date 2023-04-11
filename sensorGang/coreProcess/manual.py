@@ -10,14 +10,14 @@ class Manual():
         self.status = True
         
         self.mqttClient = mqttClient
-        self.mqttClient.on_message = self.on_message
+        self.mqttClient.on_message = self.onMessage
         self.mqttClient.subscribe(MQTT_TOPIC)
 
         self.qMessage = multiprocessing.Queue()
         self.qMotors = multiprocessing.Queue()
         self.qData = multiprocessing.Queue()
 
-        self.p1 = multiprocessing.Process(target=self.handel_message, args=(self.qMessage,))
+        self.p1 = multiprocessing.Process(target=self.handleMessage, args=(self.qMessage,))
         self.p2 = multiprocessing.Process(target=sendGetI2C, args=(self.qMotors,self.qData))
 
         self.topicDic = {
@@ -26,7 +26,8 @@ class Manual():
         }
 
 
-    def on_message(self,client, userdata, message):
+    def onMessage(self,client, userdata, message):
+        print("I got mail")
         try:
             m = int(message.payload.decode("utf-8"))
             t = message.topic
@@ -36,7 +37,7 @@ class Manual():
             print(e)
 
 
-    def handel_message (self,q):
+    def handleMessage (self,q):
         pingTime = time.time()
         while True:
             if not q.empty():
