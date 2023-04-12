@@ -1,5 +1,7 @@
-'''from PyQt5.QtWidgets import *
-from PyQt5.QtGui import QFont
+#from PyQt5.QtWidgets import *
+from PyQt5 import QtWidgets
+from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QGridLayout, QLabel, QTextBrowser, QMessageBox
+#from PyQt5.QtGui import QFont
 import sys
  
 def main():
@@ -15,7 +17,7 @@ def main():
     app = QApplication(sys.argv)
     window = QWidget()
     window.setGeometry(100, 100, 1200, 700)
-    window.setWindowTitle("Interface 1")
+    window.setWindowTitle("Interface 1")ad
     grid_layout = QGridLayout()
 
 
@@ -24,9 +26,9 @@ def main():
     obstacle_bool_text = QTextBrowser()
     obstacle_dist_label = QLabel("Distance to obstacle")
     
-    grid_layout.addWidget(obstacle_label, 0, 0, alignment=PyQt5.AlignHCenter)
+    grid_layout.addWidget(obstacle_label, 0, 0, alignment=Qt::AlignCenter)
     grid_layout.addWidget(obstacle_bool_label, 0, 0, )
-    grid_layout.addWidget(obstacle_dist_label, 0, 0, left)
+    grid_layout.addWidget(obstacle_dist_label, 0, 0, QtWidgets.AlignLeft)
 
 
 
@@ -42,9 +44,9 @@ def button_one_action():
     #print("I died")
 
 if __name__ == '__main__':
-    main()'''
+    main()
 
-import sys
+'''import sys
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 
@@ -113,7 +115,7 @@ class ClassA(QtWidgets.QWidget):
     def setdatastrength(self, index):
         value = self.comth[index]
         dist_value = self.comth_2[index]
-        self.display_data(dist_value)
+        #self.display_data(dist_value)
         self.display_data(value)
 
 
@@ -355,4 +357,4 @@ if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
     w = ClassWidget()
     w.show()
-    sys.exit(app.exec_())
+    sys.exit(app.exec_())'''
