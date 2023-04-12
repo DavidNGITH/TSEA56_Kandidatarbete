@@ -9,7 +9,7 @@ from datetime import datetime
 
 
 class compVision:
-    def __init__(self, resolution=(640,480)):
+    def __init__(self, roiPerc, resolution):
 
         #Variables
         self.resolution = resolution
@@ -21,8 +21,19 @@ class compVision:
         self.laneLines = []
         self.lineCenter = None
 
-        #ROIDIM: Upperleft, UpperRight, LowerRight, LowerLeft 
-        self.roiDim = [(0,62), (640,62), (0,355), (640,355)]
+        #ROIDIM: Upperleft, UpperRight, LowerRight, LowerLeft
+        roiP1X = roiPerc[0] * self.width
+        roiP1Y = roiPerc[1]  * self.height
+        roiP2X = roiPerc[2]  * self.width
+        roiP2Y = roiPerc[3]  * self.height
+        roiP3X = roiPerc[4]  * self.width
+        roiP3Y = roiPerc[5]  * self.height
+        roiP4X = roiPerc[6]  * self.width
+        roiP4Y = roiPerc[7]  * self.height
+        self.roiDim = [(roiP1X,roiP1Y), (roiP2X,roiP2Y), (roiP3X,roiP3Y), (roiP4X,roiP4Y)]
+
+        
+
 
         #Canny settings
         self.lowerThreshold = 200
@@ -37,10 +48,17 @@ class compVision:
         self.maxLineGap = 4
 
 
-
+        #Undistort
         self.my = np.load('mapy.npy')
         self.mx = np.load('mapx.npy')
         self.roiFile = np.load('roiFile.npy')
+
+        self.roiFile[1] = int(self.roiFile[1] * self.width / 640)
+        self.roiFile[3] = int(self.roiFile[3] * self.width / 640)
+        self.roiFile[0] = int(self.roiFile[0] * self.height / 480)
+        self.roiFile[2] = int(self.roiFile[2] * self.height / 480)
+
+
 
 
 
@@ -133,7 +151,7 @@ class compVision:
         status = statusValue.value
         
         while status:
-            print(status)
+            
             t1 = time.time()
             self.img = threadStream.read()
             self.orgImg = self.img
@@ -213,8 +231,5 @@ class compVision:
         cv2.line(lineImage, (int(self.center), 0), (int(self.center), int(self.height)), (255,0,0), 2)
         self.img = cv2.addWeighted(self.orgImg, 0.8, lineImage, 1, 1)
 
-    def stopProcess(self):
-        print("Stop compVision")
-        #self.status.value = 0
 
 

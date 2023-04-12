@@ -9,6 +9,11 @@ MQTT_TOPIC = [("stop",0),("mode",0)]
 MQTT_TOPIC_UNSUB = ["stop", "mode"]
 
 
+# Settings
+TIME_OUT_TIME = 3000
+
+ROI_PERC = [0, 0.10, 1, 0.10, 0, 0.74, 1, 0.74]
+
 
 def getMode(mqttClient):
     while True:
@@ -18,7 +23,7 @@ def getMode(mqttClient):
             if mode[0] == "stop":
                 print("Stopping")
                 return None
-            if mode[1] == 1 or mode[1] == 2 or mode[1] ==3:
+            if mode[1] == 1 or mode[1] == 2 or mode[1] == 3:
                 mqttClient.unsubscribe(MQTT_TOPIC_UNSUB)
                 return mode[1]
             else:
@@ -49,23 +54,24 @@ if not modeSetting == None:
     if modeSetting == 1:
         #Manual
         print("Manual")
-        mode = Manual(mqttClient)
+        mode = Manual(mqttClient, TIME_OUT_TIME)
     elif modeSetting == 2:
         #Semi autonoumous
             print("SemiAutonomous")
-            mode = SemiAutonomous(mqttClient)
+            mode = SemiAutonomous(mqttClient, TIME_OUT_TIME, ROI_PERC)
 
     else:
         #Autonomous
         print("Autonomous")
-        mode = Autonomous(mqttClient)
+        mode = Autonomous(mqttClient, TIME_OUT_TIME, ROI_PERC)
 
     try:
         mode.mainLoop()
 
     except Exception as e:
+        print("Exception in start, stopping")
         print(e)
-        print("Exception, stopping")
+        
         mode.stop()
 
 #mqttClient.disconnect()
