@@ -23,7 +23,7 @@ class Manual():
         self.p2 = multiprocessing.Process(target=sendGetI2C, args=(self.qMotors,self.qData))
         
         self.p1.start()
-        #self.p2.start()
+        self.p2.start()
 
         self.topicDic = {
             0 : "speedData",
@@ -43,7 +43,7 @@ class Manual():
 
 
     def handleMessage (self,q, status):
-        print("In handleMessage!")
+        print("In handleMessage manual!")
         pingTime = time.time()
         while status.value:
             if not q.empty():
@@ -52,22 +52,24 @@ class Manual():
                 if message[0] == "stop":
                     print("Recived stop in manual")
                     self.stop()
+                    print("Stopping handle message in manual")
                     return
                 elif message[0] == "ping":
                     print("Recived ping in manual")
                     pingTime = time.time()
                 elif message[0] == "steering":
                     print("Recived steering data in manual")
-                    self.qMotors = (0, message[1])
+                    self.qMotors.put((1, message[1]))
                 elif message[0] == "speed":
                     print("Recived speed data in manual")
-                    self.qMotors = (1, message[1])
+                    self.qMotors.put((0, message[1]))
             time.sleep(0.01)
 
             if time.time() - pingTime > self.timeOut:
-                print("Timed out, stopping")
+                print("Timed out, stopping in manual")
                 self.stop()
                 return
+        
             
 
     def stop(self):
@@ -77,8 +79,9 @@ class Manual():
         #Clear motor data
         while not self.qMotors.empty():
             self.qMotors.get()
+    
 
-        self.qMotors.put(None)
+        self.qMotors.put(100)
 
         self.statusHandleMessage.value = 0
 
@@ -86,8 +89,10 @@ class Manual():
 
 
     def mainLoop(self):
-        while self.statusHandleMessage:
+        while self.statusHandleMessage.value:
             if not self.qData.empty():
                 messageToSend = self.qData.get()
                 self.mqttClient.publish(self.topicDic[messageToSend[0]], messageToSend[1])
             time.sleep(0.01)
+
+        print("Stopping main loop in manual")

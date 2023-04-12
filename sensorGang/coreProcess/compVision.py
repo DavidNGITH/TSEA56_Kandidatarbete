@@ -6,6 +6,7 @@ import cv2
 from videoStream import VideoStream
 import multiprocessing
 from datetime import datetime
+import matplotlib.pyplot as plt
 
 
 class compVision:
@@ -15,21 +16,21 @@ class compVision:
         self.resolution = resolution
         self.width = resolution[0]
         self.height = resolution[1]
-        self.center = self.width/2
+        self.center = int(self.width/2)
 
         self.img = None
         self.laneLines = []
         self.lineCenter = None
 
         #ROIDIM: Upperleft, UpperRight, LowerRight, LowerLeft
-        roiP1X = roiPerc[0] * self.width
-        roiP1Y = roiPerc[1]  * self.height
-        roiP2X = roiPerc[2]  * self.width
-        roiP2Y = roiPerc[3]  * self.height
-        roiP3X = roiPerc[4]  * self.width
-        roiP3Y = roiPerc[5]  * self.height
-        roiP4X = roiPerc[6]  * self.width
-        roiP4Y = roiPerc[7]  * self.height
+        roiP1X = int(roiPerc[0] * self.width)
+        roiP1Y = int(roiPerc[1]  * self.height)
+        roiP2X = int(roiPerc[2]  * self.width)
+        roiP2Y = int(roiPerc[3]  * self.height)
+        roiP3X = int(roiPerc[4]  * self.width)
+        roiP3Y = int(roiPerc[5]  * self.height)
+        roiP4X = int(roiPerc[6]  * self.width)
+        roiP4Y = int(roiPerc[7]  * self.height)
         self.roiDim = [(roiP1X,roiP1Y), (roiP2X,roiP2Y), (roiP3X,roiP3Y), (roiP4X,roiP4Y)]
 
         
@@ -57,6 +58,10 @@ class compVision:
         self.roiFile[3] = int(self.roiFile[3] * self.width / 640)
         self.roiFile[0] = int(self.roiFile[0] * self.height / 480)
         self.roiFile[2] = int(self.roiFile[2] * self.height / 480)
+        
+        #Find lines
+        self.laneLines = []
+        self.stopLine = None
 
 
 
@@ -85,7 +90,7 @@ class compVision:
     
         self.img = cv2.bitwise_and(self.img, mask) 
     
-    def makePoints(self, line):
+    def makePoints(self, line, which):
 
         slope, intercept = line
         y1 = self.height  # bottom of the frame
@@ -94,8 +99,28 @@ class compVision:
         # bound the coordinates within the frame
         x1 = max(-self.width, min(2 * self.width, int((y1 - intercept) / slope)))
         x2 = max(-self.width, min(2 * self.width, int((y2 - intercept) / slope)))
+        
+        # 1 = Right
+        if which:
+            self.xPointRight = int((100-intercept)/slope)
+        # 0 = Left
+        else:
+            self.xPointLeft  = int((100-intercept)/slope)
 
         return [[x1, y1, x2, y2]]
+    
+    def makeStopLine(self, line, minX, maxX):
+    
+        slope, intercept = line
+        
+        x1 = int(minX)
+        x2 = int(maxX)
+        
+        y1 = int(slope * minX + intercept)
+        y2 = int(slope * maxX + intercept)
+        
+        
+        self.stopLine = [(x1,y1), (x2,y2)]
 
     
     def lineIntercept(self, lineSegments):
@@ -107,6 +132,10 @@ class compVision:
 
         leftFit = []
         rightFit = []
+        stopFit = []
+        
+        minX = 1000
+        maxX = 0
 
         boundary = 1/3
         leftRegionBoundary = self.width * (1 - boundary)  # left lane line segment should be on left 2/3 of the screen
@@ -124,15 +153,37 @@ class compVision:
                     elif slope > 1.5:
                         if x1 > rightRegionBoundary and x2 > rightRegionBoundary:
                             rightFit.append((slope, intercept))
+                            
+                    elif slope < 0.1 and slope > -0.1 and x1 > 0.15 * self.width and x2 < 0.85 * self.width:
+                        stopFit.append((slope, intercept))
+                        if x1 < minX:
+                            minX = x1
+                        if x2 > maxX:
+                            maxX = x2
 
-
+        
+        
+        
         leftFitAverage = np.average(leftFit, axis=0)
         if len(leftFit) > 0:
-            self.laneLines.append(self.makePoints(leftFitAverage))
+            self.laneLines.append(self.makePoints(leftFitAverage, 0))
+            #print("Left slope: k {}, m {}".format(leftFitAverage[0], leftFitAverage[1]))
+
 
         rightFitAverage = np.average(rightFit, axis=0)
         if len(rightFit) > 0:
-            self.laneLines.append(self.makePoints(rightFitAverage))
+            self.laneLines.append(self.makePoints(rightFitAverage, 1))
+            #print("Right slope: k {}, m {}".format(rightFitAverage[0], rightFitAverage[1]))
+        
+        if len(stopFit) > 10:
+            stopFitAverage = np.average(stopFit, axis=0)
+            self.makeStopLine(stopFitAverage, minX, maxX)
+            #print("Stop line: k {}, m {}".format(stopFitAverage[0], stopFitAverage[1]))
+
+            
+        else:
+            self.stopLine = None
+    
         try:
             self.lineCenter = (rightFitAverage[1]-leftFitAverage[1])/(leftFitAverage[0]-rightFitAverage[0])
 
@@ -154,12 +205,31 @@ class compVision:
             
             t1 = time.time()
             self.img = threadStream.read()
-            self.orgImg = self.img
             
             self.undistortImage()
+            self.orgImg = self.img
             self.img = cv2.Canny(self.img, self.lowerThreshold, self.upperThreshold, self.appetureSize)
+            
+            #self.displayImage()
 
             self.regionOfInterest()
+            
+            histogram = np.sum(self.img, axis =0)
+            
+            leftXBase = np.argmax(histogram[:self.center])
+            
+            rightXBase = np.argmax(histogram[self.center:]) + self.center
+            
+            midpointHistogram = int((rightXBase - leftXBase) / 2 + leftXBase )
+            
+            print(leftXBase)
+            print(rightXBase)
+            
+            #plt.plot(histogram)
+            #plt.vlines(leftXBase, ymin=0, ymax=self.height, colors = 'red')
+            #plt.vlines(rightXBase, ymin=0, ymax=self.height, colors = 'red')
+
+            #plt.show()
 
             lineSegments = cv2.HoughLinesP(self.img, self.rho, self.angle, self.minThreshold, cv2.HOUGH_PROBABILISTIC,
                                     minLineLength=self.minLineLength, maxLineGap=self.minLineLength)
@@ -168,10 +238,29 @@ class compVision:
             
             t2 = time.time()
         
-            #print("Time elapsed: {} in ms".format((t2-t1)*1000))
+            print("Time elapsed: {} in ms".format((t2-t1)*1000))
+            
+            midpointFromLines = int((self.xPointRight - self.xPointLeft)/2 + self.xPointLeft)
+            
+            y1 = [(leftXBase, 0), (leftXBase, self.height)]
+            y2 = [(rightXBase, 0), (rightXBase, self.height)]
+            y3 = [(midpointHistogram, 0), (midpointHistogram, self.height)]
+            y4 = [(midpointFromLines, 0), (midpointFromLines, self.height)]
+            
+            print(y1)
             
             self.addLines()
-            self.saveImageData()
+            self.displayROI()
+            if self.stopLine:
+                self.drawLine(self.stopLine, (0,0,255), 5)
+                
+            #self.drawLine(y1, (0,242,255), 2)
+            #self.drawLine(y2, (0,242,255), 2)
+            self.drawLine(y3, (128,0,128), 2)
+            self.drawLine(y4, (0,242,255), 2)
+
+
+            #self.saveImageData()
             self.displayImage()
             #print(self.lineCenter - self.center)
 
@@ -204,11 +293,11 @@ class compVision:
                 turnInstruction = "TurnLeft"
         except:
             turnInstruction = "NoLines"
-        
+
         self.img = cv2.putText(
             img = self.img,
             text = turnInstruction,
-            org = (50, 430),
+            org = (int(0.10*self.width), int(0.9 * self.height)),
             fontFace = cv2.FONT_HERSHEY_DUPLEX,
             fontScale = 0.5,
             color = (125, 246, 55),
@@ -231,5 +320,14 @@ class compVision:
         cv2.line(lineImage, (int(self.center), 0), (int(self.center), int(self.height)), (255,0,0), 2)
         self.img = cv2.addWeighted(self.orgImg, 0.8, lineImage, 1, 1)
 
+    def displayROI(self):
+        self.img = cv2.line(self.img, self.roiDim[0], self.roiDim[1], (0,140,255), 2)
+        self.img = cv2.line(self.img, self.roiDim[1], self.roiDim[2], (0,140,255), 2)
+        self.img = cv2.line(self.img, self.roiDim[2], self.roiDim[3], (0,140,255), 2)
+        self.img = cv2.line(self.img, self.roiDim[3], self.roiDim[0], (0,140,255), 2)
+        print("ROI coordinates: {}, {}, {}, {}".format(self.roiDim[0], self.roiDim[1], self.roiDim[2], self.roiDim[3]))
 
+
+    def drawLine(self, coordinates, color, width):
+            self.img = cv2.line(self.img, coordinates[0], coordinates[1], color, width)
 

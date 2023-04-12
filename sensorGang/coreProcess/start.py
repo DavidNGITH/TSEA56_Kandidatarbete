@@ -7,19 +7,22 @@ from queue import Queue
 q = Queue()
 MQTT_TOPIC = [("stop",0),("mode",0)]
 MQTT_TOPIC_UNSUB = ["stop", "mode"]
+RESOLUTION = (480,368)
+RESOLUTION = (640,480)
 
 
 # Settings
 TIME_OUT_TIME = 3000
 
-ROI_PERC = [0, 0.10, 1, 0.10, 0, 0.74, 1, 0.74]
+    #    p1: x  y   p2: x  y   p3: x  y   p3: x  y
+ROI_PERC = [0.2, 0.35, 0.85, 0.35, 1, 1, 0, 1]
 
 
 def getMode(mqttClient):
     while True:
+        return 1
         if not q.empty():
             mode = q.get()
-            print(mode)
             if mode[0] == "stop":
                 print("Stopping")
                 return None
@@ -50,7 +53,6 @@ mqttClient.subscribe(MQTT_TOPIC)
 modeSetting = getMode(mqttClient)
 
 if not modeSetting == None:
-    print(modeSetting)
     if modeSetting == 1:
         #Manual
         print("Manual")
@@ -63,7 +65,7 @@ if not modeSetting == None:
     else:
         #Autonomous
         print("Autonomous")
-        mode = Autonomous(mqttClient, TIME_OUT_TIME, ROI_PERC)
+        mode = Autonomous(mqttClient, TIME_OUT_TIME, ROI_PERC, RESOLUTION)
 
     try:
         mode.mainLoop()

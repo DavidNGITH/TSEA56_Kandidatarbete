@@ -48,6 +48,7 @@ class Autonomous():
                 print("qMessage not empty")
                 if q.get()[0] == "stop":
                     print("Recived stop in autonomous")
+                    print("Handle message autonomous stopped")
                     self.stop()
                     return
                 elif q.get()[0] == "ping":
@@ -60,7 +61,6 @@ class Autonomous():
                 return
             time.sleep(0.01)
 
-            print("Handle message autonomous stopped")
 
     def stop(self):
         #Stop all motors
