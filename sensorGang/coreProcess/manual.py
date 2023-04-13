@@ -2,6 +2,7 @@ import paho.mqtt.client as mqtt
 import multiprocessing
 import time
 from i2c import sendGetI2C
+import numpy as np
 
 MQTT_TOPIC = [("stop",0),("ping",0),("steering",0),("speed",0)]
 
@@ -92,7 +93,15 @@ class Manual():
         while self.statusHandleMessage.value:
             if not self.qData.empty():
                 messageToSend = self.qData.get()
-                self.mqttClient.publish(self.topicDic[messageToSend[0]], messageToSend[1])
+                if messageToSend[0]:
+                    speed = int((messageToSend[1]/10) * 8 * np.pi)
+                    print("Speed: {} cm/s".format(speed))
+                    self.mqttClient.publish("data/speed", speed)
+                else:
+                    distance = int(1.1 * messageToSend[1])
+                    print("Distance: {} cm".format(distance))
+                    self.mqttClient.publish("data/distance", distance)
+
             time.sleep(0.01)
 
         print("Stopping main loop in manual")

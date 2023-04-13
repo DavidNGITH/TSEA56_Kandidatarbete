@@ -25,6 +25,10 @@ def sendGetI2C(qMotors : multiprocessing.Queue, qData : multiprocessing.Queue):
             print(addressData[1])
             bus.write_byte_data(motorAdress,addressData[0],addressData[1])
 
-        #if time.time() - timeElapsed > 2:
-        #    qData.put((0,bus.read_byte_data(sensorAdress, 0)))
-        #    qData.put((1,bus.read_byte_data(sensorAdress, 1)))
+        if time.time() - timeElapsed > 2:
+            try:
+                qData.put((0,bus.read_byte_data(sensorAdress, 0)))
+                qData.put((1,bus.read_byte_data(sensorAdress, 1)))
+            except:
+                print("Couldn't read i2c")
+            timeElapsed = time.time()

@@ -62,6 +62,8 @@ class compVision:
         #Find lines
         self.laneLines = []
         self.stopLine = None
+        self.xPointRight = None
+        self.xPointLeft = None
 
 
 
@@ -222,8 +224,6 @@ class compVision:
             
             midpointHistogram = int((rightXBase - leftXBase) / 2 + leftXBase )
             
-            print(leftXBase)
-            print(rightXBase)
             
             #plt.plot(histogram)
             #plt.vlines(leftXBase, ymin=0, ymax=self.height, colors = 'red')
@@ -238,44 +238,53 @@ class compVision:
             
             t2 = time.time()
         
-            print("Time elapsed: {} in ms".format((t2-t1)*1000))
+            #print("Time elapsed: {} in ms".format((t2-t1)*1000))
             
-            midpointFromLines = int((self.xPointRight - self.xPointLeft)/2 + self.xPointLeft)
+            if(self.xPointRight and self.xPointLeft):
+                midpointFromLines = int((self.xPointRight - self.xPointLeft)/2 + self.xPointLeft)
+                #y4 = [(midpointFromLines, 0), (midpointFromLines, self.height)]
+                #self.drawLine(y4, (0,242,255), 2)
+                #y1 = [(leftXBase, 0), (leftXBase, self.height)]
+                #y2 = [(rightXBase, 0), (rightXBase, self.height)]
+                #y3 = [(midpointHistogram, 0), (midpointHistogram, self.height)]
+
+                #self.drawLine(y1, (0,242,255), 2)
+                #self.drawLine(y2, (0,242,255), 2)
+                #self.drawLine(y3, (128,0,128), 2)
             
-            y1 = [(leftXBase, 0), (leftXBase, self.height)]
-            y2 = [(rightXBase, 0), (rightXBase, self.height)]
-            y3 = [(midpointHistogram, 0), (midpointHistogram, self.height)]
-            y4 = [(midpointFromLines, 0), (midpointFromLines, self.height)]
             
-            print(y1)
             
-            self.addLines()
-            self.displayROI()
-            if self.stopLine:
-                self.drawLine(self.stopLine, (0,0,255), 5)
+            
+            
+                        
+            #self.addLines()
+            #self.displayROI()
+            #if self.stopLine:
+            #    self.drawLine(self.stopLine, (0,0,255), 5)
                 
-            #self.drawLine(y1, (0,242,255), 2)
-            #self.drawLine(y2, (0,242,255), 2)
-            self.drawLine(y3, (128,0,128), 2)
-            self.drawLine(y4, (0,242,255), 2)
+            
 
 
             #self.saveImageData()
-            self.displayImage()
+            #self.displayImage()
             #print(self.lineCenter - self.center)
-
-            status = statusValue.value
-            
+                        
             try:
                 if((self.lineCenter - self.center) > 0):
-                    print("Turn Right")
+                    #print("Turn Right")
+                    pass
 
                 else:
-                    print("Turn Left")
+                    #print("Turn Left")
+                    pass
                     
                 q.put(self.lineCenter - self.center)
             except:
-                print("No lines detected")
+                #print("No lines detected")
+                pass
+            
+            status = statusValue.value
+
                 
         print("Stopped again compVision")
         #print(self.status)
