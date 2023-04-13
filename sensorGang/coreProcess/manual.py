@@ -4,12 +4,21 @@ import time
 #from i2c import sendGetI2C
 import numpy as np
 import i2cHandle
+from record import record
 
 MQTT_TOPIC = [("stop",0),("ping",0),("steering",0),("speed",0)]
 
 class Manual():
-    def __init__(self, mqttClient : mqtt.Client(), timeOut):
+    def __init__(self, mqttClient : mqtt.Client(), timeOut, resolution, framerate, recordMode):
         self.timeOut = timeOut
+        
+        if recordMode:
+            self.recordMode = recordMode
+            self.statusVideo = multiprocessing.Value('i',1)
+            self.pR = multiprocessing.Process(target=record, args=(self.statusVideo, resolution, framerate))
+            self.pR.start()
+
+            
         
         self.mqttClient = mqttClient
         self.mqttClient.on_message = self.onMessage
@@ -19,6 +28,7 @@ class Manual():
         self.qData = multiprocessing.Queue()
 
         self.statusHandleMessage = multiprocessing.Value('i',1)
+
         #self.statusI2C = multiprocessing.Value('i',1)
 
 
@@ -73,6 +83,7 @@ class Manual():
                 elif message[0] == "speed":
                     print("Recived speed data in manual")
                     I2C_proc.send((0, message[1]))
+                    
                     #self.qMotors.put((0, message[1]))
             
 
@@ -101,6 +112,9 @@ class Manual():
 
     def stop(self):
         print("In stop manual")
+        
+        if self.recordMode:
+            self.statusVideo.value = 0
 
         #Stop all motors
         time.sleep(0.5)

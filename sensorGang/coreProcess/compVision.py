@@ -258,16 +258,16 @@ class compVision:
             
             
                         
-            #self.addLines()
-            #self.displayROI()
-            #if self.stopLine:
-            #    self.drawLine(self.stopLine, (0,0,255), 5)
+            self.addLines()
+            self.displayROI()
+            if self.stopLine:
+                self.drawLine(self.stopLine, (0,0,255), 5)
                 
             
 
 
             #self.saveImageData()
-            #self.displayImage()
+            self.displayImage()
             #print(self.lineCenter - self.center)
                         
             try:
