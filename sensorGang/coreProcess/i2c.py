@@ -7,17 +7,18 @@ bus = smbus.SMBus(1)
 motorAdress = 0x4a
 sensorAdress = 0x6a
 
-def sendGetI2C(qMotors : multiprocessing.Queue, qData : multiprocessing.Queue):
+def sendGetI2C(qMotors : multiprocessing.Queue, qData : multiprocessing.Queue, qStatus):
     timeElapsed = time.time()
     print("Start sendgeti2c")
-    while True:
+
+    status = qStatus.value
+
+    while status:
         if not qMotors.empty():
             print("Här")
             addressData = qMotors.get()
             if addressData == 100:
-                #Set speed 0 and steering 50
-                bus.write_byte_data(motorAdress,1,50)
-                bus.write_byte_data(motorAdress,0,0)
+                stop()
                 return
             
             print("Sending to buss")
@@ -32,3 +33,12 @@ def sendGetI2C(qMotors : multiprocessing.Queue, qData : multiprocessing.Queue):
             except:
                 print("Couldn't read i2c")
             timeElapsed = time.time()
+
+            status = qStatus.value
+            time.sleep(0.01)
+        
+        stop()
+
+def stop():
+    bus.write_byte_data(motorAdress,1,50)
+    bus.write_byte_data(motorAdress,0,0)

@@ -19,9 +19,11 @@ class Manual():
         self.qData = multiprocessing.Queue()
 
         self.statusHandleMessage = multiprocessing.Value('i',1)
+        self.statusI2C = multiprocessing.Value('i',1)
 
-        self.p1 = multiprocessing.Process(target=self.handleMessage, args=(self.qMessage,self.statusHandleMessage))
-        self.p2 = multiprocessing.Process(target=sendGetI2C, args=(self.qMotors,self.qData))
+
+        self.p1 = multiprocessing.Process(target=self.handleMessage, args=(self.qMessage, self.statusHandleMessage))
+        self.p2 = multiprocessing.Process(target=sendGetI2C, args=(self.qMotors, self.qData, self.statusI2C))
         
         self.p1.start()
         self.p2.start()
@@ -83,6 +85,10 @@ class Manual():
     
 
         self.qMotors.put(100)
+        
+        time.sleep(0.5)
+        
+        self.statusI2C.value = 0
 
         self.statusHandleMessage.value = 0
 

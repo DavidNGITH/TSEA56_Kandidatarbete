@@ -2,6 +2,7 @@ import compVision
 import multiprocessing
 import time
 import paho.mqtt.client as mqtt
+from i2c import sendGetI2C
 
 
 MQTT_TOPIC = [("stop",0),("ping",0)]
@@ -21,16 +22,22 @@ class Autonomous():
 
         self.qMessage = multiprocessing.Queue()
         self.qCenterOffset = multiprocessing.Queue()
-        
+        self.qMotors = multiprocessing.Queue()
+        self.qData = multiprocessing.Queue()
+
         self.statusCenterOffset = multiprocessing.Value('i',1)
         self.statusHandleMessage = multiprocessing.Value('i',1)
+        self.statusI2C = multiprocessing.Value('i',1)
 
-        self.p1 = multiprocessing.Process(target=self.handleMessage, args=(self.qMessage,self.statusHandleMessage))
-        self.p2 = multiprocessing.Process(target=self.laneData.getCenterOffset, args =(self.qCenterOffset,self.statusCenterOffset))
-        
+
+        self.p1 = multiprocessing.Process(target=self.handleMessage, args=(self.qMessage, self.statusHandleMessage))
+        self.p2 = multiprocessing.Process(target=self.laneData.getCenterOffset, args =(self.qCenterOffset, self.statusCenterOffset))
+        self.p3 = multiprocessing.Process(target=sendGetI2C, args=(self.qMotors, self.qData, self.statusI2C))
 
         self.p1.start()
         self.p2.start()
+        self.p3.start()
+
 
     def onMessage(self,client, userdata, message):
         try:
@@ -64,6 +71,15 @@ class Autonomous():
 
     def stop(self):
         #Stop all motors
+        while not self.qMotors.empty():
+            self.qMotors.get()
+    
+
+        self.qMotors.put(100)
+        
+        time.sleep(0.5)
+        
+        self.statusI2C.value = 0
 
         # Stopping center offset
         self.statusCenterOffset.value = 0 
