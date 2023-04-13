@@ -20,6 +20,7 @@ ROI_PERC = [0.2, 0.35, 0.85, 0.35, 1, 1, 0, 1]
 
 
 def getMode(mqttClient):
+    return(3)
     while True:
         if not q.empty():
             mode = q.get()

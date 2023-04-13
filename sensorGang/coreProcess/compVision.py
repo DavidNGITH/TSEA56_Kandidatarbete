@@ -1,5 +1,3 @@
-from picamera import PiCamera
-from picamera.array import PiRGBArray
 import time
 import numpy as np
 import cv2
@@ -7,6 +5,8 @@ from videoStream import VideoStream
 import multiprocessing
 from datetime import datetime
 import matplotlib.pyplot as plt
+
+from videoStreamFile import VideoStreamFile
 
 
 class compVision:
@@ -198,7 +198,8 @@ class compVision:
 
     def getCenterOffset(self, q : multiprocessing.Queue, statusValue : multiprocessing.Value):
         #Starting Video stream
-        threadStream = VideoStream(self.resolution)
+        #threadStream = VideoStream(self.resolution)
+        threadStream = VideoStreamFile()
         threadStream.start()
         
         status = statusValue.value
