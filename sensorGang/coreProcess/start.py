@@ -4,6 +4,7 @@ from manual import Manual
 import mqttSetup as mq
 from queue import Queue
 
+
 q = Queue()
 MQTT_TOPIC = [("stop",0),("mode",0)]
 MQTT_TOPIC_UNSUB = ["stop", "mode"]

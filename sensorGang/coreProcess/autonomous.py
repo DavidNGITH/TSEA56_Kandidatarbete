@@ -2,7 +2,9 @@ import compVision
 import multiprocessing
 import time
 import paho.mqtt.client as mqtt
-from i2c import sendGetI2C
+import i2cHandle
+import numpy as np
+
 
 
 MQTT_TOPIC = [("stop",0),("ping",0)]
@@ -27,16 +29,13 @@ class Autonomous():
 
         self.statusCenterOffset = multiprocessing.Value('i',1)
         self.statusHandleMessage = multiprocessing.Value('i',1)
-        self.statusI2C = multiprocessing.Value('i',1)
 
 
-        self.p1 = multiprocessing.Process(target=self.handleMessage, args=(self.qMessage, self.statusHandleMessage))
+        self.p1 = multiprocessing.Process(target=self.handleMessage, args=(self.qMessage, self.qData, self.statusHandleMessage))
         self.p2 = multiprocessing.Process(target=self.laneData.getCenterOffset, args =(self.qCenterOffset, self.statusCenterOffset))
-        self.p3 = multiprocessing.Process(target=sendGetI2C, args=(self.qMotors, self.qData, self.statusI2C))
 
         self.p1.start()
         self.p2.start()
-        self.p3.start()
 
 
     def onMessage(self,client, userdata, message):
@@ -47,18 +46,21 @@ class Autonomous():
         except:
             print("Couldn't read mqtt message")
 
-    def handleMessage (self,q,status):
+    def handleMessage (self, qMQTT, qI2C ,status):
         print("In handleMessage autonomous!")
+        I2C_proc = i2cHandle.I2C()
+        i2cTimeElapsed = time.time()
         pingTime = time.time()
         while status.value:
-            if not q.empty():
+            if not qMQTT.empty():
                 print("qMessage not empty")
-                if q.get()[0] == "stop":
+                if qMQTT.get()[0] == "stop":
                     print("Recived stop in autonomous")
-                    print("Handle message autonomous stopped")
+                    I2C_proc.send((1, 50))
+                    I2C_proc.send((0, 0))
                     self.stop()
                     return
-                elif q.get()[0] == "ping":
+                elif qMQTT.get()[0] == "ping":
                     print("Recived ping in autonomous")
                     pingTime = time.time()
             
@@ -66,6 +68,20 @@ class Autonomous():
                 print("Timed out in autonomous")
                 self.stop()
                 return
+            
+            if time.time() - i2cTimeElapsed > 2:
+                try:
+                    data = I2C_proc.get()
+                
+                    qI2C.put(data[0])
+                    qI2C.put(data[1])
+                except Exception as e:
+                    print("Couldn't read i2c")
+                    print(e)
+                    
+                    
+                i2cTimeElapsed = time.time()
+                
             time.sleep(0.01)
 
 
@@ -79,8 +95,6 @@ class Autonomous():
         
         time.sleep(0.5)
         
-        self.statusI2C.value = 0
-
         # Stopping center offset
         self.statusCenterOffset.value = 0 
 
@@ -98,6 +112,19 @@ class Autonomous():
             if not self.qCenterOffset.empty():
                 centerOffset = self.qCenterOffset.get()
                 #Send data to PD-controller
+                
+            if not self.qData.empty():
+                messageToSend = self.qData.get()
+                if messageToSend[0]:
+                    speed = int((messageToSend[1]/10) * 8 * np.pi)
+                    print("Speed: {} cm/s".format(speed))
+                    self.mqttClient.publish("data/speed", speed)
+                else:
+                    distance = int(1.1 * messageToSend[1])
+                    print("Distance: {} cm".format(distance))
+                    self.mqttClient.publish("data/distance", distance)
+                
+            
             time.sleep(0.01)
         
         print("Main loop autonomous stopped")

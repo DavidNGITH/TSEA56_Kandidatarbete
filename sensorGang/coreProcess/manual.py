@@ -1,8 +1,9 @@
 import paho.mqtt.client as mqtt
 import multiprocessing
 import time
-from i2c import sendGetI2C
+#from i2c import sendGetI2C
 import numpy as np
+import i2cHandle
 
 MQTT_TOPIC = [("stop",0),("ping",0),("steering",0),("speed",0)]
 
@@ -15,19 +16,19 @@ class Manual():
         self.mqttClient.subscribe(MQTT_TOPIC)
 
         self.qMessage = multiprocessing.Queue()
-        self.qMotors = multiprocessing.Queue()
         self.qData = multiprocessing.Queue()
 
         self.statusHandleMessage = multiprocessing.Value('i',1)
-        self.statusI2C = multiprocessing.Value('i',1)
+        #self.statusI2C = multiprocessing.Value('i',1)
 
 
-        self.p1 = multiprocessing.Process(target=self.handleMessage, args=(self.qMessage, self.statusHandleMessage))
-        self.p2 = multiprocessing.Process(target=sendGetI2C, args=(self.qMotors, self.qData, self.statusI2C))
+        self.p1 = multiprocessing.Process(target=self.handleMessage, args=(self.qMessage, self.qData, self.statusHandleMessage))
+        
+        #self.p2 = multiprocessing.Process(target=sendGetI2C, args=(self.qMotors, self.qData, self.statusI2C))
         
         self.p1.start()
-        self.p2.start()
-
+        #self.p2.start()
+        
         self.topicDic = {
             0 : "speedData",
             1 : "distanceData"
@@ -45,50 +46,66 @@ class Manual():
             print(e)
 
 
-    def handleMessage (self,q, status):
+    def handleMessage (self,qMQTT, qI2C, status):
         print("In handleMessage manual!")
+        I2C_proc = i2cHandle.I2C()
         pingTime = time.time()
+        i2cTimeElapsed = time.time()
+
         while status.value:
-            if not q.empty():
+            if not qMQTT.empty():
                 print("qMessage not empty")
-                message = q.get()
+                message = qMQTT.get()
                 if message[0] == "stop":
                     print("Recived stop in manual")
+                    I2C_proc.send((1, 50))
+                    I2C_proc.send((0, 0))
                     self.stop()
-                    print("Stopping handle message in manual")
                     return
                 elif message[0] == "ping":
                     print("Recived ping in manual")
                     pingTime = time.time()
                 elif message[0] == "steering":
                     print("Recived steering data in manual")
-                    self.qMotors.put((1, message[1]))
+                    I2C_proc.send((1, message[1]))
+                    #self.qMotors.put((0, message[1]))
+
                 elif message[0] == "speed":
                     print("Recived speed data in manual")
-                    self.qMotors.put((0, message[1]))
-            time.sleep(0.01)
+                    I2C_proc.send((0, message[1]))
+                    #self.qMotors.put((0, message[1]))
+            
 
             if time.time() - pingTime > self.timeOut:
                 print("Timed out, stopping in manual")
                 self.stop()
                 return
+            
+            if time.time() - i2cTimeElapsed > 2:
+                try:
+                    data = I2C_proc.get()
+                
+                    qI2C.put(data[0])
+                    qI2C.put(data[1])
+                except Exception as e:
+                    print("Couldn't read i2c")
+                    print(e)
+                    
+                    
+                i2cTimeElapsed = time.time()
+            
+            time.sleep(0.01)
+            
         
             
 
     def stop(self):
-        #Stop all motors
         print("In stop manual")
 
-        #Clear motor data
-        while not self.qMotors.empty():
-            self.qMotors.get()
-    
-
-        self.qMotors.put(100)
-        
+        #Stop all motors
         time.sleep(0.5)
         
-        self.statusI2C.value = 0
+        #self.statusI2C.value = 0
 
         self.statusHandleMessage.value = 0
 

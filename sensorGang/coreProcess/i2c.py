@@ -15,7 +15,6 @@ def sendGetI2C(qMotors : multiprocessing.Queue, qData : multiprocessing.Queue, q
 
     while status:
         if not qMotors.empty():
-            print("Här")
             addressData = qMotors.get()
             if addressData == 100:
                 stop()
@@ -37,8 +36,9 @@ def sendGetI2C(qMotors : multiprocessing.Queue, qData : multiprocessing.Queue, q
             status = qStatus.value
             time.sleep(0.01)
         
-        stop()
+    stop()
 
 def stop():
+    print("I2C stopped")
     bus.write_byte_data(motorAdress,1,50)
     bus.write_byte_data(motorAdress,0,0)
