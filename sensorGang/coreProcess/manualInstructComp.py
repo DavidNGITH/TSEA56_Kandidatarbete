@@ -39,8 +39,8 @@ def main(key):
         print(steerServo)
     elif key == keyboard.Key.right:
         steerServo += 10
-        if steerServo >= 100:
-            steerServo = 100
+        if steerServo >= 120:
+            steerServo = 120
         mqtt_client.publish("steering",str(steerServo))
         print(steerServo)
     elif key == keyboard.Key.up:
