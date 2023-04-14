@@ -1,4 +1,4 @@
-import compVision
+from compVision import compVision
 import multiprocessing
 import time
 import paho.mqtt.client as mqtt
@@ -15,7 +15,7 @@ class Autonomous():
         self.timeOut = timeOut
         
         self.resolution = resolution
-        self.laneData = compVision.compVision(roiPerc, self.resolution)
+        self.laneData = compVision(roiPerc, self.resolution)
         self.status = True
     
         self.mqttClient = mqttClient
