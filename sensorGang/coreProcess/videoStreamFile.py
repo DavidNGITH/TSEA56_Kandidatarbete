@@ -4,7 +4,7 @@ import cv2
 
 class VideoStreamFile:
     def __init__(self):
-        self.vid_capture = cv2.VideoCapture('victor.mp4')
+        self.vid_capture = cv2.VideoCapture('recordingForSimCutted.mp4')
 
 
     def start(self):

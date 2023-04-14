@@ -37,8 +37,8 @@ class compVision:
 
 
         #Canny settings
-        self.lowerThreshold = 200
-        self.upperThreshold = 300
+        self.lowerThreshold = 100
+        self.upperThreshold = 200
         self.appetureSize = 3
 
         #Rho settings
@@ -139,9 +139,9 @@ class compVision:
         minX = 1000
         maxX = 0
 
-        boundary = 1/3
-        leftRegionBoundary = self.width * (1 - boundary)  # left lane line segment should be on left 2/3 of the screen
-        rightRegionBoundary = self.width * boundary # right lane line segment should be on left 2/3 of the screen
+        boundary = 2/3
+        leftRegionBoundary = self.width * (1 - boundary)  # left lane line segment should be on left 1/3 of the screen
+        rightRegionBoundary = self.width * boundary # right lane line segment should be on left 1/3 of the screen
 
         for lineSegment in lineSegments:
             for x1, y1, x2, y2 in lineSegment:
@@ -206,18 +206,18 @@ class compVision:
         
         while status:
             
-            t1 = time.time()
+            #t1 = time.time()
             self.img = threadStream.read()
             
-            self.undistortImage()
+            #self.undistortImage()
             self.orgImg = self.img
             self.img = cv2.Canny(self.img, self.lowerThreshold, self.upperThreshold, self.appetureSize)
             
-            #self.displayImage()
+            self.displayImage()
 
             self.regionOfInterest()
             
-            histogram = np.sum(self.img, axis =0)
+            histogram = np.sum(self.img[400:480,10:630], axis =0)
             
             leftXBase = np.argmax(histogram[:self.center])
             
@@ -231,34 +231,40 @@ class compVision:
             #plt.vlines(rightXBase, ymin=0, ymax=self.height, colors = 'red')
 
             #plt.show()
+          
 
             lineSegments = cv2.HoughLinesP(self.img, self.rho, self.angle, self.minThreshold, cv2.HOUGH_PROBABILISTIC,
                                     minLineLength=self.minLineLength, maxLineGap=self.minLineLength)
         
             self.lineIntercept(lineSegments)
             
-            t2 = time.time()
+            #t2 = time.time()
         
             #print("Time elapsed: {} in ms".format((t2-t1)*1000))
             
+            self.addLines()
+            
+            
             if(self.xPointRight and self.xPointLeft):
+                print("Jag är inne i histo")
                 midpointFromLines = int((self.xPointRight - self.xPointLeft)/2 + self.xPointLeft)
                 #y4 = [(midpointFromLines, 0), (midpointFromLines, self.height)]
                 #self.drawLine(y4, (0,242,255), 2)
-                #y1 = [(leftXBase, 0), (leftXBase, self.height)]
-                #y2 = [(rightXBase, 0), (rightXBase, self.height)]
-                #y3 = [(midpointHistogram, 0), (midpointHistogram, self.height)]
+                y1 = [(leftXBase, 0), (leftXBase, self.height)]
+                y2 = [(rightXBase, 0), (rightXBase, self.height)]
+                y3 = [(midpointHistogram, 0), (midpointHistogram, self.height)]
+                #print("y1:{} y2:{} y3:{} y4:{}".format(y1,y2,y3,y4))
 
-                #self.drawLine(y1, (0,242,255), 2)
-                #self.drawLine(y2, (0,242,255), 2)
-                #self.drawLine(y3, (128,0,128), 2)
+                self.drawLine(y1, (0,242,255), 2)
+                self.drawLine(y2, (0,242,255), 2)
+                self.drawLine(y3, (128,0,128), 2)
             
             
             
             
             
                         
-            self.addLines()
+
             self.displayROI()
             if self.stopLine:
                 self.drawLine(self.stopLine, (0,0,255), 5)

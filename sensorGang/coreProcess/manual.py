@@ -11,7 +11,7 @@ MQTT_TOPIC = [("stop",0),("ping",0),("steering",0),("speed",0)]
 class Manual():
     def __init__(self, mqttClient : mqtt.Client(), timeOut, resolution, framerate, recordMode):
         self.timeOut = timeOut
-        
+        self.recordMode = recordMode
         if recordMode:
             self.recordMode = recordMode
             self.statusVideo = multiprocessing.Value('i',1)

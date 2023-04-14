@@ -13,14 +13,13 @@ RESOLUTION = (640,480)
 
 
 # Settings
-TIME_OUT_TIME = 6
+TIME_OUT_TIME = 400
 
     #    p1: x  y   p2: x  y   p3: x  y   p3: x  y
-ROI_PERC = [0.2, 0.35, 0.85, 0.35, 1, 1, 0, 1]
+ROI_PERC = [0, 0.65, 1, 0.65, 1, 1, 0, 1]
 
 
 def getMode(mqttClient):
-    return(1)
     while True:
         if not q.empty():
             mode = q.get()
@@ -57,7 +56,7 @@ if not modeSetting == None:
     if modeSetting == 1:
         #Manual
         print("Manual")
-        mode = Manual(mqttClient, TIME_OUT_TIME, RESOLUTION, FRAME_RATE, True)
+        mode = Manual(mqttClient, TIME_OUT_TIME, RESOLUTION, FRAME_RATE, False)
     elif modeSetting == 2:
         #Semi autonoumous
             print("SemiAutonomous")

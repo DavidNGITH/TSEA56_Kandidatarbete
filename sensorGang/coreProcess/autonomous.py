@@ -56,14 +56,19 @@ class Autonomous():
                 print("qMessage not empty")
                 if qMQTT.get()[0] == "stop":
                     print("Recived stop in autonomous")
-                    I2C_proc.send((1, 50))
-                    I2C_proc.send((0, 0))
+                    try:
+                        I2C_proc.send((1, 50))
+                        I2C_proc.send((0, 0))
+                    except:
+                        print("Couldn't read i2c")
+                        
                     self.stop()
                     return
                 elif qMQTT.get()[0] == "ping":
                     print("Recived ping in autonomous")
                     pingTime = time.time()
             
+            print(1337)
             if time.time() - pingTime > self.timeOut:
                 print("Timed out in autonomous")
                 self.stop()
