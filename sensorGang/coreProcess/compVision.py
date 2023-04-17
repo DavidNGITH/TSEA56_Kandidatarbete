@@ -215,9 +215,22 @@ class compVision:
             self.orgImg = self.img
             self.img = cv2.Canny(self.img, self.lowerThreshold, self.upperThreshold, self.appetureSize)
             
-            self.displayImage()
+            #self.displayImage()
 
             self.regionOfInterest()
+            
+            # Histogram
+            histogram = np.sum(self.img[400:480,10:630], axis =0)
+            leftXBase = np.argmax(histogram[:int(self.center)]) + 10
+            rightXBase = np.argmax(histogram[int(self.center):]) + self.center + 10
+            midpointHistogram = int((rightXBase - leftXBase) / 2 + leftXBase )
+
+            y1 = [(leftXBase, 0), (leftXBase, self.height)]
+            y2 = [(rightXBase, 0), (rightXBase, self.height)]
+            y3 = [(midpointHistogram, 0), (midpointHistogram, self.height)]
+            
+        
+
             
             
             #plt.plot(histogram)
@@ -236,30 +249,20 @@ class compVision:
         
             #print("Time elapsed: {} in ms".format((t2-t1)*1000))
             
-            self.addLines()
-
-            # Histogram
-            histogram = np.sum(self.img[400:480,10:630], axis =0)
-            leftXBase = np.argmax(histogram[:int(self.center)]) + 10
-            rightXBase = np.argmax(histogram[int(self.center):]) + self.center + 10
-            midpointHistogram = int((rightXBase - leftXBase) / 2 + leftXBase )
-
-            y1 = [(leftXBase, 0), (leftXBase, self.height)]
-            y2 = [(rightXBase, 0), (rightXBase, self.height)]
-            y3 = [(midpointHistogram, 0), (midpointHistogram, self.height)]
-        
-            self.drawLine(y1, (0,242,255), 2) # Left line
-            self.drawLine(y2, (0,242,255), 2) # Right line
-            self.drawLine(y3, (128,0,128), 2) # Midpoint line
-
             
+
+
+            self.addLines()
             
 
             # Midpoint at y = 100
             if(self.xPointRight and self.xPointLeft):
                 midpointFromLines = int((self.xPointRight - self.xPointLeft)/2 + self.xPointLeft)
                 y4 = [(midpointFromLines, 0), (midpointFromLines, self.height)]
-                self.drawLine(y4, (0,242,255), 2)
+                self.drawLine(y1, (0,242,255), 2) # Left line
+                self.drawLine(y2, (0,242,255), 2) # Right line
+                self.drawLine(y3, (128,0,128), 2) # Midpoint line
+                #self.drawLine(y4, (0,242,255), 2)
                 #print("y1:{} y2:{} y3:{} y4:{}".format(y1,y2,y3,y4))
             
             
