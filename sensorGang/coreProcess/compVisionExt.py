@@ -11,7 +11,20 @@ from videoStreamFile import VideoStreamFile
 
 class compVision:
     def __init__(self, roiPerc, resolution):
-
+        #This is the main class of this file. It contains all the functions needed to process an image.
+        #The class is initialized with the ROI percentage and the resolution of the image.
+        #The ROI percentage is a list of 8 values. The first 4 values are the percentage of the image width and height for the upper left corner of the ROI.
+        #The last 4 values are the percentage of the image width and height for the lower right corner of the ROI.
+        #The resolution is a tuple of the width and height of the image.
+        #The class contains the following functions:
+        #   - displayImage: Displays the image stored in self.img
+        #   - undistortImage: Undistorts the image stored in self.img
+        #   - regionOfInterest: Applies a ROI to the image stored in self.img
+        #   - canny: Applies the canny edge detection algorithm to the image stored in self.img
+        #   - houghLines: Applies the hough lines algorithm to the image stored in self.img
+        #   - findLines: Finds the lane lines in the image stored in self.img
+        #   - findStopLine: Finds the stop line in the image stored in self.img
+        #   - findLaneCenter: Finds the center of the lane in the image stored in self.img
         #Variables
         self.resolution = resolution
         self.width = resolution[0]
@@ -195,15 +208,13 @@ class compVision:
             return
     def birdsView(self):
 
-        src = np.float32([[0, self.height], [630, self.height], [0, 0], [self.width , 0]])
-        dst = np.float32([[0, self.height], [630, self.height], [0, 0], [self.width, 0]])
+        src = np.float32([[0, 200], [self.width, 200], [0, self.height], [self.width , self.height]]) # Four source coordinates Top left, top right, bottom left, bottom right
+        dst = np.float32([[0, 0], [self.width, 0], [0, self.height], [self.width, self.height]])
         M = cv2.getPerspectiveTransform(src, dst) # The transformation matrix
 
         self.img = self.img[0:(self.height), 0:self.width] # Apply np slicing for ROI crop
         self.img = cv2.warpPerspective(self.img, M, (self.width, self.height)) # Image warping
         self.img = cv2.cvtColor(self.img, cv2.COLOR_BGR2RGB) # Show results
-
-    
 
     def getCenterOffset(self, q : multiprocessing.Queue, statusValue : multiprocessing.Value):
         #Starting Video stream
@@ -352,5 +363,3 @@ class compVision:
 
     def drawLine(self, coordinates, color, width):
             self.img = cv2.line(self.img, coordinates[0], coordinates[1], color, width)
-
-
