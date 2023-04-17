@@ -138,56 +138,64 @@ class Ui_Dialog(object):
         self.distance_label.setGeometry(QtCore.QRect(490, 90, 151, 16))
         self.distance_label.setObjectName("distance_label")
 
+        self.speed_label = QtWidgets.QLabel(Dialog)
+        self.speed_label.setGeometry(QtCore.QRect(490, 130, 151, 16))
+        self.speed_label.setObjectName("speed_label")
+
         self.throttle_label = QtWidgets.QLabel(Dialog)
-        self.throttle_label.setGeometry(QtCore.QRect(490, 130, 151, 16))
+        self.throttle_label.setGeometry(QtCore.QRect(490, 170, 151, 16))
         self.throttle_label.setObjectName("throttle_label")
 
         self.bearing_label = QtWidgets.QLabel(Dialog)
-        self.bearing_label.setGeometry(QtCore.QRect(490, 170, 151, 16))
+        self.bearing_label.setGeometry(QtCore.QRect(490, 210, 151, 16))
         self.bearing_label.setObjectName("bearing_label")
 
         self.crs_label = QtWidgets.QLabel(Dialog)
-        self.crs_label.setGeometry(QtCore.QRect(490, 210, 151, 16))
+        self.crs_label.setGeometry(QtCore.QRect(490, 250, 151, 16))
         self.crs_label.setObjectName("crs_label")
 
         self.lat_pos_label = QtWidgets.QLabel(Dialog)
-        self.lat_pos_label.setGeometry(QtCore.QRect(490, 250, 151, 16))
+        self.lat_pos_label.setGeometry(QtCore.QRect(490, 290, 151, 16))
         self.lat_pos_label.setObjectName("lat_pos_label")
 
         self.routeplan_label = QtWidgets.QLabel(Dialog)
-        self.routeplan_label.setGeometry(QtCore.QRect(490, 290, 151, 16))
+        self.routeplan_label.setGeometry(QtCore.QRect(490, 330, 151, 16))
         self.routeplan_label.setObjectName("routeplan_label")
 
         self.map_label = QtWidgets.QLabel(Dialog)
-        self.map_label.setGeometry(QtCore.QRect(490, 330, 151, 16))
+        self.map_label.setGeometry(QtCore.QRect(490, 370, 151, 16))
         self.map_label.setObjectName("map_label")
 
         self.time_display = QtWidgets.QTextBrowser(Dialog)
         self.time_display.setGeometry(QtCore.QRect(670, 50, 301, 31))
         self.time_display.setObjectName("time_display")
 
-        self.textBrowser_4 = QtWidgets.QTextBrowser(Dialog)
-        self.textBrowser_4.setGeometry(QtCore.QRect(670, 90, 301, 31))
-        self.textBrowser_4.setObjectName("textBrowser_4")
+        self.drive_distance_display = QtWidgets.QTextBrowser(Dialog)
+        self.drive_distance_display.setGeometry(QtCore.QRect(670, 90, 301, 31))
+        self.drive_distance_display.setObjectName("drive_distance_display")
+
+        self.speed_display = QtWidgets.QTextBrowser(Dialog)
+        self.speed_display.setGeometry(QtCore.QRect(670, 130, 301, 31))
+        self.speed_display.setObjectName("speed_display")
 
         self.throttle_display = QtWidgets.QTextBrowser(Dialog)
-        self.throttle_display.setGeometry(QtCore.QRect(670, 130, 301, 31))
+        self.throttle_display.setGeometry(QtCore.QRect(670, 170, 301, 31))
         self.throttle_display.setObjectName("throttle_display")
 
         self.textBrowser_6 = QtWidgets.QTextBrowser(Dialog)
-        self.textBrowser_6.setGeometry(QtCore.QRect(670, 210, 301, 31))
+        self.textBrowser_6.setGeometry(QtCore.QRect(670, 250, 301, 31))
         self.textBrowser_6.setObjectName("textBrowser_6")
 
         self.textBrowser_7 = QtWidgets.QTextBrowser(Dialog)
-        self.textBrowser_7.setGeometry(QtCore.QRect(670, 250, 301, 31))
+        self.textBrowser_7.setGeometry(QtCore.QRect(670, 290, 301, 31))
         self.textBrowser_7.setObjectName("textBrowser_7")
 
         self.textBrowser_8 = QtWidgets.QTextBrowser(Dialog)
-        self.textBrowser_8.setGeometry(QtCore.QRect(670, 170, 301, 31))
+        self.textBrowser_8.setGeometry(QtCore.QRect(670, 210, 301, 31))
         self.textBrowser_8.setObjectName("textBrowser_8")
 
         self.textBrowser_11 = QtWidgets.QTextBrowser(Dialog)
-        self.textBrowser_11.setGeometry(QtCore.QRect(670, 290, 301, 31))
+        self.textBrowser_11.setGeometry(QtCore.QRect(670, 330, 301, 31))
         self.textBrowser_11.setObjectName("textBrowser_11")
 
         self.retranslateUi(Dialog)
@@ -214,24 +222,25 @@ class Ui_Dialog(object):
 
         self.distanceupdate_timer = QtCore.QTimer()
         #self.distanceupdate_timer.timeout.connect(self.updatedistancedriven)
-        self.drivingtimer.start(1000)
+        #self.drivingtimer.start(1000)
 
 
     def drive_function(self):
         if ((self.type_of_mode == "Manual") & (self.is_driving)):
             hotkey = keyboard.get_hotkey_name()
-            if hotkey == "uppil":
+            #print(hotkey)
+            if (hotkey == "uppil") | (hotkey == "up"):
                 if self.speed <= 251:
                     self.speed += 4
                 print(self.speed)
-            if hotkey == "nedpil":
+            if (hotkey == "nedpil") | (hotkey == "down"):
                 if self.speed > 4:
                     self.speed -= 4
                 print(self.speed)
-            if hotkey == "högerpil":
+            if (hotkey == "högerpil") | (hotkey == "right"):
                 if self.steering < 100:
                     self.steering += 4
-            if hotkey == "vänsterpil":
+            if (hotkey == "vänsterpil") | (hotkey == "left"):
                 if self.steering >= 4:
                     self.steering -= 4
             if hotkey == "space":
@@ -278,6 +287,7 @@ class Ui_Dialog(object):
         self.drive_info_label.setText(_translate("Dialog", "Drive info"))
         self.time_label.setText(_translate("Dialog", "Time:"))
         self.distance_label.setText(_translate("Dialog", "Distance:"))
+        self.speed_label.setText(_translate("Dialog", "Speed:"))
         self.throttle_label.setText(_translate("Dialog", "Throttle:"))
         self.bearing_label.setText(_translate("Dialog", "Bearing:"))
         self.crs_label.setText(_translate("Dialog", "Current road segment:"))
@@ -371,10 +381,10 @@ class Ui_Dialog(object):
             message = self.qData.get()
             if message[0] == "data/speed":
                 print ("Speed recieved")
-                
-                self.num_of_speeds += 1
+                #self.num_of_speeds += 1
                 self.car_speed_data = message[1]
                 print(self.car_speed_data)
+                self.speed_display.setText(str(self.car_speed_data))
             if message[0] == "data/distance":
                 #print ("Distance recieved")
                 self.distance_to_obj = message[1]
