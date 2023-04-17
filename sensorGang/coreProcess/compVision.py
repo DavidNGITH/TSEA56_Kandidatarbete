@@ -1,4 +1,4 @@
-import time
+import time, math
 import numpy as np
 import cv2
 from videoStream import VideoStream
@@ -21,6 +21,8 @@ class compVision:
         self.img = None
         self.laneLines = []
         self.lineCenter = None
+        self.lastOffset = None
+        self.newOffset = None
 
         #ROIDIM: Upperleft, UpperRight, LowerRight, LowerLeft
         roiP1X = int(roiPerc[0] * self.width)
@@ -64,6 +66,8 @@ class compVision:
         self.stopLine = None
         self.xPointRight = None
         self.xPointLeft = None
+        self.slopeLeft = None
+        self.slopeRight = None
 
 
 
@@ -75,10 +79,12 @@ class compVision:
         cv2.waitKey()
         cv2.destroyAllWindows()
 
+    # Undistortioon
     def undistortImage(self):
         self.img = cv2.remap(self.img, self.mx, self.my, cv2.INTER_LINEAR)
         self.img = self.img[self.roiFile[1]:self.roiFile[1]+ self.roiFile[3],self.roiFile[0]:self.roiFile[0]+ self.roiFile[2]]
 
+    # Region of interest
     def regionOfInterest(self):
 
         mask = np.zeros_like(self.img)
@@ -92,6 +98,7 @@ class compVision:
     
         self.img = cv2.bitwise_and(self.img, mask) 
     
+    # 
     def makePoints(self, line, which):
 
         slope, intercept = line
@@ -128,8 +135,12 @@ class compVision:
 
     
     def lineIntercept(self, lineSegments):
-
         self.laneLines = []
+        self.xPointLeft = None
+        self.xPointRight = None
+        self.slopeLeft = 0
+        self.slopeRight = 0
+
         if lineSegments is None:
             #print('No line_segment segments detected')
             return self.laneLines
@@ -140,7 +151,7 @@ class compVision:
         
         minX = 1000
         maxX = 0
-
+        
         boundary = 2/3
         leftRegionBoundary = self.width * (1 - boundary)  # left lane line segment should be on left 1/3 of the screen
         rightRegionBoundary = self.width * boundary # right lane line segment should be on left 1/3 of the screen
@@ -168,14 +179,18 @@ class compVision:
         
         
         
-        leftFitAverage = np.average(leftFit, axis=0)
+        
         if len(leftFit) > 0:
+            leftFitAverage = np.average(leftFit, axis=0)
+            self.slopeLeft = leftFitAverage[0]
             self.laneLines.append(self.makePoints(leftFitAverage, 0))
             #print("Left slope: k {}, m {}".format(leftFitAverage[0], leftFitAverage[1]))
 
 
-        rightFitAverage = np.average(rightFit, axis=0)
+        
         if len(rightFit) > 0:
+            rightFitAverage = np.average(rightFit, axis=0)
+            self.slopeRight = rightFitAverage[0]
             self.laneLines.append(self.makePoints(rightFitAverage, 1))
             #print("Right slope: k {}, m {}".format(rightFitAverage[0], rightFitAverage[1]))
         
@@ -208,41 +223,43 @@ class compVision:
         
         while status:
             
-            #t1 = time.time()
+            # RETRIVE
             self.img = threadStream.read()
             
+            # UNDISTORT
             #self.undistortImage()
+
+            # SAVE ORIGINIAL IMAGE
             self.orgImg = self.img
+
+            # APPLY CANNY
             self.img = cv2.Canny(self.img, self.lowerThreshold, self.upperThreshold, self.appetureSize)
             
             #self.displayImage()
 
+            # APPLY ROI
             self.regionOfInterest()
             
-            # Histogram
+            # HISTOGRAM CALC FROM CANNY
             histogram = np.sum(self.img[400:480,10:630], axis =0)
-            leftXBase = np.argmax(histogram[:int(self.center)]) + 10
-            rightXBase = np.argmax(histogram[int(self.center):]) + self.center + 10
-            midpointHistogram = int((rightXBase - leftXBase) / 2 + leftXBase )
+            self.leftHistogram = np.argmax(histogram[:int(self.center)]) + 10
+            self.rightHistogram = np.argmax(histogram[int(self.center):]) + self.center + 10
+            self.midpointHistogram = int((self.rightHistogram - self.leftHistogram) / 2 + self.leftHistogram )
 
-            y1 = [(leftXBase, 0), (leftXBase, self.height)]
-            y2 = [(rightXBase, 0), (rightXBase, self.height)]
-            y3 = [(midpointHistogram, 0), (midpointHistogram, self.height)]
+            y1 = [(self.leftHistogram, 0), (self.leftHistogram, self.height)]
+            y2 = [(self.rightHistogram, 0), (self.rightHistogram, self.height)]
+            y3 = [(self.midpointHistogram, 0), (self.midpointHistogram, self.height)]
             
-        
-
-            
-            
-            #plt.plot(histogram)
-            #plt.vlines(leftXBase, ymin=0, ymax=self.height, colors = 'red')
-            #plt.vlines(rightXBase, ymin=0, ymax=self.height, colors = 'red')
-
-            #plt.show()
+            """plt.plot(histogram)
+            #plt.vlines(self.leftHistogram, ymin=0, ymax=self.height, colors = 'red')
+            #plt.vlines(self.rightHistogram, ymin=0, ymax=self.height, colors = 'red')
+            #plt.show()"""
           
-
+            # APPLY HOUGH
             lineSegments = cv2.HoughLinesP(self.img, self.rho, self.angle, self.minThreshold, cv2.HOUGH_PROBABILISTIC,
                                     minLineLength=self.minLineLength, maxLineGap=self.minLineLength)
         
+            # CALC EQUATIONS FOR LINES
             self.lineIntercept(lineSegments)
             
             #t2 = time.time()
@@ -251,36 +268,42 @@ class compVision:
             
             
 
-
+            # ADD LINES TO ORIGINAL IMG
             self.addLines()
             
 
-            # Midpoint at y = 100
+            # CALC X VALUE FOR Y = 10
             if(self.xPointRight and self.xPointLeft):
-                midpointFromLines = int((self.xPointRight - self.xPointLeft)/2 + self.xPointLeft)
-                y4 = [(midpointFromLines, 0), (midpointFromLines, self.height)]
-                self.drawLine(y1, (0,242,255), 2) # Left line
-                self.drawLine(y2, (0,242,255), 2) # Right line
-                self.drawLine(y3, (128,0,128), 2) # Midpoint line
+                self.midpointFromPoints = int((self.xPointRight - self.xPointLeft)/2 + self.xPointLeft)
+                y4 = [(self.midpointFromPoints, 0), (self.midpointFromPoints, self.height)]
                 #self.drawLine(y4, (0,242,255), 2)
                 #print("y1:{} y2:{} y3:{} y4:{}".format(y1,y2,y3,y4))
-            
-            
-            
-            
-            
-                        
 
+
+            #self.drawLine(y1, (0,242,255), 2) # Left line
+            #self.drawLine(y2, (0,242,255), 2) # Right line
+            #self.drawLine(y3, (128,0,128), 2) # Midpoint line
+
+            y5 = [(self.midpointFromPoints + self.center, 0), (self.midpointFromPoints + self.center, self.height)]
+
+            self.drawLine(y3, (128,0,128), 2) # Calculated offset
+            
+                   
+            # DISPLAY ROI
             self.displayROI()
+
+            # DISPLAY STOP LINE
             if self.stopLine:
                 self.drawLine(self.stopLine, (0,0,255), 5)
                 
             
 
-
+            # SAVE IMAGE
             #self.saveImageData()
+
+            # DISPLAY IMAGE
             self.displayImage()
-            #print(self.lineCenter - self.center)
+
                         
             try:
                 if((self.lineCenter - self.center) > 0):
@@ -298,9 +321,7 @@ class compVision:
             
             status = statusValue.value
 
-                
-        print("Stopped again compVision")
-        #print(self.status)
+        # STOP STREAM
         threadStream.stop()
            
 
@@ -347,16 +368,159 @@ class compVision:
         self.img = cv2.line(self.img, self.roiDim[1], self.roiDim[2], (0,140,255), 2)
         self.img = cv2.line(self.img, self.roiDim[2], self.roiDim[3], (0,140,255), 2)
         self.img = cv2.line(self.img, self.roiDim[3], self.roiDim[0], (0,140,255), 2)
-        #
         
-        
-        
-        
-        
-        
-        print("ROI coordinates: {}, {}, {}, {}".format(self.roiDim[0], self.roiDim[1], self.roiDim[2], self.roiDim[3]))
+        #print("ROI coordinates: {}, {}, {}, {}".format(self.roiDim[0], self.roiDim[1], self.roiDim[2], self.roiDim[3]))
 
 
     def drawLine(self, coordinates, color, width):
             self.img = cv2.line(self.img, coordinates[0], coordinates[1], color, width)
+
+    def getDataFromLines(self):
+
+        # HISTOGRAM
+        #self.leftHistogram
+        #self.rightHistogram
+        #self.midpointHistogram
+
+        # POINTS
+        #self.xPointLeft
+        #self.xPointRight
+        #self.midpointFromPoints
+
+        # INTERCEPT
+        #self.lineCenter
+        #self.slopeRight
+        #self.slopeLeft
+
+
+        # Histogrammet har hittat båda linjerna
+        if self.leftHistogram > 0 and self.leftHistogram < 640:
+            # Båda linjernas lutning har hittats
+            if self.slopeLeft and self.slopeRight:
+                print("Case 1")
+
+                #Här kan vi använda alla variabler
+
+                self.newOffset = 0.7 * self.midpointHistogram  + 0.3 * self.lineCenter
+
+                pass
+            #Endast vänstra linjens lutning har hittats
+            elif self.slopeLeft:
+                print("Case 2")
+
+                #Här kan vi använda
+                #self.leftHistogram
+                #self.rightHistogram
+                #self.midpointHistogram
+
+                #self.slopeLeft
+                #self.xPointLeft
+
+                self.newOffset = self.midpointHistogram
+
+                pass
+            #Endast högra linjens lutning har hittats
+            elif self.slopeRight:
+                print("Case 3")
+
+                #Här kan vi använda
+                #self.leftHistogram
+                #self.rightHistogram
+                #self.midpointHistogram
+
+                #self.slopeRight
+                #self.xPointRight
+
+                self.newOffset = self.midpointHistogram
+
+                pass
+            #Inga lutningar har hittats
+            else:
+                print("Case 4")
+
+                #Här kan vi använda:
+                #self.leftHistogram
+                #self.rightHistogram
+                #self.midpointHistogram
+
+                self.newOffset = self.midpointHistogram
+
+                pass
+
+            pass
+        
+        # Histogrammet har endast hittat vänstra linjen
+        elif self.leftHistogram > 0:
+            # Vänstra linjens lutning har hittats
+            if self.slopeLeft:
+                print("Case 5")
+
+                #Här kan vi använda:
+                #self.leftHistogram
+                #self.xPointLeft
+                #self.slopeLeft
+
+                #Tar reda på hur många pixlar mellan linjer
+
+                midpointHistogram = (self.width - self.leftHistogram)/2 + self.center
+                self.newOffset = midpointHistogram 
+
+                pass
+            # Ingen lutning har hittats
+            else: 
+                print("Case 6")
+
+                #Här kan vi använda:
+                #self.leftHistogram
+
+                midpointHistogram = (self.width - self.leftHistogram)/2 + self.center
+                self.newOffset = midpointHistogram 
+
+                pass
+            
+            pass
+
+        # Histogrammet har endast hittat högra linjen
+        elif self.rightHistogram < 640:
+            # Vänstra linjens lutning har hittats
+            if self.slopeRight:
+                print("Case 7")
+
+                #Här kan vi anväda:
+                #self.rightHistogram
+                #self.xPointRight
+                #self.slopeRight
+
+                midpointHistogram = (self.rightHistogram)/2 + self.center
+                self.newOffset = midpointHistogram
+
+                pass
+            # Ingen lutning har hittats
+            else:
+                print("Case 8")
+                
+                #Här kan vi använda:
+                #self.rightHistogram
+                midpointHistogram = (self.rightHistogram)/2 + self.center
+                self.newOffset = midpointHistogram
+
+                pass
+
+        else:
+            print("Nothing detected")
+            self.newOffset = self.lastOffset
+
+            return
+
+        self.newOffset -= self.center
+
+        self.lastOffset = self.newOffset
+
+
+
+
+        
+
+
+        
 
