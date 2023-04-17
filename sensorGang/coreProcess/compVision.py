@@ -102,6 +102,8 @@ class compVision:
         x1 = max(-self.width, min(2 * self.width, int((y1 - intercept) / slope)))
         x2 = max(-self.width, min(2 * self.width, int((y2 - intercept) / slope)))
         
+
+        #Find x value for y = 100
         # 1 = Right
         if which:
             self.xPointRight = int((100-intercept)/slope)
@@ -217,14 +219,6 @@ class compVision:
 
             self.regionOfInterest()
             
-            histogram = np.sum(self.img[400:480,10:630], axis =0)
-            
-            leftXBase = np.argmax(histogram[:int(self.center)]) + 10
-            
-            rightXBase = np.argmax(histogram[int(self.center):]) + self.center + 10
-            
-            midpointHistogram = int((rightXBase - leftXBase) / 2 + leftXBase )
-            
             
             #plt.plot(histogram)
             #plt.vlines(leftXBase, ymin=0, ymax=self.height, colors = 'red')
@@ -243,21 +237,30 @@ class compVision:
             #print("Time elapsed: {} in ms".format((t2-t1)*1000))
             
             self.addLines()
-            
-            
-            if(self.xPointRight and self.xPointLeft):
-                print("Jag är inne i histo")
-                midpointFromLines = int((self.xPointRight - self.xPointLeft)/2 + self.xPointLeft)
-                #y4 = [(midpointFromLines, 0), (midpointFromLines, self.height)]
-                #self.drawLine(y4, (0,242,255), 2)
-                y1 = [(leftXBase, 0), (leftXBase, self.height)]
-                y2 = [(rightXBase, 0), (rightXBase, self.height)]
-                y3 = [(midpointHistogram, 0), (midpointHistogram, self.height)]
-                #print("y1:{} y2:{} y3:{} y4:{}".format(y1,y2,y3,y4))
 
-                self.drawLine(y1, (0,242,255), 2)
-                self.drawLine(y2, (0,242,255), 2)
-                self.drawLine(y3, (128,0,128), 2)
+            # Histogram
+            histogram = np.sum(self.img[400:480,10:630], axis =0)
+            leftXBase = np.argmax(histogram[:int(self.center)]) + 10
+            rightXBase = np.argmax(histogram[int(self.center):]) + self.center + 10
+            midpointHistogram = int((rightXBase - leftXBase) / 2 + leftXBase )
+
+            y1 = [(leftXBase, 0), (leftXBase, self.height)]
+            y2 = [(rightXBase, 0), (rightXBase, self.height)]
+            y3 = [(midpointHistogram, 0), (midpointHistogram, self.height)]
+        
+            self.drawLine(y1, (0,242,255), 2) # Left line
+            self.drawLine(y2, (0,242,255), 2) # Right line
+            self.drawLine(y3, (128,0,128), 2) # Midpoint line
+
+            
+            
+
+            # Midpoint at y = 100
+            if(self.xPointRight and self.xPointLeft):
+                midpointFromLines = int((self.xPointRight - self.xPointLeft)/2 + self.xPointLeft)
+                y4 = [(midpointFromLines, 0), (midpointFromLines, self.height)]
+                self.drawLine(y4, (0,242,255), 2)
+                #print("y1:{} y2:{} y3:{} y4:{}".format(y1,y2,y3,y4))
             
             
             
