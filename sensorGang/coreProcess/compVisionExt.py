@@ -199,7 +199,7 @@ class compVision:
         dst = np.float32([[0, self.height], [630, self.height], [0, 0], [self.width, 0]])
         M = cv2.getPerspectiveTransform(src, dst) # The transformation matrix
 
-        self.img = self.img[450:(450+self.height), 0:self.width] # Apply np slicing for ROI crop
+        self.img = self.img[0:(self.height), 0:self.width] # Apply np slicing for ROI crop
         self.img = cv2.warpPerspective(self.img, M, (self.width, self.height)) # Image warping
         self.img = cv2.cvtColor(self.img, cv2.COLOR_BGR2RGB) # Show results
 

@@ -149,10 +149,10 @@ class compVision:
                     fit = np.polyfit((x1, x2), (y1, y2), 1)
                     slope = fit[0]
                     intercept = fit[1]
-                    if slope < -1.5:
+                    if slope < -1:
                         if x1 < leftRegionBoundary and x2 < leftRegionBoundary:
                             leftFit.append((slope, intercept))
-                    elif slope > 1.5:
+                    elif slope > 1:
                         if x1 > rightRegionBoundary and x2 > rightRegionBoundary:
                             rightFit.append((slope, intercept))
                             
@@ -219,9 +219,9 @@ class compVision:
             
             histogram = np.sum(self.img[400:480,10:630], axis =0)
             
-            leftXBase = np.argmax(histogram[:self.center])
+            leftXBase = np.argmax(histogram[:int(self.center)]) + 10
             
-            rightXBase = np.argmax(histogram[self.center:]) + self.center
+            rightXBase = np.argmax(histogram[int(self.center):]) + self.center + 10
             
             midpointHistogram = int((rightXBase - leftXBase) / 2 + leftXBase )
             
@@ -341,6 +341,13 @@ class compVision:
         self.img = cv2.line(self.img, self.roiDim[1], self.roiDim[2], (0,140,255), 2)
         self.img = cv2.line(self.img, self.roiDim[2], self.roiDim[3], (0,140,255), 2)
         self.img = cv2.line(self.img, self.roiDim[3], self.roiDim[0], (0,140,255), 2)
+        #
+        
+        
+        
+        
+        
+        
         print("ROI coordinates: {}, {}, {}, {}".format(self.roiDim[0], self.roiDim[1], self.roiDim[2], self.roiDim[3]))
 
 
