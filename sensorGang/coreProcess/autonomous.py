@@ -68,7 +68,6 @@ class Autonomous():
                     print("Recived ping in autonomous")
                     pingTime = time.time()
             
-            print(1337)
             if time.time() - pingTime > self.timeOut:
                 print("Timed out in autonomous")
                 self.stop()

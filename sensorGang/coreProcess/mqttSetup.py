@@ -7,6 +7,7 @@ def initMqtt():
     ip_adress = socket.gethostbyname(hostname)
 
     mqttClient = mqtt.Client()
+    mqttClient.username_pw_set("tsea56G09", "mindset")
     mqttClient.connect(ip_adress, 1883)
     
     mqttClient.loop_start()

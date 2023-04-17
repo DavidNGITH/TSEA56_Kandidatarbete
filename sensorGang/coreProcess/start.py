@@ -16,10 +16,11 @@ RESOLUTION = (640,480)
 TIME_OUT_TIME = 400
 
     #    p1: x  y   p2: x  y   p3: x  y   p3: x  y
-ROI_PERC = [0, 0.65, 1, 0.65, 1, 1, 0, 1]
+ROI_PERC = [0, 0.45, 1, 0.45, 1, 1, 0, 1]
 
 
 def getMode(mqttClient):
+    print("Ready")
     while True:
         if not q.empty():
             mode = q.get()
