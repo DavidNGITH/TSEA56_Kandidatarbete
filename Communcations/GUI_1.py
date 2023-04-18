@@ -12,6 +12,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 import time
 import multiprocessing
 import keyboard
+import random
 
 class Ui_Dialog(object):
     def setupUi(self, Dialog):
@@ -354,7 +355,10 @@ class Ui_Dialog(object):
     def on_start_car_click(self):
         #starts car
         self.update_time_bool = 1
-        self.start = time.time()   
+        #timer counter
+        self.start = time.time()  
+        #starts first measured time for calculating distance 
+        self.delta_t1_speed = time.time()
         self.is_driving = True 
         print("START")
 
@@ -406,9 +410,18 @@ class Ui_Dialog(object):
             if message[0] == "data/speed":
                 print ("Speed recieved")
                 #self.num_of_speeds += 1
+                #recieves speed and shows it on the gui
                 self.car_speed_data = message[1]
                 print(self.car_speed_data)
                 self.speed_display.setText(str(self.car_speed_data))
+                #checks if car is driving and then prints distance based on a difference in time
+                if self.is_driving:
+                    self.delta_t2_speed = time.time()
+                    delta_t = self.delta_t2_speed - self.delta_t1_speed
+                    self.delta_t1_speed = self.delta_t2_speed
+                    self.car_distance_driven += self.car_speed_data*delta_t
+                    self.drive_distance_display.setText(str(int(self.car_distance_driven)))
+
 
             #Throttle and Bearing data given from gui
             
@@ -432,16 +445,19 @@ class Ui_Dialog(object):
                 #self.route_plan_data = message[1]
                 #print(self.route_plan_data)
                 self.routeplan_display.setText(str(self.route_plan_data))
-            
+        else:
+            pass            
             
 
-            #print(self.qData.get()[1])
+                #print(self.qData.get()[1])
            
         
         
     #def time_printer():
     #    self.time_display.
 
+def randomspeed():
+    return 10
 
 if __name__ == "__main__":
     import sys
