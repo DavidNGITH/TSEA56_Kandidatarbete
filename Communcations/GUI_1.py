@@ -45,6 +45,10 @@ class Ui_Dialog(object):
         self.crs_data = "A to B"
         self.lat_pos_data = 0
         self.route_plan_data = "A to B to D to F"
+        self.map_node_dict = {"A":[799, 440], "B":[570, 500], "C":[720, 517], "D":[570, 573], "E":[720, 555], "F":[638, 642], "G":[807, 642], "H":[862, 502]}
+        self.previous_rs = "A"
+
+       
         
 
 
@@ -182,7 +186,20 @@ class Ui_Dialog(object):
         self.image_label = QtWidgets.QLabel(Dialog)
         self.image_label.setGeometry(QtCore.QRect(550, 390, 151, 16))
         self.image_label.setObjectName("image_label")
+        self.banan_map = QPixmap('banspecifikation.png')
+        self.image_label.setPixmap(self.banan_map)
+        self.image_label.setScaledContents(True)
+        self.banan_map = self.banan_map.scaled(392, 280, QtCore.Qt.KeepAspectRatio, QtCore.Qt.FastTransformation)
+        self.image_label.resize(self.banan_map.width(), self.banan_map.height())
 
+        self.car_pos_label = QtWidgets.QLabel(Dialog)
+        self.car_pos_label.setGeometry(QtCore.QRect(100, 100, 20, 20))
+        self.car_pos_label.setObjectName("car_pos_label")
+        self.car_pos_label.resize(10, 10)
+        self.car_pos_label.move(self.map_node_dict["A"][0], self.map_node_dict["A"][1])
+        self.car_pos_label.setStyleSheet("border: 5px solid blue; border-radius: 5px;")
+
+                                    
         self.time_display = QtWidgets.QTextBrowser(Dialog)
         self.time_display.setGeometry(QtCore.QRect(670, 50, 301, 31))
         self.time_display.setObjectName("time_display")
@@ -221,11 +238,6 @@ class Ui_Dialog(object):
         self.routeplan_display.setObjectName("routeplan_display")
         self.routeplan_display.setText(str(self.route_plan_data))
 
-        self.banan_map = QPixmap('banspecifikation.png')
-        self.image_label.setPixmap(self.banan_map)
-        self.image_label.setScaledContents(True)
-        self.banan_map = self.banan_map.scaled(392, 280, QtCore.Qt.KeepAspectRatio, QtCore.Qt.FastTransformation)
-        self.image_label.resize(self.banan_map.width(), self.banan_map.height())
 
 
 
@@ -329,9 +341,7 @@ class Ui_Dialog(object):
         self.lat_pos_label.setText(_translate("Dialog", "Lateral position:"))
         self.routeplan_label.setText(_translate("Dialog", "Planned route:"))
         self.map_label.setText(_translate("Dialog", "Map:"))
-        #self.image_label.setText(_translate("Dialog", "Image:"))
-
-
+        
     def connect_buttons(self):
         self.manual_mode.clicked.connect(self.on_manual_mode_click)
         self.semi_auto_mode.clicked.connect(self.on_semi_auto_mode_click)
@@ -446,26 +456,28 @@ class Ui_Dialog(object):
                     self.car_distance_driven += self.car_speed_data*delta_t
                     self.drive_distance_display.setText(str(int(self.car_distance_driven)))
 
-
-            #Throttle and Bearing data given from gui
+            ################### Throttle and Bearing data given from gui #####################
             
             if message[0] == "data/crs":
                 print ("crs recieved")
-                #self.num_of_speeds += 1
-                #self.crs_data = message[1]
+                self.crs_data = str(message[1])
                 #print(self.crs_data)
-                self.crs_display.setText(str(self.crs_data))
-            
+                self.crs_display.setText(str(self.previous_rs + " -> " + self.crs_data))
+                self.previous_rs = self.crs_data
+                ########################################### SENSOR GÄNGET MÅSTE SÄGA HUR DOM SKA SKICKA DATAT ############
+                ########################################### SENSOR GÄNGET MÅSTE SÄGA HUR DOM SKA SKICKA DATAT ############
+                self.car_pos_label.move(self.map_node_dict[self.crs_data][0], self.map_node_dict[self.crs_data][1])
+                ########################################### SENSOR GÄNGET MÅSTE SÄGA HUR DOM SKA SKICKA DATAT ############
+                ########################################### SENSOR GÄNGET MÅSTE SÄGA HUR DOM SKA SKICKA DATAT ############
+
             if message[0] == "data/lat_pos":
                 print ("lat_pos recieved")
-                #self.num_of_speeds += 1
                 #self.lat_pos_data = message[1]
                 #print(self.lat_pos_data)
                 self.lateral_pos_display.setText(str(self.lat_pos_data))
 
             if message[0] == "data/route_plan":
                 print ("route_plan recieved")
-                #self.num_of_speeds += 1
                 #self.route_plan_data = message[1]
                 #print(self.route_plan_data)
                 self.routeplan_display.setText(str(self.route_plan_data))
