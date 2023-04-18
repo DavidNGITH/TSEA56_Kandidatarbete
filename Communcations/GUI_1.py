@@ -25,7 +25,7 @@ class Ui_Dialog(object):
 
         self.distance_to_obj = "0"
 
-        self.type_of_mode = "Manual"
+        self.type_of_mode = ""
         self.qData = multiprocessing.Queue()
 
         #bool for starting car
@@ -38,27 +38,37 @@ class Ui_Dialog(object):
         #initate straight ahead and zero speed
         self.speed = 0
         self.steering = 50
+        self.obs_det_bool = False
+        self.crs_data = "A to B"
+        self.lat_pos_data = 0
+        self.route_plan_data = "A to B to D to F"
+        
+
+
+
 
 
         self.obst_det_head = QtWidgets.QLabel(Dialog)
         self.obst_det_head.setGeometry(QtCore.QRect(140, 20, 131, 16))
         self.obst_det_head.setObjectName("obst_det_head")
 
-        self.obst_det_bool = QtWidgets.QLabel(Dialog)
-        self.obst_det_bool.setGeometry(QtCore.QRect(30, 60, 131, 16))
-        self.obst_det_bool.setObjectName("obst_det_bool")
+        self.obst_det_label = QtWidgets.QLabel(Dialog)
+        self.obst_det_label.setGeometry(QtCore.QRect(30, 60, 131, 16))
+        self.obst_det_label.setObjectName("obst_det_label")
 
-        self.obst_dist = QtWidgets.QLabel(Dialog)
-        self.obst_dist.setGeometry(QtCore.QRect(210, 60, 131, 16))
-        self.obst_dist.setObjectName("obst_dist")
+        self.obst_dist_label = QtWidgets.QLabel(Dialog)
+        self.obst_dist_label.setGeometry(QtCore.QRect(210, 60, 131, 16))
+        self.obst_dist_label.setObjectName("obst_dist_label")
 
-        self.textBrowser = QtWidgets.QTextBrowser(Dialog)
-        self.textBrowser.setGeometry(QtCore.QRect(30, 90, 151, 31))
-        self.textBrowser.setObjectName("textBrowser")
+        self.obs_det_display = QtWidgets.QTextBrowser(Dialog)
+        self.obs_det_display.setGeometry(QtCore.QRect(30, 90, 151, 31))
+        self.obs_det_display.setObjectName("obs_det_display")
+        self.obs_det_display.setText(str(self.obs_det_bool))
 
-        self.distance_display = QtWidgets.QTextBrowser(Dialog)
-        self.distance_display.setGeometry(QtCore.QRect(210, 90, 151, 31))
-        self.distance_display.setObjectName("distance_display")
+        self.obs_dist_display = QtWidgets.QTextBrowser(Dialog)
+        self.obs_dist_display.setGeometry(QtCore.QRect(210, 90, 151, 31))
+        self.obs_dist_display.setObjectName("obs_dist_display")
+        self.obs_dist_display.setText(str(self.distance_to_obj))
 
         self.drive_mode_head = QtWidgets.QLabel(Dialog)
         self.drive_mode_head.setGeometry(QtCore.QRect(20, 180, 91, 16))
@@ -114,13 +124,13 @@ class Ui_Dialog(object):
         self.send_command.setGeometry(QtCore.QRect(280, 425, 120, 30))
         self.send_command.setObjectName("send_command")
 
-        self.label_5 = QtWidgets.QLabel(Dialog)
-        self.label_5.setGeometry(QtCore.QRect(110, 510, 101, 16))
-        self.label_5.setObjectName("label_5")
+        self.manual_control_label = QtWidgets.QLabel(Dialog)
+        self.manual_control_label.setGeometry(QtCore.QRect(110, 510, 101, 16))
+        self.manual_control_label.setObjectName("manual_control_label")
 
-        self.textEdit = QtWidgets.QTextEdit(Dialog)
-        self.textEdit.setGeometry(QtCore.QRect(30, 410, 241, 64))
-        self.textEdit.setObjectName("textEdit")
+        self.Command_input_box = QtWidgets.QTextEdit(Dialog)
+        self.Command_input_box.setGeometry(QtCore.QRect(30, 410, 241, 64))
+        self.Command_input_box.setObjectName("Command_input_box")
 
         self.command_input_label = QtWidgets.QLabel(Dialog)
         self.command_input_label.setGeometry(QtCore.QRect(100, 380, 131, 16))
@@ -177,32 +187,36 @@ class Ui_Dialog(object):
         self.speed_display = QtWidgets.QTextBrowser(Dialog)
         self.speed_display.setGeometry(QtCore.QRect(670, 130, 301, 31))
         self.speed_display.setObjectName("speed_display")
+        self.speed_display.setText(str(self.car_speed_data))
 
         self.throttle_display = QtWidgets.QTextBrowser(Dialog)
         self.throttle_display.setGeometry(QtCore.QRect(670, 170, 301, 31))
         self.throttle_display.setObjectName("throttle_display")
+        self.throttle_display.setText(str(self.speed))
 
-        self.textBrowser_6 = QtWidgets.QTextBrowser(Dialog)
-        self.textBrowser_6.setGeometry(QtCore.QRect(670, 250, 301, 31))
-        self.textBrowser_6.setObjectName("textBrowser_6")
+        self.bearing_display = QtWidgets.QTextBrowser(Dialog)
+        self.bearing_display.setGeometry(QtCore.QRect(670, 210, 301, 31))
+        self.bearing_display.setObjectName("bearing_display")
+        self.bearing_display.setText(str(self.steering))
 
-        self.textBrowser_7 = QtWidgets.QTextBrowser(Dialog)
-        self.textBrowser_7.setGeometry(QtCore.QRect(670, 290, 301, 31))
-        self.textBrowser_7.setObjectName("textBrowser_7")
+        self.crs_display = QtWidgets.QTextBrowser(Dialog)
+        self.crs_display.setGeometry(QtCore.QRect(670, 250, 301, 31))
+        self.crs_display.setObjectName("crs_display")
+        self.crs_display.setText(str(self.crs_data))
 
-        self.textBrowser_8 = QtWidgets.QTextBrowser(Dialog)
-        self.textBrowser_8.setGeometry(QtCore.QRect(670, 210, 301, 31))
-        self.textBrowser_8.setObjectName("textBrowser_8")
+        self.lateral_pos_display = QtWidgets.QTextBrowser(Dialog)
+        self.lateral_pos_display.setGeometry(QtCore.QRect(670, 290, 301, 31))
+        self.lateral_pos_display.setObjectName("lateral_pos_display")
+        self.lateral_pos_display.setText(str(self.lat_pos_data))
 
-        self.textBrowser_11 = QtWidgets.QTextBrowser(Dialog)
-        self.textBrowser_11.setGeometry(QtCore.QRect(670, 330, 301, 31))
-        self.textBrowser_11.setObjectName("textBrowser_11")
+        self.routeplan_display = QtWidgets.QTextBrowser(Dialog)
+        self.routeplan_display.setGeometry(QtCore.QRect(670, 330, 301, 31))
+        self.routeplan_display.setObjectName("routeplan_display")
+        self.routeplan_display.setText(str(self.route_plan_data))
+
 
         self.retranslateUi(Dialog)
         QtCore.QMetaObject.connectSlotsByName(Dialog)
-
-        self.distance_display.setText(str(self.distance_to_obj))
-
 
         self.connect_buttons()
 
@@ -233,16 +247,20 @@ class Ui_Dialog(object):
                 if self.speed <= 251:
                     self.speed += 4
                 print(self.speed)
+                self.throttle_display.setText(str(self.speed))
             if (hotkey == "nedpil") | (hotkey == "down"):
                 if self.speed > 4:
                     self.speed -= 4
                 print(self.speed)
+                self.throttle_display.setText(str(self.speed))
             if (hotkey == "högerpil") | (hotkey == "right"):
-                if self.steering < 100:
+                if self.steering <= 96:
                     self.steering += 4
+                self.bearing_display.setText(str(self.steering))
             if (hotkey == "vänsterpil") | (hotkey == "left"):
                 if self.steering >= 4:
                     self.steering -= 4
+                self.bearing_display.setText(str(self.steering))
             if hotkey == "space":
                 self.speed = 0
             if hotkey != "":
@@ -265,9 +283,9 @@ class Ui_Dialog(object):
 
         self.obst_det_head.setText(_translate("Dialog", "Obstacle detection:"))
 
-        self.obst_det_bool.setText(_translate("Dialog", "Obstacle detected"))
+        self.obst_det_label.setText(_translate("Dialog", "Obstacle detected"))
 
-        self.obst_dist.setText(_translate("Dialog", "Distance to obstacle"))
+        self.obst_dist_label.setText(_translate("Dialog", "Distance to obstacle"))
 
         self.drive_mode_head.setText(_translate("Dialog", "Drive mode:"))
 
@@ -282,7 +300,7 @@ class Ui_Dialog(object):
         self.rightbutton.setText(_translate("Dialog", "Right"))
         self.send_command.setText(_translate("Dialog", "Send command"))
 
-        self.label_5.setText(_translate("Dialog", "Manual control"))
+        self.manual_control_label.setText(_translate("Dialog", "Manual control"))
         self.command_input_label.setText(_translate("Dialog", "Command input"))
         self.drive_info_label.setText(_translate("Dialog", "Drive info"))
         self.time_label.setText(_translate("Dialog", "Time:"))
@@ -331,7 +349,7 @@ class Ui_Dialog(object):
         # This method is called when send command is clicked
         self.mqtt_client.publish("data/command")
 
-        print(self.textEdit.toPlainText())
+        print(self.Command_input_box.toPlainText())
 
     def on_start_car_click(self):
         #starts car
@@ -379,17 +397,43 @@ class Ui_Dialog(object):
         if not self.qData.empty():
             print("updating data")
             message = self.qData.get()
+            if message[0] == "data/distance":
+                #print ("Distance recieved")
+                self.distance_to_obj = message[1]
+                #print(self.distance_to_obj)
+                self.obs_dist_display.setText(str(self.distance_to_obj))
+            
             if message[0] == "data/speed":
                 print ("Speed recieved")
                 #self.num_of_speeds += 1
                 self.car_speed_data = message[1]
                 print(self.car_speed_data)
                 self.speed_display.setText(str(self.car_speed_data))
-            if message[0] == "data/distance":
-                #print ("Distance recieved")
-                self.distance_to_obj = message[1]
-                #print(self.distance_to_obj)
-                self.distance_display.setText(str(self.distance_to_obj))
+
+            #Throttle and Bearing data given from gui
+            
+            if message[0] == "data/crs":
+                print ("crs recieved")
+                #self.num_of_speeds += 1
+                #self.crs_data = message[1]
+                #print(self.crs_data)
+                self.crs_display.setText(str(self.crs_data))
+            
+            if message[0] == "data/lat_pos":
+                print ("lat_pos recieved")
+                #self.num_of_speeds += 1
+                #self.lat_pos_data = message[1]
+                #print(self.lat_pos_data)
+                self.lateral_pos_display.setText(str(self.lat_pos_data))
+
+            if message[0] == "data/route_plan":
+                print ("route_plan recieved")
+                #self.num_of_speeds += 1
+                #self.route_plan_data = message[1]
+                #print(self.route_plan_data)
+                self.routeplan_display.setText(str(self.route_plan_data))
+            
+            
 
             #print(self.qData.get()[1])
            
