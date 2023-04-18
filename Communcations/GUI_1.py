@@ -33,7 +33,7 @@ class Ui_Dialog(object):
         self.is_driving = False
 
         self.car_distance_driven = 0
-        self.car_speed_data = list()
+        self.car_speed_data = 0
         self.delta_t1_speed = 0
         self.delta_t2_speed = 0
         #initate straight ahead and zero speed
@@ -386,6 +386,9 @@ class Ui_Dialog(object):
             self.mqtt_client.connect(broker_ip, broker_port)
             self.mqtt_client.subscribe("data/distance")
             self.mqtt_client.subscribe("data/speed")
+            self.mqtt_client.subscribe("data/crs")
+            self.mqtt_client.subscribe("data/lat_pos")
+            self.mqtt_client.subscribe("data/route_plan")
             self.mqtt_client.loop_start()
             self.mqtt_client.on_message = self.on_message
         except: 
