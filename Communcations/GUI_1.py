@@ -264,6 +264,9 @@ class Ui_Dialog(object):
                 self.bearing_display.setText(str(self.steering))
             if hotkey == "space":
                 self.speed = 0
+                self.steering = 50
+                self.throttle_display.setText(str(self.speed))
+                self.bearing_display.setText(str(self.steering))
             if hotkey != "":
                 self.mqtt_client.publish("speed", self.speed)
                 self.mqtt_client.publish("steering", self.steering)
@@ -305,8 +308,8 @@ class Ui_Dialog(object):
         self.command_input_label.setText(_translate("Dialog", "Command input"))
         self.drive_info_label.setText(_translate("Dialog", "Drive info"))
         self.time_label.setText(_translate("Dialog", "Time:"))
-        self.distance_label.setText(_translate("Dialog", "Distance:"))
-        self.speed_label.setText(_translate("Dialog", "Speed:"))
+        self.distance_label.setText(_translate("Dialog", "Distance (cm):"))
+        self.speed_label.setText(_translate("Dialog", "Speed (cm/s):"))
         self.throttle_label.setText(_translate("Dialog", "Throttle:"))
         self.bearing_label.setText(_translate("Dialog", "Bearing:"))
         self.crs_label.setText(_translate("Dialog", "Current road segment:"))
@@ -370,7 +373,10 @@ class Ui_Dialog(object):
 
         self.speed = 0  #reset speed
         self.steering = 50 #reset wheels
-        
+
+        self.throttle_display.setText(str(self.speed))
+        self.bearing_display.setText(str(self.steering))
+
         self.mqtt_client.publish("stop", "1")
         self.mqtt_client.publish("speed", self.speed)
         self.mqtt_client.publish("steering", self.steering)
@@ -414,7 +420,8 @@ class Ui_Dialog(object):
                 print ("Speed recieved")
                 #self.num_of_speeds += 1
                 #recieves speed and shows it on the gui
-                self.car_speed_data = message[1]
+                self.car_speed_data = float(message[1])
+                print(type(self.car_speed_data))
                 print(self.car_speed_data)
                 self.speed_display.setText(str(self.car_speed_data))
                 #checks if car is driving and then prints distance based on a difference in time
