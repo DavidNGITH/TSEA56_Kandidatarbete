@@ -410,7 +410,7 @@ class Ui_Dialog(object):
     def mqtt_init(self):
     #initate connection
         try:
-            #broker_ip = "10.241.242.186"
+            broker_ip = "10.241.242.186"
             broker_port = 1883
             self.mqtt_client = mqtt.Client()
             self.mqtt_client.username_pw_set("tsea56G09", "mindset")
