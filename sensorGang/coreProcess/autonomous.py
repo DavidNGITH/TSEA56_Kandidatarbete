@@ -123,10 +123,10 @@ class Autonomous():
             if time.time() - i2cTimeElapsed > 2:
                 try:
                     data = I2C_proc.get()
-                    if data[0] < 10 & self.object:
+                    if (data[0] < 10) & self.object:
                         I2C_proc.send((2, 1))
                         self.object = True
-                    elif data[0] >= 10 & self.object:
+                    elif (data[0] >= 10) & self.object:
                         I2C_proc.send((2, 0))
                         self.object = False
                 
