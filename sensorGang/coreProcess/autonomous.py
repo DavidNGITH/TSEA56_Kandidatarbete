@@ -123,6 +123,7 @@ class Autonomous():
             if time.time() - i2cTimeElapsed > 2:
                 try:
                     data = I2C_proc.get()
+                    print(data[0][1])
                     if (int(data[0][1]) < 40) & self.object == False:
                         print("Obstacle")
                         I2C_proc.send((0, 0))
