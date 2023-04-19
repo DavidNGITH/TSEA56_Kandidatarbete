@@ -61,7 +61,8 @@ class Autonomous():
         print("In handleMessage autonomous!")
         I2C_proc = i2cHandle.I2C()
         time.sleep(4)
-        i2cTimeElapsed = time.time()
+        i2cTimeElapsed = 0
+        sendI2C = 0
         pingTime = time.time()
         
         #I2C_proc.send((0, 100))
@@ -120,7 +121,7 @@ class Autonomous():
                 self.stop()
                 return
             
-            if time.time() - i2cTimeElapsed > 0.5:
+            if time.time() - i2cTimeElapsed > 0.1:
                 try:
                     data = I2C_proc.get()
                     if (int(data[0][1]) < 40) & (self.object == False):
@@ -131,9 +132,11 @@ class Autonomous():
                         print("Release")
                         I2C_proc.send((2, 0))
                         self.object = False
-                
-                    qI2CDataRecived.put(data[0])
-                    qI2CDataRecived.put(data[1])
+                    if time.time() - sendI2C > 1:
+                        qI2CDataRecived.put(data[0])
+                        qI2CDataRecived.put(data[1])
+                        sendI2C = time.time()
+
                 except Exception as e:
                     print("Couldn't read i2c")
                     print(e)
