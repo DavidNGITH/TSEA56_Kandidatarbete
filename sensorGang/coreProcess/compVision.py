@@ -134,10 +134,12 @@ class compVision:
 
 
         if (maxX-minX) < 100 and (y1+y2)/2 < 400:
+            print("No stopline")
             self.stopLine = False
         
         #Stopplinje detekterad
         else:
+            print("yes, stopline")
             if self.stopAtLine:
                 self.stopLine = True
                 self.stopAtLine = False
