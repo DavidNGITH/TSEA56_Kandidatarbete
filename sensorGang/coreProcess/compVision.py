@@ -132,7 +132,7 @@ class compVision:
         y1 = int(slope * minX + intercept)
         y2 = int(slope * maxX + intercept)
 
-        print("{} {} {} {}".format(minX,maxX,y1,y2))
+        print("Width: {} ypos: {}".format(maxX-minX,(y1+y2)/2))
 
 
         if (maxX-minX) < 370 and (y1+y2)/2 < 430:
