@@ -128,6 +128,7 @@ class Autonomous():
                         I2C_proc.send((2, 1))
                         self.object = True
                     elif (int(data[0][1]) >= 10) & (self.object):
+                        print("Release")
                         I2C_proc.send((2, 0))
                         self.object = False
                 
