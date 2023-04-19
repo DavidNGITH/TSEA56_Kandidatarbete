@@ -51,9 +51,9 @@ class compVision:
         self.maxLineGap = 4
 
         # Undistort
-        self.my = np.load('mapy.npy')
-        self.mx = np.load('mapx.npy')
-        self.roiFile = np.load('roiFile.npy')
+        self.my = np.load('distortionfiles/mapy.npy')
+        self.mx = np.load('distortionfiles/mapx.npy')
+        self.roiFile = np.load('distortionfiles/roiFile.npy')
 
         self.roiFile[1] = int(self.roiFile[1] * self.width / 640)
         self.roiFile[3] = int(self.roiFile[3] * self.width / 640)
