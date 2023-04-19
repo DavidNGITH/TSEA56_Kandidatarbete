@@ -9,17 +9,11 @@
 
 import sys
 import paho.mqtt.client as mqtt
-from PyQt5 import QtCore, QtWidgets, QtGui
-from PyQt5.QtGui import QIcon, QPixmap
+from PyQt5 import QtCore, QtWidgets
 import time
 import multiprocessing
 import keyboard
-import itertools
-import copy
-import networkx as nx
-import pandas as pd
 import matplotlib.pyplot as plt
-import random
 
 
 class Ui_Dialog(object):
@@ -282,7 +276,7 @@ class Ui_Dialog(object):
     def drive_function(self):
         if ((self.type_of_mode == "Manual") & (self.is_driving)):
             hotkey = keyboard.get_hotkey_name()
-            #print(hotkey)
+            print(hotkey)
             if (hotkey == "uppil") | (hotkey == "up"):
                 if self.speed <= 251:
                     self.speed += 4
@@ -347,7 +341,7 @@ class Ui_Dialog(object):
             self.save_obs_det_bool.append([self.obs_det_bool, self.current_time])
             self.save_lat_pos_data.append([self.lat_pos_data, self.current_time])
 
-            print(self.save_car_speed_data)
+            #print(self.save_car_speed_data)
     
     def plot_data(self, data_list):
         i1 = 0
