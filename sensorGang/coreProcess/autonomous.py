@@ -9,7 +9,9 @@ from PD_reg import PDcontroller
 
 
 MQTT_TOPIC = [("stop", 0), ("ping", 0), ("speed", 0),
-              ("PD/Kp", 0), ("PD/kd", 0)]
+              ("PD/Kp", 0), ("PD/Kd", 0)]
+
+MQTT_TOPIC_UNSUB = ["stop", "ping", "speed", "PD/Kp", "PD/Kd"]
 
 
 class Autonomous():
@@ -133,16 +135,11 @@ class Autonomous():
 
     def stop(self):
         """Stop processes."""
-        time.sleep(0.5)
+        self.statusCenterOffset.value = 0  # Stop center offset
 
-        # Stopping center offset
-        self.statusCenterOffset.value = 0
+        self.statusHandleMessage.value = 0  # Stop handle message
 
-        # Stopping mqqt handle message
-        self.statusHandleMessage.value = 0
-
-        # mqtt disconnect
-        self.mqttClient.disconnect()
+        self.mqttClient.subscribe(MQTT_TOPIC_UNSUB)  # MQTT unsibscribe
 
     def mainLoop(self):
         """Publish data to MQTT broker."""

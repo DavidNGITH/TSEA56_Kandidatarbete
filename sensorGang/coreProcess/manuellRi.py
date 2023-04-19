@@ -7,6 +7,7 @@ import i2cHandle
 from record import record
 
 MQTT_TOPIC = [("stop",0),("ping",0),("steering",0),("speed",0),("breaking", 0)]
+MQTT_TOPIC_UNSUB = ["stop", "ping", "steering", "speed", "breaking"]
 
 class Manual():
     def __init__(self, mqttClient : mqtt.Client(), timeOut, resolution, framerate, recordMode):
@@ -129,7 +130,7 @@ class Manual():
 
         self.statusHandleMessage.value = 0
 
-        self.mqttClient.disconnect()
+        self.mqttClient.unsubscribe(MQTT_TOPIC_UNSUB)
 
 
     def mainLoop(self):

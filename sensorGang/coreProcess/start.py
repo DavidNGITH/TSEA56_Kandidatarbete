@@ -50,31 +50,34 @@ mqttClient = mq.initMqtt()
 mqttClient.on_message = on_message
 mqttClient.subscribe(MQTT_TOPIC)
 
-# Get info from PC with mode car is in
-modeSetting = getMode(mqttClient)
 
-if modeSetting is not None:
-    if modeSetting == 1:
-        # Manual
-        print("Manual")
-        mode = Manual(mqttClient, TIME_OUT_TIME, RESOLUTION, FRAME_RATE, False)
-    elif modeSetting == 2:
-        # Semi autonoumous
-        print("SemiAutonomous")
-        mode = SemiAutonomous(mqttClient, TIME_OUT_TIME, ROI_PERC)
+while True:
+    modeSetting = getMode(mqttClient)  # Get info from PC with mode car is in
+    if modeSetting is not None:
+        if modeSetting == 1:
+            # Manual
+            print("Manual")
+            mode = Manual(mqttClient, TIME_OUT_TIME, RESOLUTION,
+                          FRAME_RATE, False)
+        elif modeSetting == 2:
+            # Semi autonoumous
+            print("SemiAutonomous")
+            mode = SemiAutonomous(mqttClient, TIME_OUT_TIME, ROI_PERC)
 
+        else:
+            # Autonomous
+            print("Autonomous")
+            mode = Autonomous(mqttClient, TIME_OUT_TIME, ROI_PERC, RESOLUTION)
+
+        try:
+            mode.mainLoop()
+
+        except Exception as e:
+            print("Exception in start, stopping")
+            print(e)
+
+            mode.stop()
     else:
-        # Autonomous
-        print("Autonomous")
-        mode = Autonomous(mqttClient, TIME_OUT_TIME, ROI_PERC, RESOLUTION)
+        break
 
-    try:
-        mode.mainLoop()
-
-    except Exception as e:
-        print("Exception in start, stopping")
-        print(e)
-
-        mode.stop()
-
-# mqttClient.disconnect()
+mqttClient.disconnect()
