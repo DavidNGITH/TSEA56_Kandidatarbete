@@ -109,6 +109,8 @@ class Autonomous():
             if not qSpeed.empty():
                 print("Recived speed")
                 speed = qSteering.get()
+
+                print(speed)
                 
                 I2C_proc.send((0, speed))
             
