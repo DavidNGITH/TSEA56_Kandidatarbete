@@ -1,5 +1,6 @@
 """I2C Communication."""
 import smbus
+import time
 
 
 class I2C():
@@ -28,4 +29,9 @@ class I2C():
 
     def close(self):
         """Close I2C connection."""
+        self.bus.send((0, 0))
+        self.bus.send((1, 50))
+        self.bus.send((2, 0))
+
+        time.sleep(0.1)
         self.bus.close()
