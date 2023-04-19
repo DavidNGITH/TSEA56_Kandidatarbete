@@ -124,12 +124,12 @@ class Autonomous():
                 try:
                     data = I2C_proc.get()
                     print(data[0][1])
-                    if (int(data[0][1]) < 40) & self.object == False:
+                    if (int(data[0][1]) < 40) & (self.object == False):
                         print("Obstacle")
                         I2C_proc.send((0, 0))
                         I2C_proc.send((2, 1))
                         self.object = True
-                    elif (int(data[0][1]) >= 10) & self.object:
+                    elif (int(data[0][1]) >= 10) & (self.object):
                         I2C_proc.send((2, 0))
                         self.object = False
                 
