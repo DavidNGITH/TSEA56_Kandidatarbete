@@ -1,62 +1,56 @@
+"""Handles the manual driving."""
 import paho.mqtt.client as mqtt
 import multiprocessing
 import time
-#from i2c import sendGetI2C
 import numpy as np
 import i2cHandle
 from record import record
 
-MQTT_TOPIC = [("stop",0),("ping",0),("steering",0),("speed",0)]
+MQTT_TOPIC = [("stop", 0), ("ping", 0), ("steering", 0),
+              ("speed", 0), ("breaking", 0)]
+MQTT_TOPIC_UNSUB = ["stop", "ping", "steering", "speed", "breaking"]
+
 
 class Manual():
-    def __init__(self, mqttClient : mqtt.Client(), timeOut, resolution, framerate, recordMode):
+    """Class for manual driving."""
+
+    def __init__(self, mqttClient: mqtt.Client(), timeOut, resolution,
+                 framerate, recordMode):
+        """Set up variables and processes."""
         self.timeOut = timeOut
+
+        # Record mode
         self.recordMode = recordMode
         if recordMode:
             self.recordMode = recordMode
-            self.statusVideo = multiprocessing.Value('i',1)
-            self.pR = multiprocessing.Process(target=record, args=(self.statusVideo, resolution, framerate))
-            self.pR.start()
+            self.statusVideo = multiprocessing.Value('i', 1)
+            self.pRecording = multiprocessing.Process(target=record,
+                                                      args=(self.statusVideo,
+                                                            resolution,
+                                                            framerate))
+            self.pRecording.start()
 
-            
-        
+        # Init MQTT
         self.mqttClient = mqttClient
         self.mqttClient.on_message = self.onMessage
         self.mqttClient.subscribe(MQTT_TOPIC)
 
-        self.qMessage = multiprocessing.Queue()
-        self.qData = multiprocessing.Queue()
+        # Init multiprocessing
+        self.initMultiproccessing()
 
-        self.statusHandleMessage = multiprocessing.Value('i',1)
-
-        #self.statusI2C = multiprocessing.Value('i',1)
-
-
-        self.p1 = multiprocessing.Process(target=self.handleMessage, args=(self.qMessage, self.qData, self.statusHandleMessage))
-        
-        #self.p2 = multiprocessing.Process(target=sendGetI2C, args=(self.qMotors, self.qData, self.statusI2C))
-        
-        self.p1.start()
-        #self.p2.start()
-        
-        self.topicDic = {
-            0 : "speedData",
-            1 : "distanceData"
-        }
-
-
-    def onMessage(self,client, userdata, message):
+    def onMessage(self, client, userdata, message):
+        """MQTT callback function."""
         print("I got mail in manual")
         try:
             m = int(message.payload.decode("utf-8"))
             t = message.topic
-            self.qMessage.put((t,m))
+            self.qMessage.put((t, m))
         except Exception as e:
             print("Couldn't read mqtt message")
             print(e)
 
-
-    def handleMessage (self,qMQTT, qI2C, status):
+    def handleMessage(self, qMQTT, qI2C, status):
+        """Handle messages from other processes."""
         print("In handleMessage manual!")
         I2C_proc = i2cHandle.I2C()
         pingTime = time.time()
@@ -68,67 +62,61 @@ class Manual():
                 message = qMQTT.get()
                 if message[0] == "stop":
                     print("Recived stop in manual")
-                    I2C_proc.send((1, 50))
-                    I2C_proc.send((0, 0))
-                    I2C_proc.close()
-
+                    try:
+                        I2C_proc.close()
+                    except Exception:
+                        print("Couldn't read i2c")
                     self.stop()
                     return
+
                 elif message[0] == "ping":
                     print("Recived ping in manual")
                     pingTime = time.time()
+
                 elif message[0] == "steering":
                     print("Recived steering data in manual")
                     I2C_proc.send((1, message[1]))
-                    #self.qMotors.put((0, message[1]))
 
                 elif message[0] == "speed":
                     print("Recived speed data in manual")
                     I2C_proc.send((0, message[1]))
-                    
-                    #self.qMotors.put((0, message[1]))
-            
 
+                elif message[0] == "breaking":
+                    print("Recived breaking data in manual")
+                    I2C_proc.send((2, message[1]))
+
+            # Time out checker
             if time.time() - pingTime > self.timeOut:
                 print("Timed out, stopping in manual")
                 self.stop()
                 return
-            
-            if time.time() - i2cTimeElapsed > 2:
+
+            # Get sensor data
+            if time.time() - i2cTimeElapsed > 1:
                 try:
                     data = I2C_proc.get()
-                
                     qI2C.put(data[0])
                     qI2C.put(data[1])
                 except Exception as e:
                     print("Couldn't read i2c")
                     print(e)
-                    
-                    
+
                 i2cTimeElapsed = time.time()
-            
+
             time.sleep(0.01)
-            
-        
-            
 
     def stop(self):
+        """Stop processes."""
         print("In stop manual")
-        
+
         if self.recordMode:
             self.statusVideo.value = 0
 
-        #Stop all motors
-        time.sleep(0.5)
-        
-        #self.statusI2C.value = 0
-
         self.statusHandleMessage.value = 0
-
-        self.mqttClient.disconnect()
-
+        self.mqttClient.unsubscribe(MQTT_TOPIC_UNSUB)
 
     def mainLoop(self):
+        """Publish data to MQTT broker."""
         while self.statusHandleMessage.value:
             if not self.qData.empty():
                 messageToSend = self.qData.get()
@@ -144,3 +132,15 @@ class Manual():
             time.sleep(0.01)
 
         print("Stopping main loop in manual")
+
+    def initMultiprocessing(self):
+        """Initiate of processes."""
+        self.qMessage = multiprocessing.Queue()
+        self.qData = multiprocessing.Queue()
+
+        self.statusHandleMessage = multiprocessing.Value('i', 1)
+
+        self.p1 = multiprocessing.Process(target=self.handleMessage, args=(
+            self.qMessage, self.qData, self.statusHandleMessage))
+
+        self.p1.start()
