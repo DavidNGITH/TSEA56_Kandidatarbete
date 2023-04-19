@@ -142,9 +142,11 @@ class compVision:
                 self.stopLine = True
                 self.stopAtLine = False
                 self.stopLineTimer = time.time()
+                print(1)
 
             elif time.time() - self.stopLineTimer > 5:
                 self.stopAtLine = True
+                print(2)
 
         return
         
@@ -321,6 +323,7 @@ class compVision:
             #steering = int((self.newOffset + self.center)*3/8 - 60)
 
             if not self.stopLine:
+                print(4)
                 steering = self.PD.get_control(self.newOffset)
                 steering = int((self.newOffset)*0.2 + 60)
                 
@@ -339,6 +342,7 @@ class compVision:
 
             else:
                 qSpeed.put(0)
+                print(5)
                 self.stopLine = False
                 print("Stop line detected")
             
