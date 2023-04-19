@@ -1,13 +1,10 @@
 """Computer vision."""
 import time
-import math
 import numpy as np
 import cv2
 from videoStream import VideoStream
-import multiprocessing
 from datetime import datetime
 import matplotlib.pyplot as plt
-from PD_reg import PDcontroller
 
 from videoStreamFile import VideoStreamFile
 

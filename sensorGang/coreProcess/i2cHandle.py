@@ -1,29 +1,31 @@
+"""I2C Communication."""
 import smbus
 
 
 class I2C():
+    """Class for I2C."""
+
     def __init__(self):
+        """Set up variables."""
         print("i2c init")
         self.bus = smbus.SMBus(1)
 
-        
-        
         self.motorAdress = 0x4a
         self.sensorAdress = 0x6a
-        
-        
+
     def send(self, offsetAndMessage):
+        """Send I2C message, (offset, message)."""
         try:
-            self.bus.write_byte_data(self.motorAdress,offsetAndMessage[0],offsetAndMessage[1])
+            self.bus.write_byte_data(
+                self.motorAdress, offsetAndMessage[0], offsetAndMessage[1])
         except Exception as e:
             print(e)
-        
-    
-    def get(self):
-        return ([(0,self.bus.read_byte_data(self.sensorAdress, 0)), (1,self.bus.read_byte_data(self.sensorAdress, 1))])
-    
-    def close(self):
-        self.bus.close()
 
-        
-        
+    def get(self):
+        """Get I2C data, (distance, speed)."""
+        return ([(0, self.bus.read_byte_data(self.sensorAdress, 0)),
+                 (1, self.bus.read_byte_data(self.sensorAdress, 1))])
+
+    def close(self):
+        """Close I2C connection."""
+        self.bus.close()

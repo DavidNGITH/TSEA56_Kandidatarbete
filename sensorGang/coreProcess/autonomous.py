@@ -68,8 +68,6 @@ class Autonomous():
                 if message[0] == "stop":
                     print("Recived stop in autonomous")
                     try:
-                        I2C_proc.send((1, 50))
-                        I2C_proc.send((0, 0))
                         I2C_proc.close()
                     except Exception:
                         print("Couldn't read i2c")
