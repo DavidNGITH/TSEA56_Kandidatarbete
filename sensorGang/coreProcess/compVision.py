@@ -134,7 +134,7 @@ class compVision:
 
         
         #Stopplinje detekterad
-        if (maxX-minX > 370) and ((y1+y2)/2 > 430):
+        if (maxX-minX > 300) and ((y1+y2)/2 > 430):
             print("yes, stopline")
             print("Width: {} ypos: {}".format(maxX-minX,(y1+y2)/2))
 

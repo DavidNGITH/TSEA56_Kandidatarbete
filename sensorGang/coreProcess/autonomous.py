@@ -21,6 +21,7 @@ class Autonomous():
         self.resolution = resolution
         self.laneData = compVision(self.PD, roiPerc, self.resolution)
         self.status = True
+        self.object = False
     
         self.mqttClient = mqttClient
         self.mqttClient.on_message = self.onMessage
@@ -121,6 +122,12 @@ class Autonomous():
             if time.time() - i2cTimeElapsed > 2:
                 try:
                     data = I2C_proc.get()
+                    if data[0] < 10 & self.object:
+                        I2C_proc.send((2, 1))
+                        self.object = True
+                    elif data[0] >= 10 & self.object:
+                        I2C_proc.send((2, 0))
+                        self.object = False
                 
                     qI2CDataRecived.put(data[0])
                     qI2CDataRecived.put(data[1])
