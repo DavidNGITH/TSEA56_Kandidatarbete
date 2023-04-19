@@ -132,8 +132,6 @@ class compVision:
         y1 = int(slope * minX + intercept)
         y2 = int(slope * maxX + intercept)
 
-        print("Width: {} ypos: {}".format(maxX-minX,(y1+y2)/2))
-
 
         if (maxX-minX < 370) and ((y1+y2)/2 < 430):
             print("No stopline")
@@ -142,6 +140,8 @@ class compVision:
         #Stopplinje detekterad
         else:
             print("yes, stopline")
+            print("Width: {} ypos: {}".format(maxX-minX,(y1+y2)/2))
+
             if self.stopAtLine:
                 self.stopLine = True
                 self.stopAtLine = False
