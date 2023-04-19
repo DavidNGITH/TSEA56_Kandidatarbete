@@ -1,4 +1,5 @@
-import time, math
+import time
+import math
 import numpy as np
 import cv2
 from videoStream import VideoStream

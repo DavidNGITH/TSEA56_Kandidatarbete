@@ -101,7 +101,7 @@ class Autonomous():
                 
             
             if not qSteering.empty():
-                print("Recived steering")
+#                print("Recived steering")
                 steering = qSteering.get()
                 
                 I2C_proc.send((1, steering))
