@@ -120,7 +120,7 @@ class Autonomous():
                 self.stop()
                 return
             
-            if time.time() - i2cTimeElapsed > 2:
+            if time.time() - i2cTimeElapsed > 0.5:
                 try:
                     data = I2C_proc.get()
                     if (int(data[0][1]) < 40) & (self.object == False):
