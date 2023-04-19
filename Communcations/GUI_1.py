@@ -44,6 +44,7 @@ class Ui_Dialog(object):
         #initate straight ahead and zero speed
         self.speed = 0
         self.steering = 50
+        self.breaking = 0
         self.obs_det_bool = False
         self.crs_data = "A to B"
         self.lat_pos_data = 0
@@ -285,6 +286,22 @@ class Ui_Dialog(object):
             if (hotkey == "vänsterpil") | (hotkey == "left"):
                 if self.steering >= 4:
                     self.steering -= 4
+                self.bearing_display.setText(str(self.steering))
+            if (hotkey == "B") | (hotkey == "b"):
+                if self.breaking == 0:
+                    self.breaking = 1
+                    self.speed = 0
+                self.mqtt_client.publish("breaking", self.breaking)
+                self.mqtt_client.publish("speed", self.speed)
+                self.throttle_display.setText(str(self.speed))
+                self.bearing_display.setText(str(self.steering))
+            if (hotkey == "G") | (hotkey == "g"):
+                if self.breaking == 1:
+                    self.breaking = 0
+                    self.speed = 0
+                self.mqtt_client.publish("breaking", self.breaking)
+                self.mqtt_client.publish("speed", self.speed)
+                self.throttle_display.setText(str(self.speed))
                 self.bearing_display.setText(str(self.steering))
             if hotkey == "space":
                 self.speed = 0
