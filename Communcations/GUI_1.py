@@ -14,6 +14,12 @@ from PyQt5.QtGui import QIcon, QPixmap
 import time
 import multiprocessing
 import keyboard
+import itertools
+import copy
+import networkx as nx
+import pandas as pd
+import matplotlib.pyplot as plt
+import random
 
 
 class Ui_Dialog(object):
@@ -25,15 +31,12 @@ class Ui_Dialog(object):
         self.update_time_bool = False
         self.current_time = "0"
         self.start = time.time()
-
-        self.distance_to_obj = "0"
-
         self.type_of_mode = ""
         self.qData = multiprocessing.Queue()
 
         #bool for starting car
         self.is_driving = False
-
+        self.distance_to_obj = "0"
         self.car_distance_driven = 0
         self.car_speed_data = 0
         self.delta_t1_speed = 0
@@ -49,13 +52,21 @@ class Ui_Dialog(object):
         self.map_node_dict = {"A":[799, 440], "B":[570, 500], "C":[720, 517], "D":[570, 573], "E":[720, 555], "F":[638, 642], "G":[807, 642], "H":[862, 502]}
         self.previous_rs = "A"
 
-       
-        
+        #Log data lists
+        self.save_car_speed_data = []
+        self.save_distance_to_obj = []
+        self.save_car_distance_driven = []
+        self.save_speed = []
+        self.save_steering = []
+        self.save_car_breaking = []
+        self.save_obs_det_bool = []
+        self.save_lat_pos_data = []
 
 
 
 
 
+        ################################## GUI LABEL AND BUTTONS ################################
         self.obst_det_head = QtWidgets.QLabel(Dialog)
         self.obst_det_head.setGeometry(QtCore.QRect(140, 20, 131, 16))
         self.obst_det_head.setObjectName("obst_det_head")
@@ -184,14 +195,14 @@ class Ui_Dialog(object):
         self.map_label.setGeometry(QtCore.QRect(490, 370, 151, 16))
         self.map_label.setObjectName("map_label")
 
-        self.image_label = QtWidgets.QLabel(Dialog)
-        self.image_label.setGeometry(QtCore.QRect(550, 390, 151, 16))
-        self.image_label.setObjectName("image_label")
-        self.banan_map = QPixmap('banspecifikation.png')
-        self.image_label.setPixmap(self.banan_map)
-        self.image_label.setScaledContents(True)
-        self.banan_map = self.banan_map.scaled(392, 280, QtCore.Qt.KeepAspectRatio, QtCore.Qt.FastTransformation)
-        self.image_label.resize(self.banan_map.width(), self.banan_map.height())
+        #self.image_label = QtWidgets.QLabel(Dialog)
+        #self.image_label.setGeometry(QtCore.QRect(550, 390, 151, 16))
+        #self.image_label.setObjectName("image_label")
+        #self.banan_map = QPixmap('banspecifikation.png')
+        #self.image_label.setPixmap(self.banan_map)
+        #self.image_label.setScaledContents(True)
+        #self.banan_map = self.banan_map.scaled(392, 280, QtCore.Qt.KeepAspectRatio, QtCore.Qt.FastTransformation)
+        #self.image_label.resize(self.banan_map.width(), self.banan_map.height())
 
         self.car_pos_label = QtWidgets.QLabel(Dialog)
         self.car_pos_label.setGeometry(QtCore.QRect(100, 100, 20, 20))
@@ -208,6 +219,7 @@ class Ui_Dialog(object):
         self.drive_distance_display = QtWidgets.QTextBrowser(Dialog)
         self.drive_distance_display.setGeometry(QtCore.QRect(670, 90, 301, 31))
         self.drive_distance_display.setObjectName("drive_distance_display")
+        self.drive_distance_display.setText(str(int(self.car_distance_driven)))
 
         self.speed_display = QtWidgets.QTextBrowser(Dialog)
         self.speed_display.setGeometry(QtCore.QRect(670, 130, 301, 31))
@@ -239,14 +251,13 @@ class Ui_Dialog(object):
         self.routeplan_display.setObjectName("routeplan_display")
         self.routeplan_display.setText(str(self.route_plan_data))
 
-
-
-
         self.retranslateUi(Dialog)
         QtCore.QMetaObject.connectSlotsByName(Dialog)
 
         self.connect_buttons()
+        ################################## END GUI LABEL AND BUTTONS ################################
 
+        ################################## MQTT AND TIMER INITS ################################
         self.mqtt_init()
 
         self.timer = QtCore.QTimer()
@@ -261,10 +272,12 @@ class Ui_Dialog(object):
         self.drivingtimer.timeout.connect(self.drive_function)
         self.drivingtimer.start(25)
 
-        self.distanceupdate_timer = QtCore.QTimer()
-        #self.distanceupdate_timer.timeout.connect(self.updatedistancedriven)
-        #self.drivingtimer.start(1000)
+        self.log_data_timer = QtCore.QTimer()
+        self.log_data_timer.timeout.connect(self.log_data)
+        self.log_data_timer.start(100) #1000 = every sec
 
+        
+        ################################## END MQTT AND TIMER INITS ################################
 
     def drive_function(self):
         if ((self.type_of_mode == "Manual") & (self.is_driving)):
@@ -323,18 +336,39 @@ class Ui_Dialog(object):
             pass
         self.time_display.setText(self.current_time)
 
+    def log_data(self):
+        if self.update_time_bool:
+            self.save_car_speed_data.append([self.car_speed_data, self.current_time])
+            self.save_distance_to_obj.append([self.distance_to_obj, self.current_time])
+            self.save_car_distance_driven.append([self.car_distance_driven, self.current_time])
+            self.save_speed.append([self.speed, self.current_time])
+            self.save_steering.append([self.steering, self.current_time])
+            self.save_car_breaking.append([self.breaking, self.current_time])
+            self.save_obs_det_bool.append([self.obs_det_bool, self.current_time])
+            self.save_lat_pos_data.append([self.lat_pos_data, self.current_time])
+
+            print(self.save_car_speed_data)
+    
+    def plot_data(self, data_list):
+        i1 = 0
+        x_values = [] #time
+        y_values = [] #data
+        for i1 in data_list:
+            x_values.append(i1[1])
+            y_values.append(i1[0])
+        
+        plt.plot(x_values, y_values)
+        plt.gcf().autofmt_xdate()
+        plt.show()
+        print("plotted")
+
     def retranslateUi(self, Dialog):
         _translate = QtCore.QCoreApplication.translate
         Dialog.setWindowTitle(_translate("Dialog", "Very fast taxicar, vroom vroom"))
-
         self.obst_det_head.setText(_translate("Dialog", "Obstacle detection:"))
-
         self.obst_det_label.setText(_translate("Dialog", "Obstacle detected"))
-
         self.obst_dist_label.setText(_translate("Dialog", "Distance to obstacle"))
-
         self.drive_mode_head.setText(_translate("Dialog", "Drive mode:"))
-
         self.manual_mode.setText(_translate("Dialog", "Manual mode"))
         self.semi_auto_mode.setText(_translate("Dialog", "Semi-automatic mode"))
         self.auto_mode.setText(_translate("Dialog", "Automatic mode"))
@@ -421,21 +455,20 @@ class Ui_Dialog(object):
         self.mqtt_client.publish("stop", "1")
         self.mqtt_client.publish("speed", self.speed)
         self.mqtt_client.publish("steering", self.steering)
+        self.plot_data(self.save_car_speed_data)
         print("STOP")
+        
 
     def mqtt_init(self):
-    #initate connection
+        #initate connection
+        MQTT_TOPIC = [("data/distance", 0), ("data/speed",0), ("data/crs",0), ("data/lat_pos",0), ("data/route_plan",0)]
         try:
             broker_ip = "10.241.242.186"
             broker_port = 1883
             self.mqtt_client = mqtt.Client()
             self.mqtt_client.username_pw_set("tsea56G09", "mindset")
             self.mqtt_client.connect(broker_ip, broker_port)
-            self.mqtt_client.subscribe("data/distance")
-            self.mqtt_client.subscribe("data/speed")
-            self.mqtt_client.subscribe("data/crs")
-            self.mqtt_client.subscribe("data/lat_pos")
-            self.mqtt_client.subscribe("data/route_plan")
+            self.mqtt_client.subscribe(MQTT_TOPIC)
             self.mqtt_client.loop_start()
             self.mqtt_client.on_message = self.on_message
         except: 
@@ -458,12 +491,11 @@ class Ui_Dialog(object):
                 self.obs_dist_display.setText(str(self.distance_to_obj))
             
             if message[0] == "data/speed":
-                print ("Speed recieved")
-                #self.num_of_speeds += 1
+                #print ("Speed recieved")
                 #recieves speed and shows it on the gui
                 self.car_speed_data = float(message[1])
-                print(type(self.car_speed_data))
-                print(self.car_speed_data)
+                #print(type(self.car_speed_data))
+                #print(self.car_speed_data)
                 self.speed_display.setText(str(self.car_speed_data))
                 #checks if car is driving and then prints distance based on a difference in time
                 if self.is_driving:
@@ -504,10 +536,6 @@ class Ui_Dialog(object):
 
                 #print(self.qData.get()[1])
            
-        
-        
-    #def time_printer():
-    #    self.time_display.
 
 def randomspeed():
     return 10
