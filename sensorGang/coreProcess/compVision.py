@@ -129,12 +129,22 @@ class compVision:
     
         slope, intercept = line
 
-        if (maxX-minX) < 100 and (y1+y2)/2 > 100:
+        y1 = int(slope * minX + intercept)
+        y2 = int(slope * maxX + intercept)
+
+
+        if (maxX-minX) < 100 and (y1+y2)/2 < 400:
             self.stopLine = False
         
+        #Stopplinje detekterad
         else:
-            self.stopLine = True
-                        
+            if self.stopAtLine:
+                self.stopLine = True
+                self.stopAtLine = False
+                self.stopLineTimer = time.time()
+
+            elif time.time() - self.stopLineTimer > 5:
+                self.stopAtLine = True
 
         return
         
@@ -259,9 +269,9 @@ class compVision:
             self.regionOfInterest()
             
             # HISTOGRAM CALC FROM CANNY
-            histogram = np.sum(self.img[400:480,10:630], axis =0)
-            self.leftHistogram = np.argmax(histogram[:int(self.center)]) + 10
-            self.rightHistogram = np.argmax(histogram[int(self.center):]) + self.center + 10
+            histogram = np.sum(self.img[400:480,5:635], axis =0)
+            self.leftHistogram = np.argmax(histogram[:int(self.center)]) + 5
+            self.rightHistogram = np.argmax(histogram[int(self.center):]) + self.center + 5
             self.midpointHistogram = int((self.rightHistogram - self.leftHistogram) / 2 + self.leftHistogram )
 
             #y1 = [(self.leftHistogram, 0), (self.leftHistogram, self.height)]
@@ -329,6 +339,7 @@ class compVision:
 
             else:
                 qSpeed.put(0)
+                self.stopLine = False
                 print("Stop line detected")
             
                    
