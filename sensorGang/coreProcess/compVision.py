@@ -135,7 +135,7 @@ class compVision:
         print("{} {} {} {}".format(minX,maxX,y1,y2))
 
 
-        if (maxX-minX) < 100 and (y1+y2)/2 < 400:
+        if (maxX-minX) < 370 and (y1+y2)/2 < 430:
             print("No stopline")
             self.stopLine = False
         
