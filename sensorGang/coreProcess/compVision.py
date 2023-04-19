@@ -1,4 +1,5 @@
-import time, math
+import time
+import math
 import numpy as np
 import cv2
 from videoStream import VideoStream
@@ -304,8 +305,8 @@ class compVision:
             steering = self.PD.get_control(self.newOffset)
             steering = int((self.newOffset)*0.2 + 60)
             
-            print(self.newOffset)
-            print(steering)
+           # print(self.newOffset)
+           # print(steering)
             
             if steering < 0:
                 steering = 0
@@ -538,8 +539,8 @@ class compVision:
 
             return
         
-        print(self.newOffset)
-        print(self.lastOffset)
+        #print(self.newOffset)
+        #print(self.lastOffset)
         
         self.newOffset -= self.center
 
