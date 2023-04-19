@@ -4,35 +4,45 @@ import time
 import paho.mqtt.client as mqtt
 import i2cHandle
 import numpy as np
+from PD_reg import PDcontroller
 
 
 
-MQTT_TOPIC = [("stop",0),("ping",0), ("speed",0)]
+MQTT_TOPIC = [("stop",0),("ping",0),("speed",0),("PD/Kp",0),("PD/kd",0)]
 
 
 class Autonomous():
     def __init__(self, mqttClient : mqtt.Client(), timeOut, roiPerc, resolution = (640,480)):
         self.timeOut = timeOut
+
+        ##PD-Controller        Kp  Kd
+        self.PD = PDcontroller(15, 10)
         
         self.resolution = resolution
-        self.laneData = compVision(roiPerc, self.resolution)
+        self.laneData = compVision(self.PD, roiPerc, self.resolution)
         self.status = True
     
         self.mqttClient = mqttClient
         self.mqttClient.on_message = self.onMessage
         self.mqttClient.subscribe(MQTT_TOPIC)
 
-        self.qMessage = multiprocessing.Queue()
-        self.qCenterOffset = multiprocessing.Queue()
-        self.qMotors = multiprocessing.Queue()
-        self.qData = multiprocessing.Queue()
+        #Incoming MQTT message
+        self.qMessageMQTT = multiprocessing.Queue()
+        #Steering data to motors
+        self.qSteering = multiprocessing.Queue()
+        #Speed data to motors
+        #self.qMotors = multiprocessing.Queue()
+        #Recived I2C data
+        self.qI2CDataRecived = multiprocessing.Queue()
+        #Speed data to motors
+        self.qSpeed = multiprocessing.Queue()
 
         self.statusCenterOffset = multiprocessing.Value('i',1)
         self.statusHandleMessage = multiprocessing.Value('i',1)
 
 
-        self.p1 = multiprocessing.Process(target=self.handleMessage, args=(self.qMessage, self.qData, self.qCenterOffset, self.statusHandleMessage))
-        self.p2 = multiprocessing.Process(target=self.laneData.getCenterOffset, args =(self.qCenterOffset, self.statusCenterOffset))
+        self.p1 = multiprocessing.Process(target=self.handleMessage, args=(self.qMessageMQTT, self.qI2CDataRecived, self.qSteering, self.qSpeed, self.statusHandleMessage))
+        self.p2 = multiprocessing.Process(target=self.laneData.getCenterOffset, args =(self.qSteering, self.statusCenterOffset, self.qSpeed))
 
         self.p1.start()
         self.p2.start()
@@ -42,11 +52,11 @@ class Autonomous():
         try:
             m = int(message.payload.decode("utf-8"))
             t = message.topic
-            self.qMessage.put((t,m))
+            self.qMessageMQTT.put((t,m))
         except:
             print("Couldn't read mqtt message")
 
-    def handleMessage (self, qMQTT, qI2C, qSteering ,status):
+    def handleMessage (self, qMessageMQTT, qI2CDataRecived, qSteering, qSpeed ,status):
         print("In handleMessage autonomous!")
         I2C_proc = i2cHandle.I2C()
         time.sleep(4)
@@ -58,9 +68,9 @@ class Autonomous():
 
         
         while status.value:
-            if not qMQTT.empty():
+            if not qMessageMQTT.empty():
                 print("qMessage not empty")
-                message = qMQTT.get()
+                message = qMessageMQTT.get()
 
                 if message[0] == "stop":
                     print("Recived stop in autonomous")
@@ -77,8 +87,16 @@ class Autonomous():
                     pingTime = time.time()
                     
                 elif message[0] == "speed":
-                    print("Recived speed data in manual")
+                    print("Recived speed data in autonomous")
                     I2C_proc.send((0, message[1]))
+
+                elif message[0] == "PD/Kp":
+                    print("Recived Kp data in autonomous")
+                    self.PD.updateKp(message[1])
+
+                elif message[0] == "PD/Kd":
+                    print("Recived Kd data in autonomous")
+                    self.PD.updateKd(message[1])
                     
                 
             
@@ -87,6 +105,12 @@ class Autonomous():
                 steering = qSteering.get()
                 
                 I2C_proc.send((1, steering))
+
+            if not qSpeed.empty():
+                print("Recived speed")
+                speed = qSteering.get()
+                
+                I2C_proc.send((0, speed))
             
             
             if time.time() - pingTime > self.timeOut:
@@ -98,8 +122,8 @@ class Autonomous():
                 try:
                     data = I2C_proc.get()
                 
-                    qI2C.put(data[0])
-                    qI2C.put(data[1])
+                    qI2CDataRecived.put(data[0])
+                    qI2CDataRecived.put(data[1])
                 except Exception as e:
                     print("Couldn't read i2c")
                     print(e)
@@ -112,11 +136,11 @@ class Autonomous():
 
     def stop(self):
         #Stop all motors
-        while not self.qMotors.empty():
-            self.qMotors.get()
+        #while not self.qMotors.empty():
+        #    self.qMotors.get()
     
 
-        self.qMotors.put(100)
+        #self.qMotors.put(100)
         
         time.sleep(0.5)
         
@@ -139,8 +163,8 @@ class Autonomous():
                 
                 #Send data to PD-controller
                 
-            if not self.qData.empty():
-                messageToSend = self.qData.get()
+            if not self.qI2CDataRecived.empty():
+                messageToSend = self.qI2CDataRecived.get()
                 if messageToSend[0]:
                     speed = int((messageToSend[1]/10) * 8 * np.pi)
                     #print("Speed: {} cm/s".format(speed))

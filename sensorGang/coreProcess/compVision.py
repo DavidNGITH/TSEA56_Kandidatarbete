@@ -11,7 +11,7 @@ from videoStreamFile import VideoStreamFile
 
 
 class compVision:
-    def __init__(self, roiPerc, resolution):
+    def __init__(self, PD, roiPerc, resolution):
 
         #Variables
         self.resolution = resolution
@@ -26,7 +26,7 @@ class compVision:
         self.newOffset = None
 
         #ROIDIM: Upperleft, UpperRight, LowerRight, LowerLeft
-        roiP1X = int(roiPerc[0] * self.width)
+        roiP1X = int(roiPerc[0]  * self.width)
         roiP1Y = int(roiPerc[1]  * self.height)
         roiP2X = int(roiPerc[2]  * self.width)
         roiP2Y = int(roiPerc[3]  * self.height)
@@ -64,17 +64,16 @@ class compVision:
         
         #Find lines
         self.laneLines = []
-        self.stopLine = None
+        self.stopLine = False
         self.xPointRight = None
         self.xPointLeft = None
         self.slopeLeft = None
         self.slopeRight = None
+        self.stopAtLine = True
+        self.stopLineTimer = 0
         
         ##PD-Controller
-        
-        self.PD = PDcontroller(15, 10)
-
-
+        self.PD = PD
 
 
 
@@ -128,6 +127,15 @@ class compVision:
     def makeStopLine(self, line, minX, maxX):
     
         slope, intercept = line
+
+        if (maxX-minX) < 100 and (y1+y2)/2 > 100:
+            self.stopLine = False
+        
+        else:
+            self.stopLine = True
+                        
+
+        return
         
         x1 = int(minX)
         x2 = int(maxX)
@@ -206,7 +214,7 @@ class compVision:
 
             
         else:
-            self.stopLine = None
+            self.stopLine = False
     
         try:
             self.lineCenter = (rightFitAverage[1]-leftFitAverage[1])/(leftFitAverage[0]-rightFitAverage[0])
@@ -218,7 +226,7 @@ class compVision:
 
     
 
-    def getCenterOffset(self, qOffset : multiprocessing.Queue, statusValue : multiprocessing.Value):
+    def getCenterOffset(self, qSteering : multiprocessing.Queue, statusValue : multiprocessing.Value, qSpeed: multiprocessing.Queue):
         #Starting Video stream
         threadStream = VideoStream(self.resolution)
         #threadStream = VideoStreamFile()
@@ -300,22 +308,27 @@ class compVision:
             #self.drawLine(y5, (128,0,128), 2) # Calculated offset
             
             #steering = int((self.newOffset + self.center)*3/8 - 60)
-            
-            steering = self.PD.get_control(self.newOffset)
-            steering = int((self.newOffset)*0.2 + 60)
-            
-            print(self.newOffset)
-            print(steering)
-            
-            if steering < 0:
-                steering = 0
+
+            if not self.stopLine:
+                steering = self.PD.get_control(self.newOffset)
+                steering = int((self.newOffset)*0.2 + 60)
                 
-            elif steering > 120:
-                steering = 120
-            
-            #print("Steering: {}".format(steering))
-                                    
-            qOffset.put(steering)
+                #print(self.newOffset)
+                #print(steering)
+                
+                if steering < 0:
+                    steering = 0
+                    
+                elif steering > 120:
+                    steering = 120
+                
+                #print("Steering: {}".format(steering))
+                                        
+                qSteering.put(steering)
+
+            else:
+                qSpeed.put(0)
+                print("Stop line detected")
             
                    
             # DISPLAY ROI
@@ -538,8 +551,8 @@ class compVision:
 
             return
         
-        print(self.newOffset)
-        print(self.lastOffset)
+        #print(self.newOffset)
+        #print(self.lastOffset)
         
         self.newOffset -= self.center
 
@@ -555,11 +568,4 @@ class compVision:
         self.newOffset = int(self.newOffset)
 
         self.lastOffset = self.newOffset
-
-
-
-        
-
-
-        
 

@@ -38,14 +38,10 @@ class PDcontroller:
             self.breaking = 1
         else:
             self.breaking = 0
+
+    def updateKp(self, Kp):
+        self.Kp = Kp
+
+    def updateKd(self, Kd):
+        self.Kp = Kd
         
-        
-
-
-
-
-    
-
-
-
-
