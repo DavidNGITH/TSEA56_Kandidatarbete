@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+#
 # Form implementation generated from reading ui file 'OneDrive - Linköpings universitet/Programmering/TSEA56/Designer_gui_1.ui'
 #
 # Created by: PyQt5 UI code generator 5.15.4
@@ -11,6 +11,7 @@ import paho.mqtt.client as mqtt
 from PyQt5 import QtCore, QtGui, QtWidgets
 import time
 import multiprocessing
+import keyboard
 
 class Ui_Dialog(object):
     def setupUi(self, Dialog):
@@ -21,34 +22,40 @@ class Ui_Dialog(object):
         self.current_time = "0"
         self.start = time.time()
 
-        self.car_speed = 0
-
+        self.distance_to_obj = "0"
+        self.car_speed_data = 0
+        self.type_of_mode = "Manual"
         self.qData = multiprocessing.Queue()
+
+        self.is_driving = False
         
+        self.speed = 0
+        self.steering = 52
+        self.breaking = 0
 
-        self.label = QtWidgets.QLabel(Dialog)
-        self.label.setGeometry(QtCore.QRect(140, 20, 131, 16))
-        self.label.setObjectName("label")
+        self.obst_det_head = QtWidgets.QLabel(Dialog)
+        self.obst_det_head.setGeometry(QtCore.QRect(140, 20, 131, 16))
+        self.obst_det_head.setObjectName("obst_det_head")
 
-        self.label_2 = QtWidgets.QLabel(Dialog)
-        self.label_2.setGeometry(QtCore.QRect(30, 60, 131, 16))
-        self.label_2.setObjectName("label_2")
+        self.obst_det_bool = QtWidgets.QLabel(Dialog)
+        self.obst_det_bool.setGeometry(QtCore.QRect(30, 60, 131, 16))
+        self.obst_det_bool.setObjectName("obst_det_bool")
 
-        self.label_3 = QtWidgets.QLabel(Dialog)
-        self.label_3.setGeometry(QtCore.QRect(210, 60, 131, 16))
-        self.label_3.setObjectName("label_3")
+        self.obst_dist = QtWidgets.QLabel(Dialog)
+        self.obst_dist.setGeometry(QtCore.QRect(210, 60, 131, 16))
+        self.obst_dist.setObjectName("obst_dist")
 
         self.textBrowser = QtWidgets.QTextBrowser(Dialog)
         self.textBrowser.setGeometry(QtCore.QRect(30, 90, 151, 31))
         self.textBrowser.setObjectName("textBrowser")
 
-        self.speed_display = QtWidgets.QTextBrowser(Dialog)
-        self.speed_display.setGeometry(QtCore.QRect(210, 90, 151, 31))
-        self.speed_display.setObjectName("speed_display")
+        self.distance_display = QtWidgets.QTextBrowser(Dialog)
+        self.distance_display.setGeometry(QtCore.QRect(210, 90, 151, 31))
+        self.distance_display.setObjectName("distance_display")
 
-        self.label_4 = QtWidgets.QLabel(Dialog)
-        self.label_4.setGeometry(QtCore.QRect(20, 180, 91, 16))
-        self.label_4.setObjectName("label_4")
+        self.drive_mode_head = QtWidgets.QLabel(Dialog)
+        self.drive_mode_head.setGeometry(QtCore.QRect(20, 180, 91, 16))
+        self.drive_mode_head.setObjectName("drive_mode_head")
 
         #manual mode
         self.manual_mode = QtWidgets.QPushButton(Dialog)
@@ -176,6 +183,9 @@ class Ui_Dialog(object):
         self.retranslateUi(Dialog)
         QtCore.QMetaObject.connectSlotsByName(Dialog)
 
+        self.distance_display.setText(str(self.distance_to_obj))
+
+
         self.connect_buttons()
 
         self.mqtt_init()
@@ -186,7 +196,53 @@ class Ui_Dialog(object):
 
         self.messagetimer = QtCore.QTimer()
         self.messagetimer.timeout.connect(self.updatedata)
-        self.messagetimer.start(500)
+        self.messagetimer.start(100)
+
+        self.drivingtimer = QtCore.QTimer()
+        self.drivingtimer.timeout.connect(self.drive_function)
+        self.drivingtimer.start(10)
+
+    def drive_function(self):
+
+        if ((self.type_of_mode == "Manual") & (self.is_driving)):
+            hotkey = keyboard.get_hotkey_name()
+            if hotkey == "uppil":
+                if self.speed <= 251:
+                    self.speed += 2
+                    self.mqtt_client.publish("speed", self.speed)
+                
+                print(self.speed)
+            if hotkey == "nedpil":
+                if self.speed >= 2:
+                    self.speed -= 2
+                    self.mqtt_client.publish("speed", self.speed)
+                print(self.speed)
+            if hotkey == "högerpil":
+                if self.steering <= 118:
+                    self.steering += 2
+                    self.mqtt_client.publish("steering", self.steering)
+                print(self.steering)
+            if hotkey == "vänsterpil":
+                if self.steering >= 2:
+                    self.steering -= 2
+                    self.mqtt_client.publish("steering", self.steering)
+                    print(self.steering)
+
+            
+            if hotkey == "space":
+                self.speed = 0
+                self.mqtt_client.publish("speed", self.speed)
+            if hotkey == "b":
+                if self.breaking == 0:
+                    self.breaking = 1
+                    self.speed = 0
+                    self.mqtt_client.publish("breaking", self.breaking)
+                    self.mqtt_client.publish("speed", self.speed)               
+            if hotkey == "g": 
+                if self.breaking == 1:                
+                    self.breaking = 0
+                    print(self.breaking)
+                    self.mqtt_client.publish("breaking", self.breaking)
 
     def update_time(self):
         # get the current time and format it as a string
@@ -200,12 +256,15 @@ class Ui_Dialog(object):
 
     def retranslateUi(self, Dialog):
         _translate = QtCore.QCoreApplication.translate
-        Dialog.setWindowTitle(_translate("Dialog", "Dialog"))
+        Dialog.setWindowTitle(_translate("Dialog", "Very fast taxicar, vroom vroom"))
 
-        self.label.setText(_translate("Dialog", "Obstacle detection:"))
-        self.label_2.setText(_translate("Dialog", "Obstacle detected"))
-        self.label_3.setText(_translate("Dialog", "Distance to obstacle"))
-        self.label_4.setText(_translate("Dialog", "Drive mode:"))
+        self.obst_det_head.setText(_translate("Dialog", "Obstacle detection:"))
+
+        self.obst_det_bool.setText(_translate("Dialog", "Obstacle detected"))
+
+        self.obst_dist.setText(_translate("Dialog", "Distance to obstacle"))
+
+        self.drive_mode_head.setText(_translate("Dialog", "Drive mode:"))
 
         self.manual_mode.setText(_translate("Dialog", "Manual mode"))
         self.semi_auto_mode.setText(_translate("Dialog", "Semi-automatic mode"))
@@ -243,58 +302,78 @@ class Ui_Dialog(object):
 
     def on_manual_mode_click(self):
         # This method is called when manual_mode is clicked
-        self.mqtt_client.publish("mode", 1)
+        if not self.is_driving:
+            self.mqtt_client.publish("mode", 1)
+            self.type_of_mode = "Manual"
+            print(self.type_of_mode)
 
-
-
-        print("Manual mode")
-        
     def on_semi_auto_mode_click(self):
         # This method is called when semi_auto_mode is clicked
-
-        print("Semi-automatic mode")
+        if not self.is_driving:
+            self.mqtt_client.publish("mode", 2)
+            self.type_of_mode = "Semi-automatic"
+            print(self.type_of_mode)
         
     def on_auto_mode_click(self):
         # This method is called when auto_mode is clicked
-        print("Automatic mode")
+        if not self.is_driving:
+            self.mqtt_client.publish("mode", 3)
+            self.type_of_mode = "Automatic"
+            print(self.type_of_mode)
     
     def on_send_command(self):
         # This method is called when manual_mode is clicked
+        self.mqtt_client.publish("data/command")
         print(self.textEdit.toPlainText())
 
     def on_start_car_click(self):
         #starts car
         self.update_time_bool = 1
-        self.start = time.time()    
+        self.start = time.time()   
+        self.is_driving = True 
         print("START")
 
     def on_stop_car_click(self):
         #stops car
         self.current_time = "0"
         self.update_time_bool = 0
+        self.is_driving = False
         print("STOP")
 
     def mqtt_init(self):
     #initate connection
-        broker_ip = "10.241.218.244"
-        broker_port = 1883
-        self.mqtt_client = mqtt.Client()
-        self.mqtt_client.connect(broker_ip, broker_port)
-        self.mqtt_client.subscribe("data/distance")
-        self.mqtt_client.loop_start()
-        self.mqtt_client.on_message = self.on_message
+        try:
+            broker_ip = "10.241.242.186"
+            broker_port = 1883
+            self.mqtt_client = mqtt.Client()
+            self.mqtt_client.username_pw_set("tsea56G09", "mindset")
+            self.mqtt_client.connect(broker_ip, broker_port)
+            self.mqtt_client.subscribe("data/distance")
+            self.mqtt_client.subscribe("data/speed")
+            self.mqtt_client.loop_start()
+            self.mqtt_client.on_message = self.on_message
+        except: 
+            print("Failed to setup connection")
+
 
     def on_message(self, client, userdata, message):
         m = str(message.payload.decode("utf-8"))
-        t = "data/distance"
+        t = message.topic
         self.qData.put((t,m))
         
     def updatedata(self):
         if not self.qData.empty():
-            print("Ja")
-            #print(self.qData.get()[1])
-            self.car_speed = self.qData.get()[1]
-            self.speed_display.setText(str(self.car_speed))
+            message = self.qData.get()
+            if message[0] == "data/speed":
+                #print ("Speed recieved")
+                pass
+            if message[0] == "data/distance":
+                #print ("Distance recieved")
+                self.distance_to_obj = message[1]
+                print(self.distance_to_obj)
+                self.distance_display.setText(str(self.distance_to_obj))
+
+            #print(self.qData.get()[1])      
         
         
     #def time_printer():
