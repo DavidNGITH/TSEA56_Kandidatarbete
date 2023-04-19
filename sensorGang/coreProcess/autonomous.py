@@ -77,6 +77,7 @@ class Autonomous():
                     try:
                         I2C_proc.send((1, 50))
                         I2C_proc.send((0, 0))
+                        I2C_proc.close()
                     except:
                         print("Couldn't read i2c")
                         

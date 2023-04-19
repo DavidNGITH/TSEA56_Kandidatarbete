@@ -70,6 +70,8 @@ class Manual():
                     I2C_proc.send((1, 50))
                     I2C_proc.send((0, 0))
                     I2C_proc.send((2, 1))
+                    I2C_proc.close()
+
                     self.stop()
                     return
                 elif message[0] == "ping":
