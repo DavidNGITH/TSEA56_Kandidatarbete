@@ -1,6 +1,6 @@
-from autonomous import Autonomous
-from semiAutonomous import SemiAutonomous
-from manual import Manual
+#from autonomous import Autonomous
+#from semiAutonomous import SemiAutonomous
+from manuellRi import Manual
 import mqttSetup as mq
 from queue import Queue
 

@@ -5,6 +5,7 @@ from videoStream import VideoStream
 import multiprocessing
 from datetime import datetime
 import matplotlib.pyplot as plt
+from PD_reg import PDcontroller
 
 from videoStreamFile import VideoStreamFile
 
@@ -68,6 +69,10 @@ class compVision:
         self.xPointLeft = None
         self.slopeLeft = None
         self.slopeRight = None
+        
+        ##PD-Controller
+        
+        self.PD = PDcontroller(15, 10)
 
 
 
@@ -180,7 +185,7 @@ class compVision:
         
         
         
-        if len(leftFit) > 0:
+        if len(leftFit) > 2:
             leftFitAverage = np.average(leftFit, axis=0)
             self.slopeLeft = leftFitAverage[0]
             self.laneLines.append(self.makePoints(leftFitAverage, 0))
@@ -188,13 +193,13 @@ class compVision:
 
 
         
-        if len(rightFit) > 0:
+        if len(rightFit) > 2:
             rightFitAverage = np.average(rightFit, axis=0)
             self.slopeRight = rightFitAverage[0]
             self.laneLines.append(self.makePoints(rightFitAverage, 1))
             #print("Right slope: k {}, m {}".format(rightFitAverage[0], rightFitAverage[1]))
         
-        if len(stopFit) > 10:
+        if len(stopFit) > 6:
             stopFitAverage = np.average(stopFit, axis=0)
             self.makeStopLine(stopFitAverage, minX, maxX)
             #print("Stop line: k {}, m {}".format(stopFitAverage[0], stopFitAverage[1]))
@@ -213,24 +218,28 @@ class compVision:
 
     
 
-    def getCenterOffset(self, q : multiprocessing.Queue, statusValue : multiprocessing.Value):
+    def getCenterOffset(self, qOffset : multiprocessing.Queue, statusValue : multiprocessing.Value):
         #Starting Video stream
-        #threadStream = VideoStream(self.resolution)
-        threadStream = VideoStreamFile()
+        threadStream = VideoStream(self.resolution)
+        #threadStream = VideoStreamFile()
         threadStream.start()
         
         status = statusValue.value
         
         while status:
             
+            #t1 = time.time()
+            
             # RETRIVE
             self.img = threadStream.read()
+            
+
             
             # UNDISTORT
             #self.undistortImage()
 
             # SAVE ORIGINIAL IMAGE
-            self.orgImg = self.img
+            #self.orgImg = self.img
 
             # APPLY CANNY
             self.img = cv2.Canny(self.img, self.lowerThreshold, self.upperThreshold, self.appetureSize)
@@ -246,9 +255,9 @@ class compVision:
             self.rightHistogram = np.argmax(histogram[int(self.center):]) + self.center + 10
             self.midpointHistogram = int((self.rightHistogram - self.leftHistogram) / 2 + self.leftHistogram )
 
-            y1 = [(self.leftHistogram, 0), (self.leftHistogram, self.height)]
-            y2 = [(self.rightHistogram, 0), (self.rightHistogram, self.height)]
-            y3 = [(self.midpointHistogram, 0), (self.midpointHistogram, self.height)]
+            #y1 = [(self.leftHistogram, 0), (self.leftHistogram, self.height)]
+            #y2 = [(self.rightHistogram, 0), (self.rightHistogram, self.height)]
+            #y3 = [(self.midpointHistogram, 0), (self.midpointHistogram, self.height)]
             
             """plt.plot(histogram)
             #plt.vlines(self.leftHistogram, ymin=0, ymax=self.height, colors = 'red')
@@ -269,13 +278,13 @@ class compVision:
             
 
             # ADD LINES TO ORIGINAL IMG
-            self.addLines()
+            #self.addLines()
             
 
             # CALC X VALUE FOR Y = 10
             if(self.xPointRight and self.xPointLeft):
                 self.midpointFromPoints = int((self.xPointRight - self.xPointLeft)/2 + self.xPointLeft)
-                y4 = [(self.midpointFromPoints, 0), (self.midpointFromPoints, self.height)]
+                #y4 = [(self.midpointFromPoints, 0), (self.midpointFromPoints, self.height)]
                 #self.drawLine(y4, (0,242,255), 2)
                 #print("y1:{} y2:{} y3:{} y4:{}".format(y1,y2,y3,y4))
 
@@ -283,18 +292,38 @@ class compVision:
             #self.drawLine(y1, (0,242,255), 2) # Left line
             #self.drawLine(y2, (0,242,255), 2) # Right line
             #self.drawLine(y3, (128,0,128), 2) # Midpoint line
+                
+            self.getDataFromLines()
 
-            y5 = [(self.midpointFromPoints + self.center, 0), (self.midpointFromPoints + self.center, self.height)]
+            #y5 = [(self.newOffset + self.center, 0), (self.newOffset + self.center, self.height)]
 
-            self.drawLine(y3, (128,0,128), 2) # Calculated offset
+            #self.drawLine(y5, (128,0,128), 2) # Calculated offset
+            
+            #steering = int((self.newOffset + self.center)*3/8 - 60)
+            
+            steering = self.PD.get_control(self.newOffset)
+            steering = int((self.newOffset)*0.2 + 60)
+            
+            print(self.newOffset)
+            print(steering)
+            
+            if steering < 0:
+                steering = 0
+                
+            elif steering > 120:
+                steering = 120
+            
+            #print("Steering: {}".format(steering))
+                                    
+            qOffset.put(steering)
             
                    
             # DISPLAY ROI
-            self.displayROI()
+            #self.displayROI()
 
             # DISPLAY STOP LINE
-            if self.stopLine:
-                self.drawLine(self.stopLine, (0,0,255), 5)
+            #if self.stopLine:
+               #self.drawLine(self.stopLine, (0,0,255), 5)
                 
             
 
@@ -302,24 +331,17 @@ class compVision:
             #self.saveImageData()
 
             # DISPLAY IMAGE
-            self.displayImage()
+            #self.displayImage()
 
-                        
-            try:
-                if((self.lineCenter - self.center) > 0):
-                    #print("Turn Right")
-                    pass
-
-                else:
-                    #print("Turn Left")
-                    pass
-                    
-                q.put(self.lineCenter - self.center)
-            except:
-                #print("No lines detected")
-                pass
+            
             
             status = statusValue.value
+            
+            #t2 = time.time()
+        
+            #print("Time elapsed: {} in ms".format((t2-t1)*1000))
+            
+
 
         # STOP STREAM
         threadStream.stop()
@@ -358,7 +380,8 @@ class compVision:
                     cv2.line(lineImage, (x1, y1), (x2, y2), (0,0,255), 2)
 
         if (self.lineCenter != None):
-            cv2.line(lineImage, (int(self.lineCenter), 0), (int(self.lineCenter), int(self.height)), (0,255,0), 2)
+            pass
+            #cv2.line(lineImage, (int(self.lineCenter), 0), (int(self.lineCenter), int(self.height)), (0,255,0), 2)
 
         cv2.line(lineImage, (int(self.center), 0), (int(self.center), int(self.height)), (255,0,0), 2)
         self.img = cv2.addWeighted(self.orgImg, 0.8, lineImage, 1, 1)
@@ -397,7 +420,7 @@ class compVision:
         if self.leftHistogram > 0 and self.leftHistogram < 640:
             # Båda linjernas lutning har hittats
             if self.slopeLeft and self.slopeRight:
-                print("Case 1")
+                #print("Case 1")
 
                 #Här kan vi använda alla variabler
 
@@ -406,7 +429,7 @@ class compVision:
                 pass
             #Endast vänstra linjens lutning har hittats
             elif self.slopeLeft:
-                print("Case 2")
+                #print("Case 2")
 
                 #Här kan vi använda
                 #self.leftHistogram
@@ -416,12 +439,12 @@ class compVision:
                 #self.slopeLeft
                 #self.xPointLeft
 
-                self.newOffset = self.midpointHistogram
+                self.newOffset = self.midpointHistogram - 1/self.slopeLeft * 350
 
                 pass
             #Endast högra linjens lutning har hittats
             elif self.slopeRight:
-                print("Case 3")
+                #print("Case 3")
 
                 #Här kan vi använda
                 #self.leftHistogram
@@ -430,13 +453,16 @@ class compVision:
 
                 #self.slopeRight
                 #self.xPointRight
-
-                self.newOffset = self.midpointHistogram
-
+                
+                #print(self.slopeRight)
+                
+                
+                self.newOffset = self.midpointHistogram - 1/self.slopeRight * 350
+                
                 pass
             #Inga lutningar har hittats
             else:
-                print("Case 4")
+                #print("Case 4")
 
                 #Här kan vi använda:
                 #self.leftHistogram
@@ -453,7 +479,7 @@ class compVision:
         elif self.leftHistogram > 0:
             # Vänstra linjens lutning har hittats
             if self.slopeLeft:
-                print("Case 5")
+                #print("Case 5")
 
                 #Här kan vi använda:
                 #self.leftHistogram
@@ -468,7 +494,7 @@ class compVision:
                 pass
             # Ingen lutning har hittats
             else: 
-                print("Case 6")
+                #print("Case 6")
 
                 #Här kan vi använda:
                 #self.leftHistogram
@@ -484,7 +510,7 @@ class compVision:
         elif self.rightHistogram < 640:
             # Vänstra linjens lutning har hittats
             if self.slopeRight:
-                print("Case 7")
+                #print("Case 7")
 
                 #Här kan vi anväda:
                 #self.rightHistogram
@@ -497,7 +523,7 @@ class compVision:
                 pass
             # Ingen lutning har hittats
             else:
-                print("Case 8")
+                #print("Case 8")
                 
                 #Här kan vi använda:
                 #self.rightHistogram
@@ -511,11 +537,24 @@ class compVision:
             self.newOffset = self.lastOffset
 
             return
-
+        
+        print(self.newOffset)
+        print(self.lastOffset)
+        
         self.newOffset -= self.center
 
-        self.lastOffset = self.newOffset
+        
+        #if self.lastOffset:
+        #    if abs((self.newOffset-self.lastOffset)/self.lastOffset) > 0.10:
+        #        print("Change in offset to large")
+        #        self.newOffset = self.lastOffset
+        #        return
+            
 
+        
+        self.newOffset = int(self.newOffset)
+
+        self.lastOffset = self.newOffset
 
 
 

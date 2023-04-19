@@ -11,7 +11,10 @@ class I2C():
         
         
     def send(self, offsetAndMessage):
-        self.bus.write_byte_data(self.motorAdress,offsetAndMessage[0],offsetAndMessage[1])
+        try:
+            self.bus.write_byte_data(self.motorAdress,offsetAndMessage[0],offsetAndMessage[1])
+        except Exception as e:
+            print(e)
         
     
     def get(self):
