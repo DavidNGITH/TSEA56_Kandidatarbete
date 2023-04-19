@@ -25,8 +25,8 @@ class PDcontroller:
     def update_steering(self):
         if abs(self.PD_value) > 1:
             self.steering = self.PD_value
-        return self.steering
-
+        else:
+            self.steering  = 0
     
     def obstacle_control(self, obs_distance):
         
