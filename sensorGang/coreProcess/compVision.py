@@ -132,6 +132,8 @@ class compVision:
         y1 = int(slope * minX + intercept)
         y2 = int(slope * maxX + intercept)
 
+        print("{} {} {} {}".format(minX,maxX,y1,y2))
+
 
         if (maxX-minX) < 100 and (y1+y2)/2 < 400:
             print("No stopline")
