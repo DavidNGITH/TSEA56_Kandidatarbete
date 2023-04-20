@@ -36,7 +36,7 @@ class Autonomous():
         self.mqttClient.subscribe(MQTT_TOPIC)
 
         # Init multiprocessing
-        self.initMultiproccessing()
+        self.multiProcessing()
 
     def onMessage(self, client, userdata, message):
         """MQTT callback function."""
@@ -157,7 +157,7 @@ class Autonomous():
 
         print("Main loop autonomous stopped")
 
-    def initMultiproccessing(self):
+    def multiProcessing(self):
         """Initiate of processes."""
         self.qMessageMQTT = multiprocessing.Queue()     # Incoming MQTT message
         self.qSteering = multiprocessing.Queue()        # Steering data
