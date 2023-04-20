@@ -14,7 +14,7 @@ def record(statusValue, resolution, framerate):
 
     print("Starting recording")
     # camera.start_preview()
-    camera.start_recording("recoring_{}_{}_{}.h264".format(
+    camera.start_recording("recordings/recording_{}_{}_{}.h264".format(
         date.day, date.hour, date.minute))
 
     while (statusValue.value):
