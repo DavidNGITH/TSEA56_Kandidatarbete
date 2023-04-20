@@ -89,6 +89,7 @@ class Manual():
             # Time out checker
             if time.time() - pingTime > self.timeOut:
                 print("Timed out, stopping in manual")
+                I2C_proc.close()
                 self.stop()
                 return
 
