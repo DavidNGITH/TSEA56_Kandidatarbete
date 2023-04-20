@@ -29,9 +29,10 @@ class I2C():
 
     def close(self):
         """Close I2C connection."""
+        print(1)
         self.bus.send((0, 0))
         self.bus.send((1, 50))
         self.bus.send((2, 0))
-
-        time.sleep(0.1)
+        print(2)
+        time.sleep(0.5)
         self.bus.close()
