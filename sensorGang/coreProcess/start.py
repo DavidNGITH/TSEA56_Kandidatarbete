@@ -57,8 +57,8 @@ while True:
         if modeSetting == 1:
             # Manual
             print("Manual")
-            mode = Manual(mqttClient, TIME_OUT_TIME, RESOLUTION,
-                          FRAME_RATE, False)
+            mode = Manual(mqttClient, TIME_OUT_TIME,
+                          RESOLUTION, FRAME_RATE, True)
         elif modeSetting == 2:
             # Semi autonoumous
             print("SemiAutonomous")

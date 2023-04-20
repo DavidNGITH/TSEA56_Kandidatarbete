@@ -13,6 +13,7 @@ class I2C():
 
         self.motorAdress = 0x4a
         self.sensorAdress = 0x6a
+        self.send((2, 0))
 
     def send(self, offsetAndMessage):
         """Send I2C message, (offset, message)."""
