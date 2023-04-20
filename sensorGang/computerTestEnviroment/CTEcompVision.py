@@ -2,17 +2,16 @@
 import time
 import numpy as np
 import cv2
-from videoStream import VideoStream
 from datetime import datetime
 import matplotlib.pyplot as plt
 
-from videoStreamFile import VideoStreamFile
+from CTEvideoStreamFile import VideoStreamFile
 
 
 class compVision:
     """Class for computer vision."""
 
-    def __init__(self, PD, roiPerc, resolution):
+    def __init__(self, roiPerc, resolution):
         """Set up variables and processes."""
         # Variables
         self.resolution = resolution
@@ -69,9 +68,7 @@ class compVision:
         self.slopeRight = None
         self.stopAtLine = True
         self.stopLineTimer = 0
-
-        # PD-Controller
-        self.PD = PD
+        self.stopLineCoordinates = 0
 
     def displayImage(self):
         """Display self.image on screen."""
@@ -147,15 +144,13 @@ class compVision:
             print("No stopline")
             self.stopLine = False
 
-        return
-
         x1 = int(minX)
         x2 = int(maxX)
 
         y1 = int(slope * minX + intercept)
         y2 = int(slope * maxX + intercept)
 
-        self.stopLine = [(x1, y1), (x2, y2)]
+        self.stopLineCoordinates = [(x1, y1), (x2, y2)]
 
     def lineIntercept(self, lineSegments):
         """Handle detected lines from Hough transform."""
@@ -231,15 +226,13 @@ class compVision:
             # print("Not enough lines captured")
             return
 
-    def getCenterOffset(self, qSteering, statusValue, qSpeed):
+    def getCenterOffset(self):
         """Calculate the center offset in frame."""
-        threadStream = VideoStream(self.resolution)  # Creates Video stream
-        # threadStream = VideoStreamFile()
+        # threadStream = VideoStreamFile()  # Creates Video stream
+        threadStream = VideoStreamFile()
         threadStream.start()  # Starts Video stream
 
-        status = statusValue.value
-
-        while status:
+        while True:
 
             # t1 = time.time()
 
@@ -247,7 +240,7 @@ class compVision:
 
             # self.undistortImage() # Undistort image
 
-            # self.orgImg = self.img # Save original image
+            self.orgImg = self.img  # Save original image
 
             # Apply canny
             self.img = cv2.Canny(self.img, self.lowerThreshold,
@@ -263,7 +256,7 @@ class compVision:
             self.midpointHistogram = int((self.rightHistogram -
                                           self.leftHistogram)
                                          / 2 + self.leftHistogram)
-            """
+
             y1 = [(self.leftHistogram, 0), (self.leftHistogram, self.height)]
 
             y2 = [(self.rightHistogram, 0),
@@ -272,12 +265,12 @@ class compVision:
             y3 = [(self.midpointHistogram, 0),
                   (self.midpointHistogram, self.height)]
 
-            plt.plot(histogram)
-            plt.vlines(self.leftHistogram, ymin=0,
-                       ymax=self.height, colors='red')
-            plt.vlines(self.rightHistogram, ymin=0,
-                       ymax=self.height, colors='red')
-            plt.show()"""
+            # plt.plot(histogram)
+            # plt.vlines(self.leftHistogram, ymin=0,
+            # ymax=self.height, colors='red')
+            # plt.vlines(self.rightHistogram, ymin=0,
+            # ymax=self.height, colors='red')
+            # plt.show()
 
             # Apply Hough transfrom
             lineSegments = cv2.HoughLinesP(self.img, self.rho, self.angle,
@@ -293,7 +286,7 @@ class compVision:
             # print("Time elapsed: {} in ms".format((t2-t1)*1000))
 
             # Add lines to original image
-            # self.addLines()
+            self.addLines()
 
             """# CALC X VALUE FOR Y = 10
             if (self.xPointRight and self.xPointLeft):
@@ -304,11 +297,13 @@ class compVision:
                 # self.drawLine(y4, (0,242,255), 2)
                 # print("y1:{} y2:{} y3:{} y4:{}".format(y1,y2,y3,y4))"""
 
-            # self.drawLine(y1, (0,242,255), 2) # Left line
-            # self.drawLine(y2, (0,242,255), 2) # Right line
-            # self.drawLine(y3, (128,0,128), 2) # Midpoint line
+            self.drawLine(y1, (0, 242, 255), 2)  # Left line
+            self.drawLine(y2, (0, 242, 255), 2)  # Right line
+            # self.drawLine(y3, (128, 0, 128), 2)  # Midpoint line
 
             self.getDataFromLines()  # Get offset
+            y6 = [(self.newOffset, 0), (self.newOffset, self.height)]
+            self.drawLine(y6, (200, 144, 255), 2)  # Calculated offset
 
             # y5 = [(self.newOffset + self.center, 0),
             #      (self.newOffset + self.center, self.height)]
@@ -317,46 +312,19 @@ class compVision:
 
             # steering = int((self.newOffset + self.center)*3/8 - 60)
 
-            if not self.stopLine:
-                steering = self.PD.get_control(self.newOffset)
-                steering = int((self.newOffset)*0.2 + 60)
-
-                # print(self.newOffset)
-                # print(steering)
-
-                if steering < 0:
-                    steering = 0
-
-                elif steering > 120:
-                    steering = 120
-
-                # print("Steering: {}".format(steering))
-
-                qSteering.put(steering)
-
-            else:
-                qSpeed.put(0)
-                print(5)
-                self.stopLine = False
-                print("Stop line detected")
-
             # self.displayROI() # Display ROI
 
             # Display stop line
-            # if self.stopLine:
-            # self.drawLine(self.stopLine, (0,0,255), 5)
+            if self.stopLine:
+                self.drawLine(self.stopLineCoordinates, (0, 0, 255), 5)
 
             # self.saveImageData() # Save image
 
-            # self.displayImage() # Display image
-
-            status = statusValue.value
+            self.displayImage()  # Display image
 
             # t2 = time.time()
 
             # print("Time elapsed: {} in ms".format((t2-t1)*1000))
-
-        threadStream.stop()  # Stop stream
 
     def saveImageData(self):
         """Save self.img with data to file."""
@@ -441,7 +409,7 @@ class compVision:
         if self.leftHistogram > 0 and self.leftHistogram < 640:
             # Båda linjernas lutning har hittats
             if self.slopeLeft and self.slopeRight:
-                # print("Case 1")
+                print("Case 1")
 
                 # Här kan vi använda alla variabler
 
@@ -450,7 +418,7 @@ class compVision:
 
             # Endast vänstra linjens lutning har hittats
             elif self.slopeLeft:
-                # print("Case 2")
+                print("Case 2")
 
                 # Här kan vi använda
                 # self.leftHistogram
@@ -465,7 +433,7 @@ class compVision:
 
             # Endast högra linjens lutning har hittats
             elif self.slopeRight:
-                # print("Case 3")
+                print("Case 3")
 
                 # Här kan vi använda
                 # self.leftHistogram
@@ -482,7 +450,7 @@ class compVision:
 
             # Inga lutningar har hittats
             else:
-                # print("Case 4")
+                print("Case 4")
 
                 # Här kan vi använda:
                 # self.leftHistogram
@@ -495,7 +463,7 @@ class compVision:
         elif self.leftHistogram > 0:
             # Vänstra linjens lutning har hittats
             if self.slopeLeft:
-                # print("Case 5")
+                print("Case 5")
 
                 # Här kan vi använda:
                 # self.leftHistogram
@@ -511,7 +479,7 @@ class compVision:
                 pass
             # Ingen lutning har hittats
             else:
-                # print("Case 6")
+                print("Case 6")
 
                 # Här kan vi använda:
                 # self.leftHistogram
@@ -528,7 +496,7 @@ class compVision:
         elif self.rightHistogram < 640:
             # Vänstra linjens lutning har hittats
             if self.slopeRight:
-                # print("Case 7")
+                print("Case 7")
 
                 # Här kan vi anväda:
                 # self.rightHistogram
@@ -541,7 +509,7 @@ class compVision:
                 pass
             # Ingen lutning har hittats
             else:
-                # print("Case 8")
+                print("Case 8")
 
                 # Här kan vi använda:
                 # self.rightHistogram
