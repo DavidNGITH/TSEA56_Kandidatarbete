@@ -36,7 +36,7 @@ class Manual():
         self.mqttClient.subscribe(MQTT_TOPIC)
 
         # Init multiprocessing
-        self.initMultiproccessing()
+        self.initMultiprocessing()
 
     def onMessage(self, client, userdata, message):
         """MQTT callback function."""
