@@ -104,6 +104,7 @@ class Autonomous():
 
             if time.time() - pingTime > self.timeOut:
                 print("Timed out in autonomous")
+                I2C_proc.close()
                 self.stop()
                 return
 
