@@ -9,7 +9,10 @@
 
 import sys
 import paho.mqtt.client as mqtt
-from PyQt5 import QtCore, QtWidgets
+from PyQt5 import QtCore, QtWidgets, QtGui
+from PyQt5.QtGui import QIcon, QPixmap, QPainter, QPen
+from PyQt5.QtWidgets import QApplication, QGraphicsView, QGraphicsScene, QGraphicsEllipseItem, QGraphicsLineItem, QGraphicsTextItem
+from PyQt5.QtCore import QPointF, Qt
 import time
 import multiprocessing
 import keyboard
@@ -17,18 +20,26 @@ import matplotlib.pyplot as plt
 
 
 class Ui_Dialog(object):
+    #Class for the GUI
+
+
     def setupUi(self, Dialog):
         Dialog.setObjectName("Dialog")
         Dialog.resize(986, 672)
 
-        #starts time
+        self.graphicsView = QGraphicsView(Dialog)
+        self.graphicsView.setGeometry(QtCore.QRect(550, 390, 392, 280))
+        self.graphicsView.setObjectName("graphicsView")
+        self.graphicsView.setScene(QGraphicsScene())
+        self.graphicsView.setRenderHint(QPainter.Antialiasing)
+        # starts time
         self.update_time_bool = False
         self.current_time = "0"
         self.start = time.time()
         self.type_of_mode = ""
         self.qData = multiprocessing.Queue()
 
-        #bool for starting car
+        # bool for starting car
         self.is_driving = False
         self.distance_to_obj = "0"
         self.car_distance_driven = 0
@@ -43,9 +54,11 @@ class Ui_Dialog(object):
         self.crs_data = "A to B"
         self.lat_pos_data = 0
         self.route_plan_data = "A to B to D to F"
+        
         self.map_node_dict = {"A":[799, 440], "B":[570, 500], "C":[720, 517], "D":[570, 573], "E":[720, 555], "F":[638, 642], "G":[807, 642], "H":[862, 502]}
         self.previous_rs = "A"
-
+        self.nodes = list()
+        self.setup_nodes(self.map_node_dict)
         #Log data lists
         self.save_car_speed_data = []
         self.save_distance_to_obj = []
@@ -92,7 +105,7 @@ class Ui_Dialog(object):
         self.manual_mode.setGeometry(QtCore.QRect(20, 220, 161, 26))
         self.manual_mode.setObjectName("manual_mode")
 
-        #semi-automatic
+        # semi-automatic
         self.semi_auto_mode = QtWidgets.QPushButton(Dialog)
         self.semi_auto_mode.setGeometry(QtCore.QRect(20, 270, 161, 31))
         self.semi_auto_mode.setObjectName("semi_auto_mode")
@@ -264,70 +277,113 @@ class Ui_Dialog(object):
 
         self.drivingtimer = QtCore.QTimer()
         self.drivingtimer.timeout.connect(self.drive_function)
-        self.drivingtimer.start(25)
+        self.drivingtimer.start(50)
+
+        self.pingtimer = QtCore.QTimer()
+        self.pingtimer.timeout.connect(self.ping_raspberry)
+        self.pingtimer.start(2000)
 
         self.log_data_timer = QtCore.QTimer()
         self.log_data_timer.timeout.connect(self.log_data)
         self.log_data_timer.start(100) #1000 = every sec
 
-        
-        ################################## END MQTT AND TIMER INITS ################################
+    def ping_raspberry(self):
+        print("PING")
+        self.mqtt_client.publish("ping", "1")
+
+    def setup_nodes(self, node_dictionary):
+        for node,position in node_dictionary.items():
+            node_item = QGraphicsEllipseItem(-5, -5, 10, 10)
+            node_item.setBrush(Qt.red)
+            node_item.setPos(position[0]-550,position[1]-390)
+            #self.scene().addItem(node_item)
+            label_item = QGraphicsTextItem(str(node))
+            label_item.setPos(QPointF(position[0] + 10 - 550,position[1]-390-12))
+            self.nodes.append([node_item,label_item])
+
+        # Add the label to the QGraphicsScene
+        for i in self.nodes:
+            self.graphicsView.scene().addItem(i[0])
+            self.graphicsView.scene().addItem(i[1])
+        print (f"Node: {node}, Pos: {position}")
 
     def drive_function(self):
-        if ((self.type_of_mode == "Manual") & (self.is_driving)):
-            hotkey = keyboard.get_hotkey_name()
-            print(hotkey)
-            if (hotkey == "uppil") | (hotkey == "up"):
-                if self.speed <= 251:
-                    self.speed += 4
-                print(self.speed)
-                self.throttle_display.setText(str(self.speed))
-            if (hotkey == "nedpil") | (hotkey == "down"):
-                if self.speed > 4:
-                    self.speed -= 4
-                print(self.speed)
-                self.throttle_display.setText(str(self.speed))
-            if (hotkey == "högerpil") | (hotkey == "right"):
-                if self.steering <= 96:
-                    self.steering += 4
-                self.bearing_display.setText(str(self.steering))
-            if (hotkey == "vänsterpil") | (hotkey == "left"):
-                if self.steering >= 4:
-                    self.steering -= 4
-                self.bearing_display.setText(str(self.steering))
-            if (hotkey == "B") | (hotkey == "b"):
-                if self.breaking == 0:
-                    self.breaking = 1
-                    self.speed = 0
-                self.mqtt_client.publish("breaking", self.breaking)
-                self.mqtt_client.publish("speed", self.speed)
-                self.throttle_display.setText(str(self.speed))
-                self.bearing_display.setText(str(self.steering))
-            if (hotkey == "G") | (hotkey == "g"):
-                if self.breaking == 1:
-                    self.breaking = 0
-                    self.speed = 0
-                self.mqtt_client.publish("breaking", self.breaking)
-                self.mqtt_client.publish("speed", self.speed)
-                self.throttle_display.setText(str(self.speed))
-                self.bearing_display.setText(str(self.steering))
-            if hotkey == "space":
-                self.speed = 0
-                self.steering = 50
-                self.throttle_display.setText(str(self.speed))
-                self.bearing_display.setText(str(self.steering))
-            if hotkey != "":
-                self.mqtt_client.publish("speed", self.speed)
-                self.mqtt_client.publish("steering", self.steering)
+        hotkey = keyboard.get_hotkey_name()
+        hotkey_functions = {
+            "uppil": self.set_speed_up,
+            "up": self.set_speed_up,
+            "nedpil": self.set_speed_down,
+            "down": self.set_speed_down,
+            "högerpil": self.set_steering_right,
+            "right": self.set_steering_right,
+            "vänsterpil": self.set_steering_left,
+            "left": self.set_steering_left,
+            "B": self.set_breaking_on,
+            "b": self.set_breaking_on,
+            "G": self.set_breaking_off,
+            "g": self.set_breaking_off,
+            "space": self.set_speed_and_steering_zero
+        }
+        function = hotkey_functions.get(hotkey)
+        if function:
+            function()
+
+    def set_speed_up(self):
+        if self.type_of_mode == "Manual" and self.is_driving and self.speed <= 251:
+            self.speed += 4
+            self.throttle_display.setText(str(self.speed))
+            self.mqtt_client.publish("speed", self.speed)
+
+    def set_speed_down(self):
+        if self.type_of_mode == "Manual" and self.is_driving and self.speed > 4:
+            self.speed -= 4
+            self.throttle_display.setText(str(self.speed))
+            self.mqtt_client.publish("speed", self.speed)
+
+    def set_steering_right(self):
+        if self.type_of_mode == "Manual" and self.is_driving and self.steering <= 96:
+            self.steering += 4
+            self.bearing_display.setText(str(self.steering))
+            self.mqtt_client.publish("steering", self.steering)
+
+    def set_steering_left(self):
+        if self.type_of_mode == "Manual" and self.is_driving and self.steering >= 4:
+            self.steering -= 4
+            self.bearing_display.setText(str(self.steering))
+            self.mqtt_client.publish("steering", self.steering)
+
+    def set_breaking_on(self):
+        if self.type_of_mode == "Manual" and self.is_driving and self.breaking == 0:
+            self.breaking = 1
+            self.speed = 0
+            self.mqtt_client.publish("breaking", self.breaking)
+            self.mqtt_client.publish("speed", self.speed)
+            self.throttle_display.setText(str(self.speed))
+            self.bearing_display.setText(str(self.steering))
+
+    def set_breaking_off(self):
+        if self.type_of_mode == "Manual" and self.is_driving and self.breaking == 1:
+            self.breaking = 0
+            self.speed = 0
+            self.mqtt_client.publish("breaking", self.breaking)
+            self.mqtt_client.publish("speed", self.speed)
+            self.throttle_display.setText(str(self.speed))
+            self.bearing_display.setText(str(self.steering))
+
+    def set_speed_and_steering_zero(self):
+        if self.type_of_mode == "Manual" and self.is_driving:
+            self.speed = 0
+            self.steering = 50
+            self.throttle_display.setText(str(self.speed))
+            self.bearing_display.setText(str(self.steering))
+            self.mqtt_client.publish("speed", self.speed)
+            self.mqtt_client.publish("steering", self.steering)
 
     def update_time(self):
         # get the current time and format it as a string
         if self.update_time_bool:
             self.current_time = (str(round(time.time() - self.start,2)))
         # set the text of the time_label widget to the current time
-        else:
-            #start = time.time()
-            pass
         self.time_display.setText(self.current_time)
 
     def log_data(self):
@@ -388,6 +444,7 @@ class Ui_Dialog(object):
         self.map_label.setText(_translate("Dialog", "Map:"))
         
     def connect_buttons(self):
+        #hej
         self.manual_mode.clicked.connect(self.on_manual_mode_click)
         self.semi_auto_mode.clicked.connect(self.on_semi_auto_mode_click)
         self.auto_mode.clicked.connect(self.on_auto_mode_click)
@@ -410,19 +467,23 @@ class Ui_Dialog(object):
             self.mqtt_client.publish("mode", 2)
             self.type_of_mode = "Semi-automatic"
             print(self.type_of_mode)
-        
     def on_auto_mode_click(self):
         # This method is called when auto_mode is clicked
+
         if not self.is_driving:
             self.mqtt_client.publish("mode", 3)
             self.type_of_mode = "Automatic"
             print(self.type_of_mode)
-    
+                
     def on_send_command(self):
         # This method is called when send command is clicked
         self.mqtt_client.publish("data/command")
-
-        print(self.Command_input_box.toPlainText())
+        try:
+            stringlist = (self.Command_input_box.toPlainText()).rsplit(": ")
+            print("Topic: " + stringlist[0])
+            print("Command: " + stringlist[1])
+        except IndexError:
+            print("Error: Wrong input")
 
     def on_start_car_click(self):
         #starts car
@@ -472,24 +533,17 @@ class Ui_Dialog(object):
         m = str(message.payload.decode("utf-8"))
         t = message.topic
         self.qData.put((t,m))
-        print("Recieved message")
         
     def updatedata(self):
         if not self.qData.empty():
-            print("updating data")
             message = self.qData.get()
             if message[0] == "data/distance":
-                #print ("Distance recieved")
                 self.distance_to_obj = message[1]
-                #print(self.distance_to_obj)
                 self.obs_dist_display.setText(str(self.distance_to_obj))
             
             if message[0] == "data/speed":
-                #print ("Speed recieved")
                 #recieves speed and shows it on the gui
                 self.car_speed_data = float(message[1])
-                #print(type(self.car_speed_data))
-                #print(self.car_speed_data)
                 self.speed_display.setText(str(self.car_speed_data))
                 #checks if car is driving and then prints distance based on a difference in time
                 if self.is_driving:
