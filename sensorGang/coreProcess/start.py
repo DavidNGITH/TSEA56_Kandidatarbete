@@ -71,14 +71,13 @@ while True:
 
         try:
             mode.mainLoop()
+            mode.stop()
+            mqttClient.on_message = on_message
+            mqttClient.subscribe(MQTT_TOPIC)
 
         except Exception as e:
             print("Exception in start, stopping")
             print(e)
-
-            mode.stop()
-            mqttClient.on_message = on_message
-            mqttClient.subscribe(MQTT_TOPIC)
 
     else:
         break
