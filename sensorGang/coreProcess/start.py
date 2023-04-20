@@ -1,7 +1,7 @@
 """Start script."""
 from autonomous import Autonomous
 from semiAutonomous import SemiAutonomous
-from manuellRi import Manual
+from manual import Manual
 import mqttSetup as mq
 from queue import Queue
 
