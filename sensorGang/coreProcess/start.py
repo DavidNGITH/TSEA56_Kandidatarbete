@@ -14,7 +14,7 @@ RESOLUTION = (640, 480)
 
 
 # Settings
-TIME_OUT_TIME = 40000
+TIME_OUT_TIME = 3
 ROI_PERC = [0, 0.45, 1, 0.45, 1, 1, 0, 1]
 
 
