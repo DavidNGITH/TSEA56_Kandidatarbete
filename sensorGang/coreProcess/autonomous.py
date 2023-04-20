@@ -138,7 +138,7 @@ class Autonomous():
 
         self.statusHandleMessage.value = 0  # Stop handle message
 
-        self.mqttClient.subscribe(MQTT_TOPIC_UNSUB)  # MQTT unsibscribe
+        self.mqttClient.unsubscribe(MQTT_TOPIC_UNSUB)  # MQTT unsibscribe
 
     def mainLoop(self):
         """Publish data to MQTT broker."""
