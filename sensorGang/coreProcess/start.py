@@ -77,6 +77,9 @@ while True:
             print(e)
 
             mode.stop()
+            mqttClient.on_message = on_message
+            mqttClient.subscribe(MQTT_TOPIC)
+
     else:
         break
 

@@ -64,7 +64,8 @@ class Manual():
                     print("Recived stop in manual")
                     try:
                         I2C_proc.close()
-                    except Exception:
+                    except Exception as e:
+                        print(e)
                         print("Couldn't read i2c")
                     self.stop()
                     return
