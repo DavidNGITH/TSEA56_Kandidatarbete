@@ -48,7 +48,7 @@ class Autonomous():
             print("Couldn't read mqtt message")
 
     def handleMessage(self, qMessageMQTT, qI2CDataRecived,
-                      qSteering, qSpeed, status):
+                      qSteering, qSpeed, qBreak, status):
         """Handle messages from other processes."""
         print("In handleMessage autonomous!")
         I2C_proc = i2cHandle.I2C()
@@ -102,6 +102,11 @@ class Autonomous():
 
                 I2C_proc.send((0, speed))
 
+            if not qBreak.empty():
+                print("Recived breaking")
+                breaking = qBreak.get()
+                I2C_proc.send((2, breaking))
+
             if time.time() - pingTime > self.timeOut:
                 print("Timed out in autonomous")
                 I2C_proc.close()
@@ -113,11 +118,11 @@ class Autonomous():
                     data = I2C_proc.get()
                     if (int(data[0][1]) < 40) & (self.object is False):
                         print("Obstacle")
-                        #I2C_proc.send((2, 1))
+                        # I2C_proc.send((2, 1))
                         self.object = True
                     elif (int(data[0][1]) >= 40) & (self.object):
                         print("Release")
-                        #I2C_proc.send((2, 0))
+                        # I2C_proc.send((2, 0))
                         self.object = False
                     if time.time() - sendI2C > 1:
                         qI2CDataRecived.put(data[0])
@@ -165,6 +170,7 @@ class Autonomous():
         # self.qMotors = multiprocessing.Queue()         # Speed data to motors
         self.qI2CDataRecived = multiprocessing.Queue()  # Recived I2C data
         self.qSpeed = multiprocessing.Queue()           # Speed data to motors
+        self.qBreak = multiprocessing.Queue()
 
         self.statusCenterOffset = multiprocessing.Value('i', 1)
         self.statusHandleMessage = multiprocessing.Value('i', 1)
@@ -174,12 +180,14 @@ class Autonomous():
                                                 self.qI2CDataRecived,
                                                 self.qSteering,
                                                 self.qSpeed,
+                                                self.qBreak,
                                                 self.statusHandleMessage))
 
         self.p2 = multiprocessing.Process(target=self.laneData.getCenterOffset,
                                           args=(self.qSteering,
                                                 self.statusCenterOffset,
-                                                self.qSpeed))
+                                                self.qSpeed,
+                                                self.qBreak))
 
         self.p1.start()  # Starts handleMessage process
         self.p2.start()  # Starts getCenterOffset process

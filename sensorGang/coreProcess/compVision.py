@@ -70,6 +70,8 @@ class compVision:
         self.slopeRight = None
         self.stopAtLine = True
         self.stopLineTimer = 0
+        self.stopTimer = 0
+        self.stopStatus = False
 
         # Stop lines coordinates
         self.widthStopLine = 250
@@ -238,7 +240,7 @@ class compVision:
             # print("Not enough lines captured")
             return
 
-    def getCenterOffset(self, qSteering, statusValue, qSpeed):
+    def getCenterOffset(self, qSteering, statusValue, qSpeed, qBreak):
         """Calculate the center offset in frame."""
         threadStream = VideoStream(self.resolution)  # Creates Video stream
         # threadStream = VideoStreamFile()
@@ -325,10 +327,13 @@ class compVision:
             # steering = int((self.newOffset + self.center)*3/8 - 60)
 
             if self.stopLine or self.nodeLine:
-                qSpeed.put(0)
-                self.stopLine = False
-                self.nodeLine = False
-                print("Stop line or node line detected")
+                if not self.stopStatus:
+                    self.stopTimer = time.time()
+                    qBreak.put(1)
+                    self.stopLine = False
+                    self.nodeLine = False
+                    self.stopStatus = True
+                    print("Stop line or node line detected")
 
             else:
                 steering_raw = self.PD.get_control(self.newOffset)
@@ -345,7 +350,11 @@ class compVision:
 
                 qSteering.put(steering)
 
-                # print("Steering: {}".format(steering))
+            if self.stopStatus and (time.time() - self.stopTimer > 3):
+                self.stopStatus = False
+                qBreak.put(0)
+
+            # print("Steering: {}".format(steering))
 
             # self.displayROI() # Display ROI
 
