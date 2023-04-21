@@ -341,7 +341,7 @@ class compVision:
 
             if not self.stopLine or not self.nodeLine:
                 steering_raw = self.PD.get_control(self.newOffset)
-                steering = int((steering_raw)*0.2 + 60)
+                steering = int((steering_raw)*0.2 + 52)
 
                 # print(self.newOffset)
                 # print(steering)
