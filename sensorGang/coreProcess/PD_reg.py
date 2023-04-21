@@ -1,9 +1,9 @@
 import time
 
+
 class PDcontroller:
 
-
-    def __init__(self,Kp,Kd):
+    def __init__(self, Kp, Kd):
         self.Kp = Kp
         self.Kd = Kd
         self.derivative_term = 0
@@ -23,23 +23,22 @@ class PDcontroller:
 
 
     def update_steering(self):
-        if abs(self.PD_value) > 1:
+        if abs(self.PD_value) > 10:
+            print(self.PD_value)
             if self.PD_value < 0:
-                self.steering = self.PD_value
+                self.steering = (self.PD_value *0.8)
             elif self.PD_value > 0:
+
                 self.steering = self.PD_value
-        return self.steering
-
-    
-    def obstacle_control(self, obs_distance):
-        
-
-        if obs_distance < 10:
-            self.breaking = 1
         else:
-            self.breaking = 0
-        
-        
+            self.steering = 0
+
+
+    def updateKp(self, Kp):
+        self.Kp = Kp
+
+    def updateKd(self, Kd):
+        self.Kp = Kd
 
 
 
