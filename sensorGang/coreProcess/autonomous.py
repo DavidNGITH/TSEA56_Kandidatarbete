@@ -23,7 +23,7 @@ class Autonomous():
         self.timeOut = timeOut
 
         # PD-Controller        Kp  Kd
-        self.PD = PDcontroller(1, 0.1)
+        self.PD = PDcontroller(1, 0.12)
 
         # Init compVision
         self.resolution = resolution

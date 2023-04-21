@@ -494,7 +494,7 @@ class compVision:
                 # print(self.slopeRight)
 
                 self.newOffset = (self.midpointHistogram -
-                                  1/self.slopeRight * 350)
+                                  1/self.slopeRight * 300)
 
             # Inga lutningar har hittats
             else:
