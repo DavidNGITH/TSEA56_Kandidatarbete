@@ -143,21 +143,6 @@ class compVision:
         width = maxX-minX
         height = (y1+y2)/2
 
-        print("{}, {}, {}, {}".format(minX, maxX, y1, y2))
-        print("Width: {}".format(maxX-minX))
-        print("Height: {}".format(height))
-
-        if width > self.widthStopLine:
-            print("Width for stopline OK")
-
-        elif width < self.widthNodeLine:
-            print("Width for node OK")
-
-        if height < self.heightMax:
-            print("Height OK")
-        else:
-            print("Height not OK")
-
         if height < self.heightMax:
             if width > self.widthStopLine:
                 print("Yes, stopline")
@@ -357,7 +342,7 @@ class compVision:
                 qSteering.put(steering)
 
             else:
-                # qSpeed.put(0)
+                qSpeed.put(0)
                 self.stopLine = False
                 self.nodeLine = False
                 print("Stop line or node line detected")

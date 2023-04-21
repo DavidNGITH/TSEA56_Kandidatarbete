@@ -28,6 +28,7 @@ class PDcontroller:
 
     def update_steering(self):
         """Check threshold."""
+        print(self.PD_value)
         if abs(self.PD_value) > 1:
             self.steering = self.PD_value
         else:
@@ -39,4 +40,4 @@ class PDcontroller:
 
     def updateKd(self, Kd):
         """Update Kd value."""
-        self.Kp = Kd
+        self.Kp = Kd/100
