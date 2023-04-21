@@ -9,7 +9,7 @@ import time
 class VideoStream:
     """Class for video stream."""
 
-    def __init__(self, resolution, framerate=60):
+    def __init__(self, resolution, framerate=20):
         """Init camera."""
         self.camera = PiCamera()
         self.camera.resolution = resolution
