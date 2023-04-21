@@ -23,7 +23,7 @@ class Autonomous():
         self.timeOut = timeOut
 
         # PD-Controller        Kp  Kd
-        self.PD = PDcontroller(15, 10)
+        self.PD = PDcontroller(1, 0.1)
 
         # Init compVision
         self.resolution = resolution
@@ -113,11 +113,11 @@ class Autonomous():
                     data = I2C_proc.get()
                     if (int(data[0][1]) < 40) & (self.object is False):
                         print("Obstacle")
-                        I2C_proc.send((2, 1))
+                        #I2C_proc.send((2, 1))
                         self.object = True
                     elif (int(data[0][1]) >= 40) & (self.object):
                         print("Release")
-                        I2C_proc.send((2, 0))
+                        #I2C_proc.send((2, 0))
                         self.object = False
                     if time.time() - sendI2C > 1:
                         qI2CDataRecived.put(data[0])

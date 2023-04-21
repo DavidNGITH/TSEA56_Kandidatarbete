@@ -325,8 +325,7 @@ class compVision:
             # steering = int((self.newOffset + self.center)*3/8 - 60)
 
             if self.stopLine or self.nodeLine:
-                qSteering.put(steering)
-                # qSpeed.put(0)
+                qSpeed.put(0)
                 self.stopLine = False
                 self.nodeLine = False
                 print("Stop line or node line detected")
@@ -343,6 +342,8 @@ class compVision:
 
                 elif steering > 120:
                     steering = 120
+
+                qSteering.put(steering)
 
                 # print("Steering: {}".format(steering))
 
