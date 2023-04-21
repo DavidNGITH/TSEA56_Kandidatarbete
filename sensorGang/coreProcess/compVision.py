@@ -342,7 +342,7 @@ class compVision:
                 qSteering.put(steering)
 
             else:
-                # qSpeed.put(0)
+                qSpeed.put(0)
                 self.stopLine = False
                 self.nodeLine = False
                 print("Stop line or node line detected")
