@@ -40,15 +40,15 @@ class compVision:
 
         # Canny settings
         self.lowerThreshold = 100
-        self.upperThreshold = 200
+        self.upperThreshold = 180
         self.appetureSize = 3
 
-        # Rho settings
+        # Hough settings
         self.rho = 1
-        self.angle = np.pi / 180
+        self.angle = np.pi / (180*2)
         self.minThreshold = 0
-        self.minLineLength = 8
-        self.maxLineGap = 4
+        self.minLineLength = 6
+        self.maxLineGap = 3
 
         # Undistort
         self.my = np.load('distortionfiles/mapy.npy')
@@ -63,12 +63,19 @@ class compVision:
         # Find lines
         self.laneLines = []
         self.stopLine = False
+        self.nodeLine = False
         self.xPointRight = None
         self.xPointLeft = None
         self.slopeLeft = None
         self.slopeRight = None
         self.stopAtLine = True
         self.stopLineTimer = 0
+
+        # Stop lines coordinates
+        self.widthStopLine = 250
+        self.widthNodeLine = 220
+        # self.heightMin = 200
+        self.heightMax = 390
 
         # PD-Controller
         self.PD = PD
@@ -127,35 +134,49 @@ class compVision:
         """Create endpoints for stop line."""
         slope, intercept = line
 
-        y1 = int(slope * minX + intercept)
-        y2 = int(slope * maxX + intercept)
-
-        # Stopplinje detekterad
-        if (maxX-minX > 300) and ((y1+y2)/2 > 430):
-            print("yes, stopline")
-            print("Width: {} ypos: {}".format(maxX-minX, (y1+y2)/2))
-
-            if self.stopAtLine:
-                self.stopLine = True
-                self.stopAtLine = False
-                self.stopLineTimer = time.time()
-
-            elif time.time() - self.stopLineTimer > 5:
-                self.stopAtLine = True
-
-        else:
-            print("No stopline")
-            self.stopLine = False
-
-        return
-
         x1 = int(minX)
         x2 = int(maxX)
 
         y1 = int(slope * minX + intercept)
         y2 = int(slope * maxX + intercept)
 
-        self.stopLine = [(x1, y1), (x2, y2)]
+        width = maxX-minX
+        height = (y1+y2)/2
+
+        print("{}, {}, {}, {}".format(minX, maxX, y1, y2))
+        print("Width: {}".format(maxX-minX))
+        print("Height: {}".format(height))
+
+        if width > self.widthStopLine:
+            print("Width for stopline OK")
+
+        elif width < self.widthNodeLine:
+            print("Width for node OK")
+
+        if height < self.heightMax:
+            print("Height OK")
+        else:
+            print("Height not OK")
+
+        if height < self.heightMax:
+            if width > self.widthStopLine:
+                print("Yes, stopline")
+                self.stopLine = True
+
+            elif width < self.widthNodeLine:
+                if minX < 200:
+                    print("Node to the left")
+                    self.stopLine = False
+
+                elif maxX > 400:
+                    print("Node to the right")
+                    self.nodeLine = True
+
+        else:
+            print("No stopline")
+            self.stopLine = False
+
+        # self.stopLineCoordinates = [(x1, y1), (x2, y2)]
 
     def lineIntercept(self, lineSegments):
         """Handle detected lines from Hough transform."""
@@ -184,7 +205,7 @@ class compVision:
 
         for lineSegment in lineSegments:
             for x1, y1, x2, y2 in lineSegment:
-                if x1 != x2:
+                if x1 != x2 and y2 < 477 and y1 < 477:
                     fit = np.polyfit((x1, x2), (y1, y2), 1)
                     slope = fit[0]
                     intercept = fit[1]
@@ -215,12 +236,13 @@ class compVision:
             self.slopeRight = rightFitAverage[0]
             self.laneLines.append(self.makePoints(rightFitAverage, 1))
 
-        if len(stopFit) > 6:
+        if len(stopFit) > 5:
             stopFitAverage = np.average(stopFit, axis=0)
             self.makeStopLine(stopFitAverage, minX, maxX)
 
         else:
             self.stopLine = False
+            self.nodeLine = False
 
         try:
             self.lineCenter = ((rightFitAverage[1]-leftFitAverage[1]) /
@@ -317,7 +339,7 @@ class compVision:
 
             # steering = int((self.newOffset + self.center)*3/8 - 60)
 
-            if not self.stopLine:
+            if not self.stopLine or not self.nodeLine:
                 steering = self.PD.get_control(self.newOffset)
                 steering = int((self.newOffset)*0.2 + 60)
 
@@ -336,9 +358,9 @@ class compVision:
 
             else:
                 qSpeed.put(0)
-                print(5)
                 self.stopLine = False
-                print("Stop line detected")
+                self.nodeLine = False
+                print("Stop line or node line detected")
 
             # self.displayROI() # Display ROI
 
@@ -445,8 +467,8 @@ class compVision:
 
                 # Här kan vi använda alla variabler
 
-                self.newOffset = (0.7 * self.midpointHistogram +
-                                  0.3 * self.lineCenter)
+                self.newOffset = (0.6 * self.midpointHistogram +
+                                  0.5 * self.lineCenter)
 
             # Endast vänstra linjens lutning har hittats
             elif self.slopeLeft:
