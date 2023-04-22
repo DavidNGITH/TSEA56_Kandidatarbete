@@ -583,7 +583,7 @@ class compVision:
                 # midpointHistogram = (self.rightHistogram)/2 + self.center
                 # self.newOffset = midpointHistogram
 
-                self.newOffset = self.rightHistogram - 190
+                self.newOffset = self.rightHistogram - 100
 
                 pass
 
