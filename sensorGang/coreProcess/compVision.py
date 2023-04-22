@@ -184,11 +184,11 @@ class compVision:
         minX = 1000
         maxX = 0
 
-        boundary = 2/3
+        boundary = 1/3
         # left lane line segment should be on left 1/3 of the screen
-        leftRegionBoundary = self.width * (1 - boundary)
+        leftRegionBoundary = self.width * boundary
         # right lane line segment should be on left 1/3 of the screen
-        rightRegionBoundary = self.width * boundary
+        rightRegionBoundary = self.width * (1 - boundary)
 
         for lineSegment in lineSegments:
             for x1, y1, x2, y2 in lineSegment:
@@ -454,7 +454,7 @@ class compVision:
         # self.slopeLeft
 
         # Histogrammet har hittat båda linjerna
-        if self.leftHistogram > 0 and self.leftHistogram < 640:
+        if self.leftHistogram > 10 and self.leftHistogram < 630:
             # Båda linjernas lutning har hittats
             if self.slopeLeft and self.slopeRight:
                 print("Case 1")
