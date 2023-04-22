@@ -457,7 +457,8 @@ class compVision:
         print("right histogram: {}".format(self.rightHistogram))
 
         # Histogrammet har hittat båda linjerna
-        if self.leftHistogram > 10 and self.leftHistogram < 600:
+        if (self.leftHistogram > 10 and self.leftHistogram < 600 and
+                self.leftHistogram > 330):
             # Båda linjernas lutning har hittats
             if self.slopeLeft and self.slopeRight:
                 print("Case 1")
@@ -536,7 +537,7 @@ class compVision:
                 # self.width - self.leftHistogram)/2 + self.center
                 # self.newOffset = midpointHistogram
 
-                self.newOffset = self.leftHistogram + 220
+                self.newOffset = self.leftHistogram + 190
 
                 pass
             # Ingen lutning har hittats
@@ -550,14 +551,14 @@ class compVision:
                 #    self.width - self.leftHistogram)/2 + self.center
                 # self.newOffset = midpointHistogram
 
-                self.newOffset = self.leftHistogram + 220
+                self.newOffset = self.leftHistogram + 190
 
                 pass
 
             pass
 
         # Histogrammet har endast hittat högra linjen
-        elif self.rightHistogram < 600:
+        elif self.rightHistogram < 600 and self.leftHistogram > 330:
             # Vänstra linjens lutning har hittats
             if self.slopeRight:
                 print("Case 7")
@@ -570,7 +571,7 @@ class compVision:
                 # midpointHistogram = (self.rightHistogram)/2 + self.center
                 # self.newOffset = midpointHistogram
 
-                self.newOffset = self.rightHistogram - 220
+                self.newOffset = self.rightHistogram - 190
 
                 pass
             # Ingen lutning har hittats
@@ -582,7 +583,7 @@ class compVision:
                 # midpointHistogram = (self.rightHistogram)/2 + self.center
                 # self.newOffset = midpointHistogram
 
-                self.newOffset = self.rightHistogram - 220
+                self.newOffset = self.rightHistogram - 190
 
                 pass
 
