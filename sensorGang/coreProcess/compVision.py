@@ -537,7 +537,7 @@ class compVision:
                 # self.width - self.leftHistogram)/2 + self.center
                 # self.newOffset = midpointHistogram
 
-                self.newOffset = self.leftHistogram + 230
+                self.newOffset = self.leftHistogram + 300
 
                 pass
             # Ingen lutning har hittats
@@ -551,7 +551,7 @@ class compVision:
                 #    self.width - self.leftHistogram)/2 + self.center
                 # self.newOffset = midpointHistogram
 
-                self.newOffset = self.leftHistogram + 230
+                self.newOffset = self.leftHistogram + 300
 
                 pass
 
@@ -571,7 +571,7 @@ class compVision:
                 # midpointHistogram = (self.rightHistogram)/2 + self.center
                 # self.newOffset = midpointHistogram
 
-                self.newOffset = self.rightHistogram - 190
+                self.newOffset = self.rightHistogram - 300
 
                 pass
             # Ingen lutning har hittats
