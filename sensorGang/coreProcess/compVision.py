@@ -457,7 +457,7 @@ class compVision:
         print("right histogram: {}".format(self.rightHistogram))
 
         # Histogrammet har hittat båda linjerna
-        if self.leftHistogram > 10 and self.leftHistogram < 630:
+        if self.leftHistogram > 10 and self.leftHistogram < 600:
             # Båda linjernas lutning har hittats
             if self.slopeLeft and self.slopeRight:
                 print("Case 1")
@@ -526,9 +526,11 @@ class compVision:
 
                 # Tar reda på hur många pixlar mellan linjer
 
-                midpointHistogram = (
-                    self.width - self.leftHistogram)/2 + self.center
-                self.newOffset = midpointHistogram
+                # midpointHistogram = (
+                # self.width - self.leftHistogram)/2 + self.center
+                # self.newOffset = midpointHistogram
+
+                self.newOffset = self.leftHistogram + 220
 
                 pass
             # Ingen lutning har hittats
@@ -538,16 +540,18 @@ class compVision:
                 # Här kan vi använda:
                 # self.leftHistogram
 
-                midpointHistogram = (
-                    self.width - self.leftHistogram)/2 + self.center
-                self.newOffset = midpointHistogram
+                # midpointHistogram = (
+                #    self.width - self.leftHistogram)/2 + self.center
+                # self.newOffset = midpointHistogram
+
+                self.newOffset = self.leftHistogram + 220
 
                 pass
 
             pass
 
         # Histogrammet har endast hittat högra linjen
-        elif self.rightHistogram < 630:
+        elif self.rightHistogram < 600:
             # Vänstra linjens lutning har hittats
             if self.slopeRight:
                 print("Case 7")
@@ -557,8 +561,10 @@ class compVision:
                 # self.xPointRight
                 # self.slopeRight
 
-                midpointHistogram = (self.rightHistogram)/2 + self.center
-                self.newOffset = midpointHistogram
+                # midpointHistogram = (self.rightHistogram)/2 + self.center
+                # self.newOffset = midpointHistogram
+
+                self.newOffset = self.rightHistogram - 220
 
                 pass
             # Ingen lutning har hittats
@@ -567,8 +573,10 @@ class compVision:
 
                 # Här kan vi använda:
                 # self.rightHistogram
-                midpointHistogram = (self.rightHistogram)/2 + self.center
-                self.newOffset = midpointHistogram
+                # midpointHistogram = (self.rightHistogram)/2 + self.center
+                # self.newOffset = midpointHistogram
+
+                self.newOffset = self.rightHistogram - 220
 
                 pass
 
