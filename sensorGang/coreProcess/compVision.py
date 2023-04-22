@@ -476,10 +476,10 @@ class compVision:
                 # self.slopeLeft
                 # self.xPointLeft
 
-                print(self.leftHistogram)
-
                 self.newOffset = (self.midpointHistogram -
                                   1/self.slopeLeft * 350)
+
+                print(self.newOffset)
 
             # Endast högra linjens lutning har hittats
             elif self.slopeRight:
