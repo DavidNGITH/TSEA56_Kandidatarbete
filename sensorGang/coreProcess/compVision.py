@@ -511,7 +511,7 @@ class compVision:
                 self.newOffset = self.midpointHistogram
 
         # Histogrammet har endast hittat vänstra linjen
-        elif self.leftHistogram > 0:
+        elif self.leftHistogram > 10:
             # Vänstra linjens lutning har hittats
             if self.slopeLeft:
                 print("Case 5")
@@ -544,7 +544,7 @@ class compVision:
             pass
 
         # Histogrammet har endast hittat högra linjen
-        elif self.rightHistogram < 640:
+        elif self.rightHistogram < 630:
             # Vänstra linjens lutning har hittats
             if self.slopeRight:
                 print("Case 7")
