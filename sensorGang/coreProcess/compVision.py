@@ -499,8 +499,14 @@ class compVision:
 
                 # print(self.slopeRight)
 
-                self.newOffset = (self.midpointHistogram -
-                                  1/self.slopeRight * 350)
+                if self.leftHistogram > 90:
+                    self.newOffset = (self.midpointHistogram -
+                                      1/self.slopeRight * 350 +
+                                      self.leftHistogram-90)
+
+                else:
+                    self.newOffset = (self.midpointHistogram -
+                                      1/self.slopeRight * 350)
 
             # Inga lutningar har hittats
             else:
