@@ -69,6 +69,10 @@ class compVision:
         self.stopLineTimer = 0
         self.stopLineCoordinates = 0
 
+        # Stop
+        self.stop = False
+        self.stopLineDistance = 0  # Distance to stop line
+
         # Stop lines coordinates
         self.widthStopLine = 250
         self.widthNodeLine = 220
@@ -138,38 +142,52 @@ class compVision:
         width = maxX-minX
         height = (y1+y2)/2
 
-        print("{}, {}, {}, {}".format(minX, maxX, y1, y2))
-        print("Width: {}".format(maxX-minX))
-        print("Height: {}".format(height))
+        # print("{}, {}, {}, {}".format(minX, maxX, y1, y2))
+        # print("Width: {}".format(maxX-minX))
+        # print("Height: {}".format(height))
 
         if width > self.widthStopLine:
-            print("Width for stopline OK")
+            # print("Width for stopline OK")
+            pass
 
         elif width < self.widthNodeLine:
-            print("Width for node OK")
+            # print("Width for node OK")
+            pass
 
         if height < self.heightMax:
-            print("Height OK")
+            # print("Height OK")
+            pass
         else:
-            print("Height not OK")
+            # print("Height not OK")
+            pass
 
         if height < self.heightMax:
             if width > self.widthStopLine:
                 print("Yes, stopline")
+                self.stopLineDistance = abs(self.height-y1)
+                print("Stopline distance: {}".format(self.stopLineDistance))
+                if self.stopLine:
+                    if self.stopLineDistance < 150:
+                        if self.stopRequired:
+                            print("Stopping")
+                            self.stop = True
+                            self.stopRequired = False
+
                 self.stopLine = True
 
             elif width < self.widthNodeLine:
                 if minX < 200:
-                    print("Node to the left")
+                    # print("Node to the left")
                     self.stopLine = True
 
                 elif maxX > 400:
-                    print("Node to the right")
+                    # print("Node to the right")
                     self.stopLine = True
 
         else:
             print("No stopline")
             self.stopLine = False
+            self.stopRequired = True
 
         self.stopLineCoordinates = [(x1, y1), (x2, y2)]
 
@@ -431,7 +449,7 @@ class compVision:
         if self.leftHistogram > 0 and self.leftHistogram < 640:
             # Båda linjernas lutning har hittats
             if self.slopeLeft and self.slopeRight:
-                print("Case 1")
+                # print("Case 1")
 
                 # Här kan vi använda alla variabler
 
@@ -440,7 +458,7 @@ class compVision:
 
             # Endast vänstra linjens lutning har hittats
             elif self.slopeLeft:
-                print("Case 2")
+                # print("Case 2")
 
                 # Här kan vi använda
                 # self.leftHistogram
@@ -455,7 +473,7 @@ class compVision:
 
             # Endast högra linjens lutning har hittats
             elif self.slopeRight:
-                print("Case 3")
+                # print("Case 3")
 
                 # Här kan vi använda
                 # self.leftHistogram
@@ -472,7 +490,7 @@ class compVision:
 
             # Inga lutningar har hittats
             else:
-                print("Case 4")
+                # print("Case 4")
 
                 # Här kan vi använda:
                 # self.leftHistogram
@@ -485,7 +503,7 @@ class compVision:
         elif self.leftHistogram > 0:
             # Vänstra linjens lutning har hittats
             if self.slopeLeft:
-                print("Case 5")
+                # print("Case 5")
 
                 # Här kan vi använda:
                 # self.leftHistogram
@@ -501,7 +519,7 @@ class compVision:
                 pass
             # Ingen lutning har hittats
             else:
-                print("Case 6")
+                # print("Case 6")
 
                 # Här kan vi använda:
                 # self.leftHistogram
@@ -518,7 +536,7 @@ class compVision:
         elif self.rightHistogram < 640:
             # Vänstra linjens lutning har hittats
             if self.slopeRight:
-                print("Case 7")
+                # print("Case 7")
 
                 # Här kan vi anväda:
                 # self.rightHistogram
@@ -531,7 +549,7 @@ class compVision:
                 pass
             # Ingen lutning har hittats
             else:
-                print("Case 8")
+                # print("Case 8")
 
                 # Här kan vi använda:
                 # self.rightHistogram
@@ -541,7 +559,7 @@ class compVision:
                 pass
 
         else:
-            print("Nothing detected")
+            # print("Nothing detected")
             self.newOffset = self.lastOffset
 
             return
