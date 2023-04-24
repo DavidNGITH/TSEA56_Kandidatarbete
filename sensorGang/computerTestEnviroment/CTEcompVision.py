@@ -72,6 +72,7 @@ class compVision:
         # Stop
         self.stop = False
         self.stopLineDistance = 0  # Distance to stop line
+        self.lastStopLineDistance = 0
         self.stopRequired = True
 
         # Stop lines coordinates
@@ -167,14 +168,18 @@ class compVision:
                 print("Yes, stopline")
                 self.stopLineDistance = abs(self.height-y1)
                 print("Stopline distance: {}".format(self.stopLineDistance))
-                if self.stopLine:
-                    if self.stopLineDistance < 200:
-                        if self.stopRequired:
-                            print("Stopping")
-                            self.stop = True
-                            self.stopRequired = False
-                        else:
-                            print("Already stopped")
+
+                if self.stopLineDistance >= self.lastStopLineDistance:
+                    if self.stopRequired:
+                        print("Stopping")
+                        self.stop = True
+                        self.stopRequired = False
+                    else:
+                        print("Making stop required")
+                        self.stopRequired = True
+                else:
+                    print("Already stopped")
+                self.lastStopLineDistance = self.stopLineDistance
 
                 self.stopLine = True
 
@@ -257,7 +262,6 @@ class compVision:
 
         else:
             self.stopLine = False
-            self.stopRequired = True
 
         try:
             self.lineCenter = ((rightFitAverage[1]-leftFitAverage[1]) /
@@ -581,3 +585,18 @@ class compVision:
         self.newOffset = int(self.newOffset)
 
         self.lastOffset = self.newOffset
+
+    def turnRightJunction(self):
+       # turn right at junction
+
+        return
+
+    def turnLeftJunction(self):
+        # turn left at junction
+
+        return
+
+    def straightJunction(self):
+        # go straight at junction
+
+        return
