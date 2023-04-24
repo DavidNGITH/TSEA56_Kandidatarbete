@@ -461,20 +461,20 @@ class compVision:
         print("Midpoint histogram: {}".format(self.midpointHistogram))
         print("Crossing: {}".format(self.lineCenter))
 
-        if self.leftHistogram < 40 or self.steerLeft:
-            if self.leftHistogram > 60:
+        if self.leftHistogram < 20 or self.steerLeft:
+            if self.leftHistogram > 50:
                 print("Case 1.1")
                 self.steerLeft = False
                 self.newOffset = int(self.newOffset)
 
             elif self.steerLeft:
                 print("Case 1.2")
-                self.newOffset -= 10
+                self.newOffset -= 3
                 return
 
             else:
                 print("Case 1.3")
-                self.newOffset = self.center - 40
+                self.newOffset = self.center - 5
                 self.steerLeft = True
                 self.newOffset -= self.center
                 return
