@@ -321,6 +321,7 @@ class compVision:
             # self.drawLine(y3, (128,0,128), 2) # Midpoint line
 
             self.getDataFromLines()  # Get offset
+            self.lastOffset = self.newOffset
 
             # y5 = [(self.newOffset + self.center, 0),
             #      (self.newOffset + self.center, self.height)]
@@ -329,7 +330,8 @@ class compVision:
 
             # steering = int((self.newOffset + self.center)*3/8 - 60)
 
-            if self.stopLine or self.nodeLine:
+            # if self.stopLine or self.nodeLine:
+            if False:
                 if not self.stopStatus:
                     self.stopTimer = time.time()
                     qBreak.put(1)
@@ -462,22 +464,33 @@ class compVision:
         print("Crossing: {}".format(self.lineCenter))
 
         if self.leftHistogram < 20 or self.steerLeft:
-            if self.leftHistogram > 50:
+            if self.leftHistogram > 40:
                 print("Case 1.1")
                 self.steerLeft = False
                 self.newOffset = int(self.newOffset)
 
             elif self.steerLeft:
-                print("Case 1.2")
-                self.newOffset -= 3
-                return
+
+                if self.lastOffset < 0:
+                    print("Case 1.2")
+                    self.newOffset -= 3
+                    return
+                else:
+                    print("Case 1.3")
+                    self.newOffset += 3
+                    return
 
             else:
-                print("Case 1.3")
-                self.newOffset = self.center - 5
-                self.steerLeft = True
-                self.newOffset -= self.center
-                return
+                if self.lastOffset < 0:
+                    print("Case 1.4")
+                    self.newOffset -= 5
+                    self.steerLeft = True
+                    return
+                else:
+                    print("Case 1.5")
+                    self.newOffset += 5
+                    self.steerLeft = True
+                    return
 
         # Histogrammet har hittat båda linjerna
         if self.leftHistogram > 10 and self.rightHistogram < 630:
@@ -616,5 +629,3 @@ class compVision:
         #        return
 
         self.newOffset = int(self.newOffset)
-
-        self.lastOffset = self.newOffset
