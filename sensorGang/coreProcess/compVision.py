@@ -473,7 +473,7 @@ class compVision:
 
             elif self.steerLeft:
 
-                if self.lastOffset < 0 or self.lastOffset is None:
+                if self.lastOffset is None or self.lastOffset < 0:
                     print("Case 1.2")
                     self.newOffset -= 3
                     return
@@ -483,7 +483,7 @@ class compVision:
                     return
 
             else:
-                if self.lastOffset < 0 or self.lastOffset is None:
+                if self.lastOffset is None or self.lastOffset < 0:
                     print("Case 1.4")
                     self.newOffset -= 5
                     self.steerLeft = True
@@ -501,7 +501,7 @@ class compVision:
 
             elif self.steerRight:
 
-                if self.lastOffset < 0 or self.lastOffset is None:
+                if self.lastOffset is None or self.lastOffset < 0:
                     print("Case 1.7")
                     self.newOffset += 3
                     return
@@ -511,7 +511,7 @@ class compVision:
                     return
 
             else:
-                if self.lastOffset < 0 or self.lastOffset is None:
+                if self.lastOffset is None or self.lastOffset < 0:
                     print("Case 1.9")
                     self.newOffset += 5
                     self.steerRight = True
