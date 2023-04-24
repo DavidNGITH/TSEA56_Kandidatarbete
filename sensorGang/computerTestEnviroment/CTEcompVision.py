@@ -72,6 +72,7 @@ class compVision:
         # Stop
         self.stop = False
         self.stopLineDistance = 0  # Distance to stop line
+        self.stopRequired = True
 
         # Stop lines coordinates
         self.widthStopLine = 250
@@ -167,11 +168,13 @@ class compVision:
                 self.stopLineDistance = abs(self.height-y1)
                 print("Stopline distance: {}".format(self.stopLineDistance))
                 if self.stopLine:
-                    if self.stopLineDistance < 150:
+                    if self.stopLineDistance < 200:
                         if self.stopRequired:
                             print("Stopping")
                             self.stop = True
                             self.stopRequired = False
+                        else:
+                            print("Already stopped")
 
                 self.stopLine = True
 
@@ -187,7 +190,6 @@ class compVision:
         else:
             print("No stopline")
             self.stopLine = False
-            self.stopRequired = True
 
         self.stopLineCoordinates = [(x1, y1), (x2, y2)]
 
@@ -255,6 +257,7 @@ class compVision:
 
         else:
             self.stopLine = False
+            self.stopRequired = True
 
         try:
             self.lineCenter = ((rightFitAverage[1]-leftFitAverage[1]) /
@@ -287,7 +290,7 @@ class compVision:
 
             self.regionOfInterest()  # Apply ROI
 
-            self.displayImage()
+            # self.displayImage()
             # Histogram calc from canny image
             histogram = np.sum(self.img[400:480, 5:635], axis=0)
             self.leftHistogram = np.argmax(histogram[:int(self.center-60)]) + 5
@@ -305,12 +308,12 @@ class compVision:
             y3 = [(self.midpointHistogram, 0),
                   (self.midpointHistogram, self.height)]
 
-            plt.plot(histogram)
+            # plt.plot(histogram)
             # plt.vlines(self.leftHistogram, ymin=0,
             # ymax=self.height, colors='red')
             # plt.vlines(self.rightHistogram, ymin=0,
             # ymax=self.height, colors='red')
-            plt.show()
+            # plt.show()
 
             # Apply Hough transfrom
             lineSegments = cv2.HoughLinesP(self.img, self.rho, self.angle,
@@ -453,8 +456,8 @@ class compVision:
 
                 # Här kan vi använda alla variabler
 
-                self.newOffset = (0.6 * self.midpointHistogram +
-                                  0.5 * self.lineCenter)
+                self.newOffset = (0.7 * self.midpointHistogram +
+                                  0.3 * self.lineCenter)
 
             # Endast vänstra linjens lutning har hittats
             elif self.slopeLeft:
