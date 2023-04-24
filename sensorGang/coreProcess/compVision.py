@@ -467,7 +467,7 @@ class compVision:
         # 560
 
         if self.leftHistogram < 20 or self.steerLeft:
-            if self.leftHistogram > 40:
+            if self.leftHistogram > 30:
                 print("Case 1.1")
                 self.steerLeft = False
 
@@ -475,11 +475,11 @@ class compVision:
 
                 if self.lastOffset is None or self.lastOffset < 0:
                     print("Case 1.2")
-                    self.newOffset -= 6
+                    self.newOffset -= 5
                     return
                 else:
                     print("Case 1.3")
-                    self.newOffset += 6
+                    self.newOffset += 5
                     return
 
             else:
@@ -498,7 +498,7 @@ class compVision:
                     return
 
         elif self.rightHistogram > 560 or self.steerRight:
-            if self.rightHistogram < 540:
+            if self.rightHistogram < 550:
                 print("Case 1.6")
                 self.steerRight = False
 
@@ -506,11 +506,11 @@ class compVision:
 
                 if self.lastOffset is None or self.lastOffset > 0:
                     print("Case 1.7")
-                    self.newOffset += 3
+                    self.newOffset += 5
                     return
                 else:
                     print("Case 1.8")
-                    self.newOffset -= 3
+                    self.newOffset -= 5
                     return
 
             else:
