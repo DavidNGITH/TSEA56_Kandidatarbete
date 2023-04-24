@@ -463,15 +463,16 @@ class compVision:
         print("Midpoint histogram: {}".format(self.midpointHistogram))
         print("Crossing: {}".format(self.lineCenter))
 
+        # 560
+
         if self.leftHistogram < 20 or self.steerLeft:
             if self.leftHistogram > 40:
                 print("Case 1.1")
                 self.steerLeft = False
-                self.newOffset = int(self.newOffset)
 
             elif self.steerLeft:
 
-                if self.lastOffset < 0:
+                if self.lastOffset < 0 or self.lastOffset is None:
                     print("Case 1.2")
                     self.newOffset -= 3
                     return
@@ -490,6 +491,34 @@ class compVision:
                     print("Case 1.5")
                     self.newOffset += 5
                     self.steerLeft = True
+                    return
+
+        elif self.rightHistogram > 560 or self.steerRight:
+            if self.rightHistogram < 540:
+                print("Case 1.6")
+                self.steerRight = False
+
+            elif self.steerRight:
+
+                if self.lastOffset < 0 or self.lastOffset is None:
+                    print("Case 1.7")
+                    self.newOffset += 3
+                    return
+                else:
+                    print("Case 1.8")
+                    self.newOffset -= 3
+                    return
+
+            else:
+                if self.lastOffset < 0:
+                    print("Case 1.9")
+                    self.newOffset += 5
+                    self.steerRight = True
+                    return
+                else:
+                    print("Case 1.99")
+                    self.newOffset -= 5
+                    self.steerRight = True
                     return
 
         # Histogrammet har hittat båda linjerna
@@ -536,7 +565,7 @@ class compVision:
                 # print(self.slopeRight)
 
                 self.newOffset = (self.midpointHistogram -
-                                  1/self.slopeRight * 350)
+                                  1/self.slopeRight * 400)
 
             # Inga lutningar har hittats
             else:
