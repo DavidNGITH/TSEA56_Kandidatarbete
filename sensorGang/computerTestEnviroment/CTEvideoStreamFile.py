@@ -7,7 +7,7 @@ class VideoStreamFile:
 
     def __init__(self):
         """Init stream from file."""
-        self.vid_capture = cv2.VideoCapture('oneWaySim.mp4')
+        self.vid_capture = cv2.VideoCapture('caseTesting.mp4')
 
     def start(self):
         """Do nothing."""
