@@ -457,7 +457,7 @@ class compVision:
         print("right histogram: {}".format(self.rightHistogram))
 
         # Histogrammet har hittat båda linjerna
-        if self.leftHistogram > 10 and self.leftHistogram < 630:
+        if self.leftHistogram > 10 and self.rightHistogram < 630:
             # Båda linjernas lutning har hittats
             if self.slopeLeft and self.slopeRight:
                 print("Case 1")
