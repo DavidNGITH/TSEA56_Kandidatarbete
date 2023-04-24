@@ -40,7 +40,7 @@ class compVision:
 
         # Canny settings
         self.lowerThreshold = 125
-        self.upperThreshold = 180
+        self.upperThreshold = 190
         self.appetureSize = 3
 
         # Hough settings
