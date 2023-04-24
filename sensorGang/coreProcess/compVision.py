@@ -84,6 +84,7 @@ class compVision:
 
         # Cases
         self.steerLeft = False
+        self.steerRight = False
 
     def displayImage(self):
         """Display self.image on screen."""
