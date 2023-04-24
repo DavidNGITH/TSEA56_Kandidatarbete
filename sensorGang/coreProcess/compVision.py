@@ -40,12 +40,12 @@ class compVision:
 
         # Canny settings
         self.lowerThreshold = 100
-        self.upperThreshold = 180
+        self.upperThreshold = 175
         self.appetureSize = 3
 
         # Hough settings
         self.rho = 1
-        self.angle = np.pi / (180*2)
+        self.angle = np.pi / (180*1.8)
         self.minThreshold = 0
         self.minLineLength = 6
         self.maxLineGap = 3
@@ -81,6 +81,9 @@ class compVision:
 
         # PD-Controller
         self.PD = PD
+
+        # Cases
+        self.steerLeft = False
 
     def displayImage(self):
         """Display self.image on screen."""
@@ -266,9 +269,9 @@ class compVision:
 
             # Histogram calc from canny image
             histogram = np.sum(self.img[400:480, 5:635], axis=0)
-            self.leftHistogram = np.argmax(histogram[:int(self.center)]) + 5
-            self.rightHistogram = (np.argmax(histogram[int(self.center):]) +
-                                   self.center + 5)
+            self.leftHistogram = np.argmax(histogram[:int(self.center-60)]) + 5
+            self.rightHistogram = (np.argmax(histogram[int(self.center+60):]) +
+                                   self.center + 65)
             self.midpointHistogram = int((self.rightHistogram -
                                           self.leftHistogram)
                                          / 2 + self.leftHistogram)
@@ -453,11 +456,32 @@ class compVision:
         # self.slopeRight
         # self.slopeLeft
 
-        print("left histogram: {}".format(self.leftHistogram))
-        print("right histogram: {}".format(self.rightHistogram))
+        print("Right histogram: {}".format(self.rightHistogram))
+        print("Left histogram: {}".format(self.leftHistogram))
+        print("Midpoint histogram: {}".format(self.midpointHistogram))
+        print("Crossing: {}".format(self.lineCenter))
+
+        if self.leftHistogram < 40 or self.steerLeft:
+            if self.leftHistogram > 70:
+                print("Case 1.1")
+                self.steerLeft = False
+                self.newOffset = int(self.newOffset)
+
+            elif self.steerLeft:
+                print("Case 1.2")
+                self.newOffset -= 20
+                self.newOffset = int(self.newOffset)
+                return
+
+            else:
+                print("Case 1.3")
+                self.newOffset = self.center - 40
+                self.steerLeft = True
+                self.newOffset = int(self.newOffset)
+                return
 
         # Histogrammet har hittat båda linjerna
-        if self.leftHistogram > 10 and self.leftHistogram < 630:
+        if self.leftHistogram > 10 and self.rightHistogram < 630:
             # Båda linjernas lutning har hittats
             if self.slopeLeft and self.slopeRight:
                 print("Case 1")
@@ -557,7 +581,7 @@ class compVision:
                 # self.xPointRight
                 # self.slopeRight
 
-                midpointHistogram = (self.rightHistogram)/2 + self.center
+                midpointHistogram = self.center - (self.rightHistogram)/2
                 self.newOffset = midpointHistogram
 
                 pass
@@ -567,7 +591,7 @@ class compVision:
 
                 # Här kan vi använda:
                 # self.rightHistogram
-                midpointHistogram = (self.rightHistogram)/2 + self.center
+                midpointHistogram = self.center - (self.rightHistogram)/2
                 self.newOffset = midpointHistogram
 
                 pass
