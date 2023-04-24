@@ -16,7 +16,7 @@ def mqtt_init():
 
     broker_ip = "10.241.242.186"
     broker_port = 1883
-
+    mqtt_client.username_pw_set("tsea56G09", "mindset")
     mqtt_client.connect(broker_ip, broker_port)
 
     mqtt_client.loop_start()
@@ -78,11 +78,12 @@ def on_release(key):
 l = keyboard.Listener(on_press=main, on_release=on_release)
 l.start()
 t1 = 0
-"""while state:
+while state:
     if time.time() - t1 > 2:
         mqtt_client.publish("ping", 1)
         t1 = time.time()
-        time.sleep(1)"""
+        time.sleep(1)
+
 l.join()
 
 
