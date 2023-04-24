@@ -466,7 +466,7 @@ class compVision:
 
         # 560
 
-        if self.slopeLeft and self.slopeRight:
+        """if self.slopeLeft and self.slopeRight:
 
             if self.leftHistogram < 20 or self.steerLeft:
                 if self.leftHistogram > 30:
@@ -528,7 +528,7 @@ class compVision:
                     print("Case 1.99")
                     self.newOffset -= 5
                     self.steerRight = True
-                    return
+                    return"""
 
         # Histogrammet har hittat båda linjerna
         if self.leftHistogram > 10 and self.rightHistogram < 630:
