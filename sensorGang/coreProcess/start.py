@@ -14,7 +14,7 @@ RESOLUTION = (640, 480)
 
 
 # Settings
-TIME_OUT_TIME = 500
+TIME_OUT_TIME = 5
 ROI_PERC = [0, 0.45, 1, 0.45, 1, 1, 0, 1]
 
 
@@ -58,7 +58,7 @@ while True:
             # Manual
             print("Manual")
             mode = Manual(mqttClient, TIME_OUT_TIME,
-                          RESOLUTION, FRAME_RATE, False)
+                          RESOLUTION, FRAME_RATE, True)
         elif modeSetting == 2:
             # Semi autonoumous
             print("SemiAutonomous")
