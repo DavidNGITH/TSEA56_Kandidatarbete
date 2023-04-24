@@ -475,11 +475,11 @@ class compVision:
 
                 if self.lastOffset is None or self.lastOffset < 0:
                     print("Case 1.2")
-                    self.newOffset -= 3
+                    self.newOffset -= 6
                     return
                 else:
                     print("Case 1.3")
-                    self.newOffset += 3
+                    self.newOffset += 6
                     return
 
             else:
@@ -572,7 +572,7 @@ class compVision:
                 # print(self.slopeRight)
 
                 self.newOffset = (self.midpointHistogram -
-                                  1/self.slopeRight * 500)
+                                  1/self.slopeRight * 350)
 
             # Inga lutningar har hittats
             else:
