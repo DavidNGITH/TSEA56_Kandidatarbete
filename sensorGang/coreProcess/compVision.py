@@ -39,8 +39,8 @@ class compVision:
                        (roiP3X, roiP3Y), (roiP4X, roiP4Y)]
 
         # Canny settings
-        self.lowerThreshold = 100
-        self.upperThreshold = 175
+        self.lowerThreshold = 125
+        self.upperThreshold = 180
         self.appetureSize = 3
 
         # Hough settings
