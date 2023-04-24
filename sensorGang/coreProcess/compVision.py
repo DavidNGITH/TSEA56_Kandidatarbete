@@ -39,13 +39,13 @@ class compVision:
                        (roiP3X, roiP3Y), (roiP4X, roiP4Y)]
 
         # Canny settings
-        self.lowerThreshold = 100
-        self.upperThreshold = 180
+        self.lowerThreshold = 125
+        self.upperThreshold = 190
         self.appetureSize = 3
 
         # Hough settings
         self.rho = 1
-        self.angle = np.pi / (180*2)
+        self.angle = np.pi / (180*1.8)
         self.minThreshold = 0
         self.minLineLength = 6
         self.maxLineGap = 3
@@ -81,6 +81,10 @@ class compVision:
 
         # PD-Controller
         self.PD = PD
+
+        # Cases
+        self.steerLeft = False
+        self.steerRight = False
 
     def displayImage(self):
         """Display self.image on screen."""
@@ -266,9 +270,9 @@ class compVision:
 
             # Histogram calc from canny image
             histogram = np.sum(self.img[400:480, 5:635], axis=0)
-            self.leftHistogram = np.argmax(histogram[:int(self.center)]) + 5
-            self.rightHistogram = (np.argmax(histogram[int(self.center):]) +
-                                   self.center + 5)
+            self.leftHistogram = np.argmax(histogram[:int(self.center-60)]) + 5
+            self.rightHistogram = (np.argmax(histogram[int(self.center+60):]) +
+                                   self.center + 65)
             self.midpointHistogram = int((self.rightHistogram -
                                           self.leftHistogram)
                                          / 2 + self.leftHistogram)
@@ -318,6 +322,7 @@ class compVision:
             # self.drawLine(y3, (128,0,128), 2) # Midpoint line
 
             self.getDataFromLines()  # Get offset
+            self.lastOffset = self.newOffset
 
             # y5 = [(self.newOffset + self.center, 0),
             #      (self.newOffset + self.center, self.height)]
@@ -326,7 +331,8 @@ class compVision:
 
             # steering = int((self.newOffset + self.center)*3/8 - 60)
 
-            if self.stopLine or self.nodeLine:
+            # if self.stopLine or self.nodeLine:
+            if False:
                 if not self.stopStatus:
                     self.stopTimer = time.time()
                     qBreak.put(1)
@@ -453,11 +459,77 @@ class compVision:
         # self.slopeRight
         # self.slopeLeft
 
-        print("left histogram: {}".format(self.leftHistogram))
-        print("right histogram: {}".format(self.rightHistogram))
+        print("Right histogram: {}".format(self.rightHistogram))
+        print("Left histogram: {}".format(self.leftHistogram))
+        print("Midpoint histogram: {}".format(self.midpointHistogram))
+        print("Crossing: {}".format(self.lineCenter))
+
+        # 560
+
+        if self.leftHistogram < 20 or self.steerLeft:
+            if self.leftHistogram > 40:
+                print("Case 1.1")
+                self.steerLeft = False
+
+            elif self.steerLeft:
+
+                if self.lastOffset is None or self.lastOffset < 0:
+                    print("Case 1.2")
+                    self.newOffset -= 6
+                    return
+                else:
+                    print("Case 1.3")
+                    self.newOffset += 6
+                    return
+
+            else:
+                if self.lastOffset is None or self.lastOffset < 0:
+                    print("Case 1.4")
+                    if self.lastOffset is None:
+                        self.newOffset = -5
+                    else:
+                        self.newOffset -= 5
+                    self.steerLeft = True
+                    return
+                else:
+                    print("Case 1.5")
+                    self.newOffset += 5
+                    self.steerLeft = True
+                    return
+
+        elif self.rightHistogram > 560 or self.steerRight:
+            if self.rightHistogram < 540:
+                print("Case 1.6")
+                self.steerRight = False
+
+            elif self.steerRight:
+
+                if self.lastOffset is None or self.lastOffset > 0:
+                    print("Case 1.7")
+                    self.newOffset += 3
+                    return
+                else:
+                    print("Case 1.8")
+                    self.newOffset -= 3
+                    return
+
+            else:
+                if self.lastOffset is None or self.lastOffset > 0:
+                    print("Case 1.9")
+                    if self.lastOffset is None:
+                        self.newOffset = 5
+                    else:
+                        self.newOffset += 5
+                    self.steerRight = True
+                    return
+                else:
+                    print("Case 1.99")
+                    self.newOffset -= 5
+                    self.steerRight = True
+                    return
 
         # Histogrammet har hittat båda linjerna
-        if self.leftHistogram > 10 and self.leftHistogram < 630:
+        if self.leftHistogram > 10 and self.rightHistogram < 630:
             # Båda linjernas lutning har hittats
             if self.slopeLeft and self.slopeRight:
                 print("Case 1")
@@ -557,7 +629,7 @@ class compVision:
                 # self.xPointRight
                 # self.slopeRight
 
-                midpointHistogram = (self.rightHistogram)/2 + self.center
+                midpointHistogram = self.center - (self.rightHistogram)/2
                 self.newOffset = midpointHistogram
 
                 pass
@@ -567,7 +639,7 @@ class compVision:
 
                 # Här kan vi använda:
                 # self.rightHistogram
-                midpointHistogram = (self.rightHistogram)/2 + self.center
+                midpointHistogram = self.center - (self.rightHistogram)/2
                 self.newOffset = midpointHistogram
 
                 pass
@@ -593,5 +665,3 @@ class compVision:
         #        return
 
         self.newOffset = int(self.newOffset)
-
-        self.lastOffset = self.newOffset
