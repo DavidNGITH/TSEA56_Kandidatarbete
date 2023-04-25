@@ -353,7 +353,7 @@ class compVision:
                 qSpeed.put(90)
 
             if time.time() - self.slowDownTimer > 0.5:
-                qSpeed.put(150)
+                qSpeed.put(135)
 
             # y5 = [(self.newOffset + self.center, 0),
             #      (self.newOffset + self.center, self.height)]
