@@ -161,10 +161,10 @@ class compVision:
             if width > self.widthStopLine:
 
                 print("Yes, stopline")
-                self.stopLineDistance = abs(self.height-y1)
+                self.stopLineDistance = abs(self.height-height)
                 print("Stopline distance: {}".format(self.stopLineDistance))
 
-                if self.stopLineDistance > self.lastStopLineDistance*1.1 or self.stoplineDistance > 240:
+                if self.stopLineDistance > self.lastStopLineDistance:
                     if self.stopRequired:
                         print("Stopping")
                         self.stop = True
@@ -174,6 +174,7 @@ class compVision:
                         self.stopRequired = True
                 else:
                     print("Already stopped")
+                    self.stop = False
 
                 self.stopLine = True
                 self.lastStopLineDistance = self.stopLineDistance
