@@ -18,7 +18,7 @@ class compVision:
         self.resolution = resolution
         self.width = resolution[0]
         self.height = resolution[1]
-        self.center = int(self.width/2)
+        self.center = int(self.width/2+10)
 
         self.img = None
         self.laneLines = []
@@ -574,7 +574,7 @@ class compVision:
                 # print(self.slopeRight)
 
                 self.newOffset = (self.midpointHistogram -
-                                  1/self.slopeRight * 350)
+                                  1/self.slopeRight * 365)
 
             # Inga lutningar har hittats
             else:
