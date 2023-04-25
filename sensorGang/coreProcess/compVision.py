@@ -385,6 +385,7 @@ class compVision:
                 self.nodeLine = False
                 self.stopStatus = True
                 print("Stop line or node line detected")
+                qBreak.put(0)
 
                 self.waitForCommand(qCommand)
 
