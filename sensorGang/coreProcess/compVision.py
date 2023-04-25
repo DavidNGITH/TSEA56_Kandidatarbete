@@ -590,7 +590,7 @@ class compVision:
                 # print(self.leftHistogram)
 
                 self.newOffset = (self.midpointHistogram -
-                                  1/self.slopeLeft * 350)
+                                  1/self.slopeLeft * 375)
 
             # Endast högra linjens lutning har hittats
             elif self.slopeRight:
@@ -608,7 +608,7 @@ class compVision:
                 # print(self.slopeRight)
 
                 self.newOffset = (self.midpointHistogram -
-                                  1/self.slopeRight * 380)
+                                  1/self.slopeRight * 390)
 
             # Inga lutningar har hittats
             else:
