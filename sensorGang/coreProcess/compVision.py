@@ -94,6 +94,17 @@ class compVision:
         self.slowDownTimer = 0
         self.slowDown = False
 
+        # Get offset
+        self.getOffset = self.getCenterOffset
+
+        self.casesDict = {
+            0: self.getCenterOffset,
+            1: self.getOffsetStraightLeft,
+            2: self.getOffsetStraightRight,
+            3: self.getOffsetLeftTurn,
+            4: self.getOffsetRightTurn
+        }
+
     def displayImage(self):
         """Display self.image on screen."""
         cv2.imshow("Bild", self.img)
@@ -172,6 +183,7 @@ class compVision:
                     else:
                         print("Making stop required")
                         self.stopRequired = True
+                        self.getOffset = self.getCenterOffset
                 else:
                     print("Already stopped")
                     self.stop = False
@@ -269,7 +281,8 @@ class compVision:
             # print("Not enough lines captured")
             return
 
-    def getCenterOffset(self, qSteering, statusValue, qSpeed, qBreak):
+    def getCenterOffset(self, qSteering, statusValue, qSpeed, qBreak,
+                        qCommand):
         """Calculate the center offset in frame."""
         threadStream = VideoStream(self.resolution)  # Creates Video stream
         # threadStream = VideoStreamFile()
@@ -346,7 +359,8 @@ class compVision:
             # self.drawLine(y2, (0,242,255), 2) # Right line
             # self.drawLine(y3, (128,0,128), 2) # Midpoint line
 
-            self.getDataFromLines()  # Get offset
+            self.getOffset()  # Get offset
+
             self.lastOffset = self.newOffset
             if self.slowDown:
                 self.slowDownTimer = time.time()
@@ -364,13 +378,15 @@ class compVision:
 
             # if self.stopLine or self.nodeLine:
             if self.stop:
-                if not self.stopStatus:
-                    self.stopTimer = time.time()
-                    qBreak.put(1)
-                    self.stopLine = False
-                    self.nodeLine = False
-                    self.stopStatus = True
-                    print("Stop line or node line detected")
+                self.stopTimer = time.time()
+                qBreak.put(1)
+                qSpeed.put(90)
+                self.stopLine = False
+                self.nodeLine = False
+                self.stopStatus = True
+                print("Stop line or node line detected")
+
+                self.waitForCommand(qCommand)
 
             else:
                 steering_raw = self.PD.get_control(self.newOffset)
@@ -387,9 +403,9 @@ class compVision:
 
                 qSteering.put(steering)
 
-            if self.stopStatus and (time.time() - self.stopTimer > 3):
-                self.stopStatus = False
-                qBreak.put(0)
+            # if self.stopStatus and (time.time() - self.stopTimer > 3):
+            #    self.stopStatus = False
+            #    qBreak.put(0)
 
             # print("Steering: {}".format(steering))
 
@@ -701,3 +717,37 @@ class compVision:
         #        return
 
         self.newOffset = int(self.newOffset)
+
+    def getOffsetStraightRight(self):
+        """Get offset on straight, right line avalible."""
+        if self.rightHistogram is not None:
+            self.newOffset = self.rightHistogram - 560
+        else:
+            self.newOffset = 50
+
+    def getOffsetStraightLeft(self):
+        """Get offset on straight, left line avalible."""
+        if self.leftHistogram is not None:
+            self.newOffset = self.leftHistogram - 115
+        else:
+            self.newOffset = - 50
+
+    def getOffsetRightTurn(self):
+        """Get offset on right turn."""
+        if self.rightHistogram is not None:
+            self.newOffset = self.rightHistogram - 560
+        else:
+            self.newOffset = 50
+
+    def getOffsetLeftTurn(self):
+        """Get offset on left turn."""
+        if self.rightHistogram is not None:
+            self.newOffset = self.rightHistogram - 560
+        else:
+            self.newOffset = 50
+
+    def waitForCommand(self, qCommand):
+        """Get steering command."""
+        while qCommand.empty():
+            time.sleep(0.01)
+        self.getOffset = self.casesDict(qCommand.get())

@@ -11,7 +11,7 @@ from PD_reg import PDcontroller
 MQTT_TOPIC = [("stop", 0), ("ping", 0), ("speed", 0),
               ("PD/Kp", 0), ("PD/Kd", 0)]
 
-MQTT_TOPIC_UNSUB = ["stop", "ping", "speed", "PD/Kp", "PD/Kd"]
+MQTT_TOPIC_UNSUB = ["stop", "ping", "speed", "PD/Kp", "PD/Kd", "command"]
 
 
 class Autonomous():
@@ -89,6 +89,9 @@ class Autonomous():
                 elif message[0] == "PD/Kd":
                     print("Recived Kd data in autonomous")
                     self.PD.updateKd(message[1])
+                elif message[0] == "command":
+                    print("Recived command data in autonomous")
+                    self.qCommand.put(message[1])
 
             if not qSteering.empty():
                 #                print("Recived steering")
@@ -171,6 +174,7 @@ class Autonomous():
         self.qI2CDataRecived = multiprocessing.Queue()  # Recived I2C data
         self.qSpeed = multiprocessing.Queue()           # Speed data to motors
         self.qBreak = multiprocessing.Queue()
+        self.qCommand = multiprocessing.Queue()
 
         self.statusCenterOffset = multiprocessing.Value('i', 1)
         self.statusHandleMessage = multiprocessing.Value('i', 1)
@@ -187,7 +191,8 @@ class Autonomous():
                                           args=(self.qSteering,
                                                 self.statusCenterOffset,
                                                 self.qSpeed,
-                                                self.qBreak))
+                                                self.qBreak,
+                                                self.qCommand))
 
         self.p1.start()  # Starts handleMessage process
         self.p2.start()  # Starts getCenterOffset process
