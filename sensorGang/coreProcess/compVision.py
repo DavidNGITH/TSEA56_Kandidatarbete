@@ -673,8 +673,8 @@ class compVision:
     def getOffsetRightTurn(self):
         """Get offset on right turn."""
         print("Case: Turn right")
-        if self.rightHistogram is not None:
-            self.newOffset = self.rightHistogram - 560
+        if not self.rightHistogram == 365:
+            self.newOffset = (self.rightHistogram - 560)*2
             print(self.newOffset)
         else:
             print(self.newOffset)
@@ -682,10 +682,10 @@ class compVision:
 
     def getOffsetLeftTurn(self):
         """Get offset on left turn."""
-        if self.rightHistogram is not None:
-            self.newOffset = self.rightHistogram - 560
+        if self.leftHistogram is not None:
+            self.newOffset = self.leftHistogram - 115
         else:
-            self.newOffset = 50
+            self.newOffset = - 50
 
     def waitForCommand(self, qCommand):
         """Get steering command."""
