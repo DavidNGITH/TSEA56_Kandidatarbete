@@ -674,8 +674,8 @@ class compVision:
         """Get offset on right turn."""
         print("Case: Turn right")
         print(self.rightHistogram)
-        if not self.rightHistogram == 365:
-            self.newOffset = (self.rightHistogram - 560)*2
+        if not self.rightHistogram == 385:
+            self.newOffset = (self.rightHistogram - 530)*2
         else:
             self.newOffset = 50
 
