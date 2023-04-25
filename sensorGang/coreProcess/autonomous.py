@@ -48,7 +48,7 @@ class Autonomous():
             print("Couldn't read mqtt message")
 
     def handleMessage(self, qMessageMQTT, qI2CDataRecived,
-                      qSteering, qSpeed, qBreak, status):
+                      qSteering, qSpeed, qBreak, qCommand, status):
         """Handle messages from other processes."""
         print("In handleMessage autonomous!")
         I2C_proc = i2cHandle.I2C()
@@ -91,7 +91,7 @@ class Autonomous():
                     self.PD.updateKd(message[1])
                 elif message[0] == "command":
                     print("Recived command data in autonomous")
-                    self.qCommand.put(message[1])
+                    qCommand.put(message[1])
 
             if not qSteering.empty():
                 #                print("Recived steering")
@@ -185,6 +185,7 @@ class Autonomous():
                                                 self.qSteering,
                                                 self.qSpeed,
                                                 self.qBreak,
+                                                self.qCommand,
                                                 self.statusHandleMessage))
 
         self.p2 = multiprocessing.Process(target=self.laneData.getCenterOffset,
