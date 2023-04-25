@@ -385,9 +385,9 @@ class compVision:
                 self.nodeLine = False
                 self.stopStatus = True
                 print("Stop line or node line detected")
-                qBreak.put(0)
 
                 self.waitForCommand(qCommand)
+                qBreak.put(0)
 
             else:
                 steering_raw = self.PD.get_control(self.newOffset)
@@ -513,70 +513,6 @@ class compVision:
         # print("Crossing: {}".format(self.lineCenter))
 
         # 560
-
-        """if self.slopeLeft and self.slopeRight:
-
-            if self.leftHistogram < 20 or self.steerLeft:
-                if self.leftHistogram > 30:
-                    print("Case 1.1")
-                    self.steerLeft = False
-
-                elif self.steerLeft:
-
-                    if self.lastOffset is None or self.lastOffset < 0:
-                        print("Case 1.2")
-                        self.newOffset -= 5
-                        return
-                    else:
-                        print("Case 1.3")
-                        self.newOffset += 5
-                        return
-
-                else:
-                    if self.lastOffset is None or self.lastOffset < 0:
-                        print("Case 1.4")
-                        if self.lastOffset is None:
-                            self.newOffset = -5
-                        else:
-                            self.newOffset -= 5
-                        self.steerLeft = True
-                        return
-                    else:
-                        print("Case 1.5")
-                        self.newOffset += 5
-                        self.steerLeft = True
-                        return
-
-        elif self.rightHistogram > 560 or self.steerRight:
-            if self.rightHistogram < 550:
-                print("Case 1.6")
-                self.steerRight = False
-
-            elif self.steerRight:
-
-                if self.lastOffset is None or self.lastOffset > 0:
-                    print("Case 1.7")
-                    self.newOffset += 5
-                    return
-                else:
-                    print("Case 1.8")
-                    self.newOffset -= 5
-                    return
-
-            else:
-                if self.lastOffset is None or self.lastOffset > 0:
-                    print("Case 1.9")
-                    if self.lastOffset is None:
-                        self.newOffset = 5
-                    else:
-                        self.newOffset += 5
-                    self.steerRight = True
-                    return
-                else:
-                    print("Case 1.99")
-                    self.newOffset -= 5
-                    self.steerRight = True
-                    return"""
 
         self.slowDown = True
 
