@@ -3,7 +3,7 @@ from CTEvideoStreamFile import VideoStreamFile
 import cv2
 
 RESOLUTION = (640, 480)
-ROI_PERC = [0, 0.45, 1, 0.45, 1, 1, 0, 1]
+ROI_PERC = [0, 0.45, .99, 0.45, .99, 1, 0, 1]
 
 
 def main():

@@ -72,6 +72,8 @@ class compVision:
         # Stop
         self.stop = False
         self.stopLineDistance = 0  # Distance to stop line
+        self.lastStopLineDistance = 0
+        self.stopRequired = True
 
         # Stop lines coordinates
         self.widthStopLine = 250
@@ -166,12 +168,18 @@ class compVision:
                 print("Yes, stopline")
                 self.stopLineDistance = abs(self.height-y1)
                 print("Stopline distance: {}".format(self.stopLineDistance))
-                if self.stopLine:
-                    if self.stopLineDistance < 150:
-                        if self.stopRequired:
-                            print("Stopping")
-                            self.stop = True
-                            self.stopRequired = False
+
+                if self.stopLineDistance >= self.lastStopLineDistance:
+                    if self.stopRequired:
+                        print("Stopping")
+                        self.stop = True
+                        self.stopRequired = False
+                    else:
+                        print("Making stop required")
+                        self.stopRequired = True
+                else:
+                    print("Already stopped")
+                self.lastStopLineDistance = self.stopLineDistance
 
                 self.stopLine = True
 
@@ -187,7 +195,6 @@ class compVision:
         else:
             print("No stopline")
             self.stopLine = False
-            self.stopRequired = True
 
         self.stopLineCoordinates = [(x1, y1), (x2, y2)]
 
@@ -290,9 +297,9 @@ class compVision:
             # self.displayImage()
             # Histogram calc from canny image
             histogram = np.sum(self.img[400:480, 5:635], axis=0)
-            self.leftHistogram = np.argmax(histogram[:int(self.center)]) + 5
-            self.rightHistogram = (np.argmax(histogram[int(self.center):]) +
-                                   self.center + 5)
+            self.leftHistogram = np.argmax(histogram[:int(self.center-60)]) + 5
+            self.rightHistogram = (np.argmax(histogram[int(self.center+60):]) +
+                                   self.center + 65)
             self.midpointHistogram = int((self.rightHistogram -
                                           self.leftHistogram)
                                          / 2 + self.leftHistogram)
@@ -449,16 +456,16 @@ class compVision:
         if self.leftHistogram > 0 and self.leftHistogram < 640:
             # Båda linjernas lutning har hittats
             if self.slopeLeft and self.slopeRight:
-                # print("Case 1")
+                print("Case 1")
 
                 # Här kan vi använda alla variabler
 
-                self.newOffset = (0.6 * self.midpointHistogram +
-                                  0.5 * self.lineCenter)
+                self.newOffset = (0.7 * self.midpointHistogram +
+                                  0.3 * self.lineCenter)
 
             # Endast vänstra linjens lutning har hittats
             elif self.slopeLeft:
-                # print("Case 2")
+                print("Case 2")
 
                 # Här kan vi använda
                 # self.leftHistogram
@@ -473,7 +480,7 @@ class compVision:
 
             # Endast högra linjens lutning har hittats
             elif self.slopeRight:
-                # print("Case 3")
+                print("Case 3")
 
                 # Här kan vi använda
                 # self.leftHistogram
@@ -490,7 +497,7 @@ class compVision:
 
             # Inga lutningar har hittats
             else:
-                # print("Case 4")
+                print("Case 4")
 
                 # Här kan vi använda:
                 # self.leftHistogram
@@ -503,7 +510,7 @@ class compVision:
         elif self.leftHistogram > 0:
             # Vänstra linjens lutning har hittats
             if self.slopeLeft:
-                # print("Case 5")
+                print("Case 5")
 
                 # Här kan vi använda:
                 # self.leftHistogram
@@ -519,7 +526,7 @@ class compVision:
                 pass
             # Ingen lutning har hittats
             else:
-                # print("Case 6")
+                print("Case 6")
 
                 # Här kan vi använda:
                 # self.leftHistogram
@@ -534,32 +541,32 @@ class compVision:
 
         # Histogrammet har endast hittat högra linjen
         elif self.rightHistogram < 640:
-            # Vänstra linjens lutning har hittats
+            # Högra linjens lutning har hittats
             if self.slopeRight:
-                # print("Case 7")
+                print("Case 7")
 
                 # Här kan vi anväda:
                 # self.rightHistogram
                 # self.xPointRight
                 # self.slopeRight
 
-                midpointHistogram = (self.rightHistogram)/2 + self.center
+                midpointHistogram = self.center - (self.rightHistogram)/2
                 self.newOffset = midpointHistogram
 
                 pass
             # Ingen lutning har hittats
             else:
-                # print("Case 8")
+                print("Case 8")
 
                 # Här kan vi använda:
                 # self.rightHistogram
-                midpointHistogram = (self.rightHistogram)/2 + self.center
+                midpointHistogram = self.center - (self.rightHistogram)/2
                 self.newOffset = midpointHistogram
 
                 pass
 
         else:
-            # print("Nothing detected")
+            print("Nothing detected")
             self.newOffset = self.lastOffset
 
             return
@@ -578,3 +585,18 @@ class compVision:
         self.newOffset = int(self.newOffset)
 
         self.lastOffset = self.newOffset
+
+    def turnRightJunction(self):
+       # turn right at junction
+
+        return
+
+    def turnLeftJunction(self):
+        # turn left at junction
+
+        return
+
+    def straightJunction(self):
+        # go straight at junction
+
+        return
