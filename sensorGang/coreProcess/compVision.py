@@ -388,6 +388,7 @@ class compVision:
 
                 self.waitForCommand(qCommand)
                 qBreak.put(0)
+                self.stop = False
 
             else:
                 steering_raw = self.PD.get_control(self.newOffset)
@@ -689,5 +690,7 @@ class compVision:
         while qCommand.empty():
             time.sleep(0.01)
 
-        if not self.getCenterOffset == 10:
-            self.getOffset = self.casesDict[qCommand.get()]
+        getCommand = qCommand.get()
+
+        if not getCommand == 10:
+            self.getOffset = self.casesDict[getCommand]
