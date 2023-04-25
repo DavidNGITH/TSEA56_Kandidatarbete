@@ -167,7 +167,7 @@ class compVision:
                 if self.stopLineDistance > self.lastStopLineDistance:
                     if self.stopRequired:
                         print("Stopping")
-                        self.stop = True
+                        # self.stop = True
                         self.stopRequired = False
                     else:
                         print("Making stop required")
@@ -350,10 +350,10 @@ class compVision:
             self.lastOffset = self.newOffset
             if self.slowDown:
                 self.slowDownTimer = time.time()
-                qSpeed.put(90)
+                qSpeed.put(80)
 
             if time.time() - self.slowDownTimer > 0.5:
-                qSpeed.put(135)
+                qSpeed.put(150)
 
             # y5 = [(self.newOffset + self.center, 0),
             #      (self.newOffset + self.center, self.height)]
@@ -608,7 +608,7 @@ class compVision:
                 # print(self.slopeRight)
 
                 self.newOffset = (self.midpointHistogram -
-                                  1/self.slopeRight * 365)
+                                  1/self.slopeRight * 380)
 
             # Inga lutningar har hittats
             else:
