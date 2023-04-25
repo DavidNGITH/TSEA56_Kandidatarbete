@@ -79,6 +79,12 @@ class compVision:
         # self.heightMin = 200
         self.heightMax = 390
 
+        # Stop
+        self.stop = False
+        self.stopLineDistance = 0  # Distance to stop line
+        self.lastStopLineDistance = 0
+        self.stopRequired = True
+
         # PD-Controller
         self.PD = PD
 
