@@ -18,7 +18,7 @@ class compVision:
         self.resolution = resolution
         self.width = resolution[0]
         self.height = resolution[1]
-        self.center = int(self.width/2+10)
+        self.center = int(self.width/2)
 
         self.img = None
         self.laneLines = []
@@ -167,7 +167,7 @@ class compVision:
                 if self.stopLineDistance > self.lastStopLineDistance:
                     if self.stopRequired:
                         print("Stopping")
-                        # self.stop = True
+                        self.stop = True
                         self.stopRequired = False
                     else:
                         print("Making stop required")
@@ -353,7 +353,7 @@ class compVision:
                 qSpeed.put(90)
 
             if time.time() - self.slowDownTimer > 0.5:
-                qSpeed.put(225)
+                qSpeed.put(125)
 
             # y5 = [(self.newOffset + self.center, 0),
             #      (self.newOffset + self.center, self.height)]
@@ -567,7 +567,7 @@ class compVision:
         if self.leftHistogram > 10 and self.rightHistogram < 630:
             # Båda linjernas lutning har hittats
             if self.slopeLeft and self.slopeRight:
-                # print("Case 1")
+                print("Case 1")
 
                 # Här kan vi använda alla variabler
 
@@ -577,7 +577,7 @@ class compVision:
 
             # Endast vänstra linjens lutning har hittats
             elif self.slopeLeft:
-                # print("Case 2")
+                print("Case 2")
 
                 # Här kan vi använda
                 # self.leftHistogram
@@ -590,11 +590,11 @@ class compVision:
                 # print(self.leftHistogram)
 
                 self.newOffset = (self.midpointHistogram -
-                                  1/self.slopeLeft * 350)
+                                  1/self.slopeLeft * 420)
 
             # Endast högra linjens lutning har hittats
             elif self.slopeRight:
-                # print("Case 3")
+                print("Case 3")
                 # print(self.rightHistogram)
 
                 # Här kan vi använda
@@ -608,11 +608,11 @@ class compVision:
                 # print(self.slopeRight)
 
                 self.newOffset = (self.midpointHistogram -
-                                  1/self.slopeRight * 380)
+                                  1/self.slopeRight * 370)
 
             # Inga lutningar har hittats
             else:
-                # print("Case 4")
+                print("Case 4")
 
                 # Här kan vi använda:
                 # self.leftHistogram
@@ -625,7 +625,7 @@ class compVision:
         elif self.leftHistogram > 10:
             # Vänstra linjens lutning har hittats
             if self.slopeLeft:
-                # print("Case 5")
+                print("Case 5")
 
                 # Här kan vi använda:
                 # self.leftHistogram
@@ -641,7 +641,7 @@ class compVision:
                 pass
             # Ingen lutning har hittats
             else:
-                # print("Case 6")
+                print("Case 6")
 
                 # Här kan vi använda:
                 # self.leftHistogram
@@ -658,7 +658,7 @@ class compVision:
         elif self.rightHistogram < 630:
             # Vänstra linjens lutning har hittats
             if self.slopeRight:
-                # print("Case 7")
+                print("Case 7")
 
                 # Här kan vi anväda:
                 # self.rightHistogram
@@ -671,7 +671,7 @@ class compVision:
                 pass
             # Ingen lutning har hittats
             else:
-                # print("Case 8")
+                print("Case 8")
 
                 # Här kan vi använda:
                 # self.rightHistogram
@@ -681,7 +681,7 @@ class compVision:
                 pass
 
         else:
-            # print("Case 9")
+            print("Case 9")
             # print("Nothing detected")
             self.newOffset = self.lastOffset
 
@@ -690,7 +690,7 @@ class compVision:
         # print(self.newOffset)
         # print(self.lastOffset)
 
-        self.newOffset -= self.center
+        self.newOffset -= (self.center + 40)
 
         # print(self.newOffset)
 
