@@ -174,7 +174,7 @@ class compVision:
                     print("Already stopped")
 
                 self.stopLine = True
-
+                self.lastStopLineDistance = self.stopLineDistance
             elif width < self.widthNodeLine:
                 if minX < 200:
                     # print("Node to the left")
