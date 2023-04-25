@@ -172,6 +172,7 @@ class compVision:
                         self.stopRequired = True
                 else:
                     print("Already stopped")
+                    self.stop = False
 
                 self.stopLine = True
                 self.lastStopLineDistance = self.stopLineDistance
