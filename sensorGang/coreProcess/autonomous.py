@@ -9,7 +9,7 @@ from PD_reg import PDcontroller
 
 
 MQTT_TOPIC = [("stop", 0), ("ping", 0), ("speed", 0),
-              ("PD/Kp", 0), ("PD/Kd", 0), ("PD/Kd", 0)]
+              ("PD/Kp", 0), ("PD/Kd", 0), ("command", 0)]
 
 MQTT_TOPIC_UNSUB = ["stop", "ping", "speed", "PD/Kp", "PD/Kd", "command"]
 
@@ -71,7 +71,7 @@ class Autonomous():
                         I2C_proc.close()
                     except Exception:
                         print("Couldn't read i2c")
-
+                    qCommand.put(10)
                     self.stop()
                     return
                 elif message[0] == "ping":

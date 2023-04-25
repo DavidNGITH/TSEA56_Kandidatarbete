@@ -687,6 +687,7 @@ class compVision:
         """Get steering command."""
         print(1)
         while qCommand.empty():
-            print(2)
             time.sleep(0.01)
-        self.getOffset = self.casesDict(qCommand.get())
+
+        if not self.getCenterOffset == 10:
+            self.getOffset = self.casesDict(qCommand.get())
