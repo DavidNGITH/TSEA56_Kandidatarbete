@@ -95,7 +95,7 @@ class compVision:
         self.slowDown = False
 
         # Get offset
-        self.getOffset = self.getCenterOffset
+        self.getOffset = self.getDataFromLines
 
         self.casesDict = {
             0: self.getCenterOffset,
@@ -183,7 +183,7 @@ class compVision:
                     else:
                         print("Making stop required")
                         self.stopRequired = True
-                        self.getOffset = self.getCenterOffset
+                        self.getOffset = self.getDataFromLines
                 else:
                     print("Already stopped")
                     self.stop = False
