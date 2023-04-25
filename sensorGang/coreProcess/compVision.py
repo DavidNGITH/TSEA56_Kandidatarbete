@@ -364,10 +364,10 @@ class compVision:
             self.lastOffset = self.newOffset
             if self.slowDown:
                 self.slowDownTimer = time.time()
-                qSpeed.put(90)
+                qSpeed.put(70)
 
             if time.time() - self.slowDownTimer > 0.5:
-                qSpeed.put(125)
+                qSpeed.put(100)
 
             # y5 = [(self.newOffset + self.center, 0),
             #      (self.newOffset + self.center, self.height)]
@@ -380,7 +380,7 @@ class compVision:
             if self.stop:
                 self.stopTimer = time.time()
                 qBreak.put(1)
-                qSpeed.put(90)
+                self.slowDown = True
                 self.stopLine = False
                 self.nodeLine = False
                 self.stopStatus = True
