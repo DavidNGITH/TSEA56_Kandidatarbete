@@ -690,4 +690,4 @@ class compVision:
             time.sleep(0.01)
 
         if not self.getCenterOffset == 10:
-            self.getOffset = self.casesDict(qCommand.get())
+            self.getOffset = self.casesDict[qCommand.get()]
