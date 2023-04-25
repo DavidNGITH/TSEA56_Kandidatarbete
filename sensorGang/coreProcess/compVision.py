@@ -481,10 +481,10 @@ class compVision:
         # self.slopeRight
         # self.slopeLeft
 
-        print("Right histogram: {}".format(self.rightHistogram))
-        print("Left histogram: {}".format(self.leftHistogram))
-        print("Midpoint histogram: {}".format(self.midpointHistogram))
-        print("Crossing: {}".format(self.lineCenter))
+        # print("Right histogram: {}".format(self.rightHistogram))
+        # print("Left histogram: {}".format(self.leftHistogram))
+        # print("Midpoint histogram: {}".format(self.midpointHistogram))
+        # print("Crossing: {}".format(self.lineCenter))
 
         # 560
 
@@ -556,7 +556,7 @@ class compVision:
         if self.leftHistogram > 10 and self.rightHistogram < 630:
             # Båda linjernas lutning har hittats
             if self.slopeLeft and self.slopeRight:
-                print("Case 1")
+                # print("Case 1")
 
                 # Här kan vi använda alla variabler
 
@@ -565,7 +565,7 @@ class compVision:
 
             # Endast vänstra linjens lutning har hittats
             elif self.slopeLeft:
-                print("Case 2")
+                # print("Case 2")
 
                 # Här kan vi använda
                 # self.leftHistogram
@@ -575,15 +575,15 @@ class compVision:
                 # self.slopeLeft
                 # self.xPointLeft
 
-                print(self.leftHistogram)
+                # print(self.leftHistogram)
 
                 self.newOffset = (self.midpointHistogram -
                                   1/self.slopeLeft * 350)
 
             # Endast högra linjens lutning har hittats
             elif self.slopeRight:
-                print("Case 3")
-                print(self.rightHistogram)
+                # print("Case 3")
+                # print(self.rightHistogram)
 
                 # Här kan vi använda
                 # self.leftHistogram
@@ -600,7 +600,7 @@ class compVision:
 
             # Inga lutningar har hittats
             else:
-                print("Case 4")
+                # print("Case 4")
 
                 # Här kan vi använda:
                 # self.leftHistogram
@@ -613,7 +613,7 @@ class compVision:
         elif self.leftHistogram > 10:
             # Vänstra linjens lutning har hittats
             if self.slopeLeft:
-                print("Case 5")
+                # print("Case 5")
 
                 # Här kan vi använda:
                 # self.leftHistogram
@@ -629,7 +629,7 @@ class compVision:
                 pass
             # Ingen lutning har hittats
             else:
-                print("Case 6")
+                # print("Case 6")
 
                 # Här kan vi använda:
                 # self.leftHistogram
@@ -646,7 +646,7 @@ class compVision:
         elif self.rightHistogram < 630:
             # Vänstra linjens lutning har hittats
             if self.slopeRight:
-                print("Case 7")
+                # print("Case 7")
 
                 # Här kan vi anväda:
                 # self.rightHistogram
@@ -659,7 +659,7 @@ class compVision:
                 pass
             # Ingen lutning har hittats
             else:
-                print("Case 8")
+                # print("Case 8")
 
                 # Här kan vi använda:
                 # self.rightHistogram
@@ -669,8 +669,8 @@ class compVision:
                 pass
 
         else:
-            print("Case 9")
-            print("Nothing detected")
+            # print("Case 9")
+            # print("Nothing detected")
             self.newOffset = self.lastOffset
 
             return
@@ -680,7 +680,7 @@ class compVision:
 
         self.newOffset -= self.center
 
-        print(self.newOffset)
+        # print(self.newOffset)
 
         # if self.lastOffset:
         #    if abs((self.newOffset-self.lastOffset)/self.lastOffset) > 0.10:
