@@ -152,20 +152,36 @@ class compVision:
         if height < self.heightMax:
             if width > self.widthStopLine:
                 print("Yes, stopline")
+                self.stopLineDistance = abs(self.height-y1)
+                print("Stopline distance: {}".format(self.stopLineDistance))
+
+                if self.stopLineDistance >= self.lastStopLineDistance:
+                    if self.stopRequired:
+                        print("Stopping")
+                        self.stop = True
+                        self.stopRequired = False
+                    else:
+                        print("Making stop required")
+                        self.stopRequired = True
+                else:
+                    print("Already stopped")
+                self.lastStopLineDistance = self.stopLineDistance
+
                 self.stopLine = True
 
             elif width < self.widthNodeLine:
                 if minX < 200:
-                    print("Node to the left")
-                    self.stopLine = False
+                    # print("Node to the left")
+                    self.stopLine = True
 
                 elif maxX > 400:
-                    print("Node to the right")
-                    self.nodeLine = True
+                    # print("Node to the right")
+                    self.stopLine = True
 
         else:
             print("No stopline")
             self.stopLine = False
+            self.stop = False
 
         # self.stopLineCoordinates = [(x1, y1), (x2, y2)]
 
@@ -332,7 +348,7 @@ class compVision:
             # steering = int((self.newOffset + self.center)*3/8 - 60)
 
             # if self.stopLine or self.nodeLine:
-            if False:
+            if self.stop:
                 if not self.stopStatus:
                     self.stopTimer = time.time()
                     qBreak.put(1)

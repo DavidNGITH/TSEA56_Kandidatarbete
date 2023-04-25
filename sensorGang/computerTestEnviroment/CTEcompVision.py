@@ -195,6 +195,7 @@ class compVision:
         else:
             print("No stopline")
             self.stopLine = False
+            self.stop = False
 
         self.stopLineCoordinates = [(x1, y1), (x2, y2)]
 
