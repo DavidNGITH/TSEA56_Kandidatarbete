@@ -91,6 +91,8 @@ class compVision:
         # Cases
         self.steerLeft = False
         self.steerRight = False
+        self.slowDownTimer = 0
+        self.slowDown = False
 
     def displayImage(self):
         """Display self.image on screen."""
@@ -345,6 +347,12 @@ class compVision:
 
             self.getDataFromLines()  # Get offset
             self.lastOffset = self.newOffset
+            if self.slowDown:
+                self.slowDownTimer = time.time()
+                qSpeed.put(90)
+
+            if time.time() > self.slowDownTimer:
+                qSpeed.put(120)
 
             # y5 = [(self.newOffset + self.center, 0),
             #      (self.newOffset + self.center, self.height)]
@@ -552,6 +560,8 @@ class compVision:
                     self.steerRight = True
                     return"""
 
+        self.slowDown = True
+
         # Histogrammet har hittat båda linjerna
         if self.leftHistogram > 10 and self.rightHistogram < 630:
             # Båda linjernas lutning har hittats
@@ -562,6 +572,7 @@ class compVision:
 
                 self.newOffset = (0.6 * self.midpointHistogram +
                                   0.5 * self.lineCenter)
+                self.slowDown = False
 
             # Endast vänstra linjens lutning har hittats
             elif self.slopeLeft:
