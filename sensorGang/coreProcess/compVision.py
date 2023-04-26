@@ -682,7 +682,7 @@ class compVision:
         """Get offset on straight, left line avalible."""
         self.currentSpeed = self.normalSpeed
         if self.leftHistogram is not None:
-            self.newOffset = (self.leftHistogram - 130)*2
+            self.newOffset = (self.leftHistogram - 140)*2
         else:
             self.newOffset = - 50
 
@@ -698,7 +698,7 @@ class compVision:
         """Get offset on left turn."""
         self.currentSpeed = self.turningSpeed - 10
         if self.leftHistogram is not None:
-            self.newOffset = (self.leftHistogram - 130)*3
+            self.newOffset = (self.leftHistogram - 140)*3.5
         else:
             self.newOffset = - 150
 
