@@ -182,7 +182,7 @@ class compVision:
 
                 print("Yes, stopline")
                 self.stopLineDistance = abs(self.height-height)
-                print("Stopline distance: {}".format(self.stopLineDistance))
+                # print("Stopline distance: {}".format(self.stopLineDistance))
 
                 if self.stopLineDistance > self.lastStopLineDistance:
                     if self.stopRequired:
@@ -194,7 +194,7 @@ class compVision:
                         self.stopRequired = True
                         self.getOffset = self.getDataFromLines
                 else:
-                    print("Already stopped")
+                    # print("Already stopped")
                     self.stop = False
 
                 self.stopLine = True
@@ -209,7 +209,7 @@ class compVision:
                     self.stopLine = True
 
         else:
-            print("No stopline")
+            # print("No stopline")
             self.stopLine = False
             self.stop = False
 
@@ -384,7 +384,7 @@ class compVision:
                 self.stopLine = False
                 self.nodeLine = False
                 self.stopStatus = True
-                print("Stop line or node line detected")
+                # print("Stop line or node line detected")
 
                 self.waitForCommand(qCommand)
                 qBreak.put(0)
@@ -653,7 +653,7 @@ class compVision:
 
         self.newOffset -= (self.center + 40)
 
-        print("Offset: {}".format(self.newOffset))
+        # print("Offset: {}".format(self.newOffset))
 
         # print(self.newOffset)
 
@@ -699,7 +699,6 @@ class compVision:
 
     def waitForCommand(self, qCommand):
         """Get steering command."""
-        print(1)
         while qCommand.empty():
             time.sleep(0.01)
 
