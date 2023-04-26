@@ -114,7 +114,6 @@ class Autonomous():
                 print("Recived breaking")
                 breaking = qBreak.get()
                 self.breakingStatus = breaking
-                print("status1 {}".format(self.breakingStatus))
                 I2C_proc.send((2, breaking))
 
             if time.time() - pingTime > self.timeOut:
@@ -132,7 +131,6 @@ class Autonomous():
                         self.object = True
                     elif (int(data[0][1]) >= 50) & (self.object):
                         print("Release")
-                        print("status2 {}".format(self.breakingStatus))
                         if self.breakingStatus == 0:
                             I2C_proc.send((2, 0))
                             self.object = False
