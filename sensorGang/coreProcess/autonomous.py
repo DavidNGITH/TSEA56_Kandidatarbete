@@ -97,6 +97,8 @@ class Autonomous():
                 #                print("Recived steering")
                 steering = qSteering.get()
 
+                print("Steering: {}".format(steering))
+
                 I2C_proc.send((1, steering))
 
             if not qSpeed.empty():
@@ -119,6 +121,7 @@ class Autonomous():
             if time.time() - i2cTimeElapsed > 0.1:
                 try:
                     data = I2C_proc.get()
+                    print(int(data[0][1]))
                     if (int(data[0][1]) < 40) & (self.object is False):
                         print("Obstacle")
                         I2C_proc.send((2, 1))

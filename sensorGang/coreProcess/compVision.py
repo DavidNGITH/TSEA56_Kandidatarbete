@@ -653,7 +653,7 @@ class compVision:
 
         self.newOffset -= (self.center + 40)
 
-        print(self.newOffset)
+        print("Offset: {}".format(self.newOffset))
 
         # print(self.newOffset)
 
