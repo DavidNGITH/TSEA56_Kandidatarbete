@@ -38,6 +38,9 @@ class Autonomous():
         # Init multiprocessing
         self.multiProcessing()
 
+        #
+        self.breakingStatus = 0
+
     def onMessage(self, client, userdata, message):
         """MQTT callback function."""
         try:
@@ -110,6 +113,7 @@ class Autonomous():
             if not qBreak.empty():
                 print("Recived breaking")
                 breaking = qBreak.get()
+                self.breakingStatus = breaking
                 I2C_proc.send((2, breaking))
 
             if time.time() - pingTime > self.timeOut:
@@ -127,8 +131,9 @@ class Autonomous():
                         self.object = True
                     elif (int(data[0][1]) >= 50) & (self.object):
                         print("Release")
-                        I2C_proc.send((2, 0))
-                        self.object = False
+                        if self.breakingStatus == 0:
+                            I2C_proc.send((2, 0))
+                            self.object = False
                     if time.time() - sendI2C > 1:
                         qI2CDataRecived.put(data[0])
                         qI2CDataRecived.put(data[1])
