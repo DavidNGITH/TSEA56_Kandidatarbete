@@ -652,6 +652,8 @@ class compVision:
 
         self.newOffset -= (self.center + 40)
 
+        print(self.newOffset)
+
         # print(self.newOffset)
 
         # if self.lastOffset:
