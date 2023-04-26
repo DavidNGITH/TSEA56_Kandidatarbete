@@ -412,7 +412,7 @@ class compVision:
 
             if (time.time() - self.intersectionTime > 4):
                 self.stopRequired = True
-                self.stopLineDistance = 0
+                self.lastStopLineDistance
 
             # print(self.newOffset)
             # print(steering)
@@ -698,7 +698,7 @@ class compVision:
         """Get offset on left turn."""
         self.currentSpeed = self.turningSpeed - 10
         if self.leftHistogram is not None:
-            self.newOffset = (self.leftHistogram - 115)*3
+            self.newOffset = (self.leftHistogram - 95)*3
         else:
             self.newOffset = - 150
 
