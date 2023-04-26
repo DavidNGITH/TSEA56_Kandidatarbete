@@ -101,6 +101,7 @@ class compVision:
         self.currentSpeed = 110
         self.lastSpeed = 110
         self.speedToSend = None
+        self.intersectionTime = 0
 
         # Get offset
         self.getOffset = self.getDataFromLines
