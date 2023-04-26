@@ -404,7 +404,7 @@ class compVision:
                 steering_raw = self.PD.get_control(self.newOffset)
                 steering = int((steering_raw)*0.2 + 52)
 
-            if (time.time()-self.intersectionTime > 3 and
+            if (time.time()-self.intersectionTime > 2.5 and
                     not self.normalSteering):
                 print("normal")
                 self.getOffset = self.getDataFromLines
