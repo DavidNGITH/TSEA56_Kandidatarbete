@@ -23,8 +23,8 @@ class compVision:
         self.img = None
         self.laneLines = []
         self.lineCenter = None
-        self.lastOffset = None
-        self.newOffset = None
+        self.lastOffset = 0
+        self.newOffset = 0
 
         # ROIDIM: Upperleft, UpperRight, LowerRight, LowerLeft
         roiP1X = int(roiPerc[0] * self.width)
