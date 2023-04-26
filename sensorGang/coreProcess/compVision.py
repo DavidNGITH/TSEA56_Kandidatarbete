@@ -410,7 +410,7 @@ class compVision:
                 self.getOffset = self.getDataFromLines
                 self.normalSteering = True
 
-            if (time.time() - self.intersectionTime > 3):
+            if (time.time() - self.intersectionTime > 4):
                 self.stopRequired = True
                 self.lastStopLineDistance = 0
 
