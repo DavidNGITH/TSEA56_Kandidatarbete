@@ -403,12 +403,12 @@ class compVision:
                 steering_raw = self.PD.get_control(self.newOffset)
                 steering = int((steering_raw)*0.2 + 52)
 
-            if (self.intersectionTime - time.time() > 2 and
+            if (self.intersectionTime - time.time() > 3 and
                     not self.normalSteering):
                 self.getOffset = self.getDataFromLines
                 self.normalSteering = True
 
-            if (self.intersectionTime - time.time() > 4):
+            if (self.intersectionTime - time.time() > 5):
                 self.stopRequired = True
 
             # print(self.newOffset)
@@ -693,7 +693,7 @@ class compVision:
 
     def getOffsetLeftTurn(self):
         """Get offset on left turn."""
-        self.currentSpeed = self.turningSpeed
+        self.currentSpeed = self.turningSpeed - 10
         if self.leftHistogram is not None:
             self.newOffset = (self.leftHistogram - 115)*2.5
         else:
@@ -701,7 +701,7 @@ class compVision:
 
     def getOffsetRightTurn(self):
         """Get offset on right turn."""
-        self.currentSpeed = self.turningSpeed
+        self.currentSpeed = self.turningSpeed - 10
         if self.rightHistogram is not None:
             self.newOffset = (self.rightHistogram - 530)*2.5
         else:
