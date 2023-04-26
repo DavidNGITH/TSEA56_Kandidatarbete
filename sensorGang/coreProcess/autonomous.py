@@ -125,11 +125,11 @@ class Autonomous():
             if time.time() - i2cTimeElapsed > 0.1:
                 try:
                     data = I2C_proc.get()
-                    if (int(data[0][1]) < 50) & (self.object is False):
+                    if (int(data[0][1]) < 40) & (self.object is False):
                         print("Obstacle")
                         I2C_proc.send((2, 1))
                         self.object = True
-                    elif (int(data[0][1]) >= 50) & (self.object):
+                    elif (int(data[0][1]) >= 40) & (self.object):
                         print("Release")
                         if self.breakingStatus == 0:
                             I2C_proc.send((2, 0))

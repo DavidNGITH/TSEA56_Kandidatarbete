@@ -411,7 +411,6 @@ class compVision:
                 self.normalSteering = True
 
             if (time.time() - self.intersectionTime > 4):
-                print("ready")
                 self.stopRequired = True
                 self.stopLineDistance = 0
 
