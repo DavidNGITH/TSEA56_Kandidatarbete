@@ -401,16 +401,16 @@ class compVision:
                 self.getOffset = self.getDataFromLines
                 self.normalSteering = True
 
-                # print(self.newOffset)
-                # print(steering)
+            # print(self.newOffset)
+            # print(steering)
 
-                if steering < 0:
-                    steering = 0
+            if steering < 0:
+                steering = 0
 
-                elif steering > 120:
-                    steering = 120
+            elif steering > 120:
+                steering = 120
 
-                qSteering.put(steering)
+            qSteering.put(steering)
 
             # if self.stopStatus and (time.time() - self.stopTimer > 3):
             #    self.stopStatus = False
