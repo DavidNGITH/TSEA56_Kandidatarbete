@@ -291,7 +291,7 @@ class compVision:
             return
 
     def getCenterOffset(self, qSteering, statusValue, qSpeed, qBreak,
-                        qCommand):
+                        qCommand, qPD):
         """Calculate the center offset in frame."""
         threadStream = VideoStream(self.resolution)  # Creates Video stream
         # threadStream = VideoStreamFile()
@@ -302,6 +302,13 @@ class compVision:
         qSpeed.put(self.normalSpeed)
 
         while status:
+
+            if qPD.empty() is False:
+                message = qPD.get()
+                if message[0] == 0:
+                    self.PD.updateKp(message[1])
+                else:
+                    self.PD.updateKp(message[1])
 
             # t1 = time.time()
 

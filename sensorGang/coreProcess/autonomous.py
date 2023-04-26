@@ -48,7 +48,7 @@ class Autonomous():
             print("Couldn't read mqtt message")
 
     def handleMessage(self, qMessageMQTT, qI2CDataRecived,
-                      qSteering, qSpeed, qBreak, qCommand, status):
+                      qSteering, qSpeed, qBreak, qCommand, qPD, status):
         """Handle messages from other processes."""
         print("In handleMessage autonomous!")
         I2C_proc = i2cHandle.I2C()
@@ -84,11 +84,11 @@ class Autonomous():
 
                 elif message[0] == "PD/Kp":
                     print("Recived Kp data in autonomous")
-                    self.PD.updateKp(message[1])
+                    qPD.put((0, message[1]/100))
 
                 elif message[0] == "PD/Kd":
                     print("Recived Kd data in autonomous")
-                    self.PD.updateKd(message[1])
+                    qPD.put((1, message[1]/100))
                 elif message[0] == "command":
                     print("Recived command data in autonomous")
                     qCommand.put(message[1])
@@ -177,6 +177,7 @@ class Autonomous():
         self.qSpeed = multiprocessing.Queue()           # Speed data to motors
         self.qBreak = multiprocessing.Queue()
         self.qCommand = multiprocessing.Queue()
+        self.qPD = multiprocessing.Queue()
 
         self.statusCenterOffset = multiprocessing.Value('i', 1)
         self.statusHandleMessage = multiprocessing.Value('i', 1)
@@ -188,6 +189,7 @@ class Autonomous():
                                                 self.qSpeed,
                                                 self.qBreak,
                                                 self.qCommand,
+                                                self.qPD,
                                                 self.statusHandleMessage))
 
         self.p2 = multiprocessing.Process(target=self.laneData.getCenterOffset,
@@ -195,7 +197,8 @@ class Autonomous():
                                                 self.statusCenterOffset,
                                                 self.qSpeed,
                                                 self.qBreak,
-                                                self.qCommand))
+                                                self.qCommand,
+                                                self.qPD))
 
         self.p1.start()  # Starts handleMessage process
         self.p2.start()  # Starts getCenterOffset process
