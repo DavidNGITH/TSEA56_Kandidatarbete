@@ -94,6 +94,7 @@ class compVision:
         self.slowDownTimer = 0
         self.slowDown = False
         self.lastSlowDown = None
+        self.normalSteering = True
 
         # Speed
         self.normalSpeed = 110
