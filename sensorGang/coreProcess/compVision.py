@@ -195,7 +195,7 @@ class compVision:
                         self.stopRequired = True
                         self.getOffset = self.getDataFromLines
                 else:
-                    # print("Already stopped")
+                    print("Already stopped")
                     self.stop = False
 
                 self.stopLine = True
