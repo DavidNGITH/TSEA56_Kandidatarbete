@@ -12,9 +12,6 @@ class PDcontroller:
         self.steering = 0
 
     def get_control(self, center_offset):
-        print("Kd : {}".format(self.Kd))
-        print("Kp : {}".format(self.Kp))
-
         error = center_offset
         if self.last_error is not None:
             self.derivative_term = self.Kd * \
