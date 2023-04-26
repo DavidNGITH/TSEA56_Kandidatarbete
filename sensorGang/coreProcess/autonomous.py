@@ -102,8 +102,8 @@ class Autonomous():
             if not qSpeed.empty():
                 print("Recived speed")
                 speed = qSpeed.get()
-
-                I2C_proc.send((0, speed))
+                if not self.object:
+                    I2C_proc.send((0, speed))
 
             if not qBreak.empty():
                 print("Recived breaking")

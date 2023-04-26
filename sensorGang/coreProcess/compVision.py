@@ -93,6 +93,14 @@ class compVision:
         self.steerRight = False
         self.slowDownTimer = 0
         self.slowDown = False
+        self.lastSlowDown = None
+
+        # Speed
+        self.normalSpeed = 110
+        self.turningSpeed = 90
+        self.currentSpeed = 110
+        self.lastSpeed = 110
+        self.speedToSend = None
 
         # Get offset
         self.getOffset = self.getDataFromLines
@@ -290,6 +298,8 @@ class compVision:
 
         status = statusValue.value
 
+        qSpeed.put(self.normalSpeed)
+
         while status:
 
             # t1 = time.time()
@@ -309,26 +319,21 @@ class compVision:
             # Histogram calc from canny image
             histogram = np.sum(self.img[400:480, 5:635], axis=0)
             self.leftHistogram = np.argmax(histogram[:int(self.center-60)]) + 5
+            if self.leftHistogram == 5:
+                self.leftHistogram = None
+
             self.rightHistogram = (np.argmax(histogram[int(self.center+60):]) +
                                    self.center + 65)
-            self.midpointHistogram = int((self.rightHistogram -
-                                          self.leftHistogram)
-                                         / 2 + self.leftHistogram)
-            """
-            y1 = [(self.leftHistogram, 0), (self.leftHistogram, self.height)]
+            if self.rightHistogram == self.center + 65:
+                self.rightHistogram = None
 
-            y2 = [(self.rightHistogram, 0),
-                  (self.rightHistogram, self.height)]
-
-            y3 = [(self.midpointHistogram, 0),
-                  (self.midpointHistogram, self.height)]
-
-            plt.plot(histogram)
-            plt.vlines(self.leftHistogram, ymin=0,
-                       ymax=self.height, colors='red')
-            plt.vlines(self.rightHistogram, ymin=0,
-                       ymax=self.height, colors='red')
-            plt.show()"""
+            if (self.rightHistogram is not None and
+                    self.leftHistogram is not None):
+                self.midpointHistogram = int((self.rightHistogram -
+                                              self.leftHistogram)
+                                             / 2 + self.leftHistogram)
+            else:
+                self.midpointHistogram = None
 
             # Apply Hough transfrom
             lineSegments = cv2.HoughLinesP(self.img, self.rho, self.angle,
@@ -346,28 +351,23 @@ class compVision:
             # Add lines to original image
             # self.addLines()
 
-            """# CALC X VALUE FOR Y = 10
-            if (self.xPointRight and self.xPointLeft):
-                self.midpointFromPoints = int(
-                    (self.xPointRight - self.xPointLeft)/2 + self.xPointLeft)
-                # y4 = [(self.midpointFromPoints, 0),
-                #      (self.midpointFromPoints, self.height)]
-                # self.drawLine(y4, (0,242,255), 2)
-                # print("y1:{} y2:{} y3:{} y4:{}".format(y1,y2,y3,y4))"""
-
-            # self.drawLine(y1, (0,242,255), 2) # Left line
-            # self.drawLine(y2, (0,242,255), 2) # Right line
-            # self.drawLine(y3, (128,0,128), 2) # Midpoint line
+            self.lastSpeed = self.currentSpeed
 
             self.getOffset()  # Get offset
 
             self.lastOffset = self.newOffset
-            if self.slowDown:
-                self.slowDownTimer = time.time()
-                qSpeed.put(85)
 
-            if time.time() - self.slowDownTimer > 0.5:
-                qSpeed.put(110)
+            if self.currentSpeed is not self.lastSpeed:
+                if self.currentSpeed == self.turningSpeed:
+                    self.slowDownTimer = time.time()
+                    if self.speedToSend is not self.turningSpeed:
+                        self.speedToSend = self.turningSpeed
+                        qSpeed.put(self.speedToSend)
+
+            if (time.time() - self.slowDownTimer > 0.5 and
+                    self.speedToSend is not self.normalSpeed):
+                self.speedToSend = self.normalSpeed
+                qSpeed.put(self.speedToSend)
 
             # y5 = [(self.newOffset + self.center, 0),
             #      (self.newOffset + self.center, self.height)]
@@ -380,7 +380,6 @@ class compVision:
             if self.stop:
                 self.stopTimer = time.time()
                 qBreak.put(1)
-                self.slowDown = True
                 self.stopLine = False
                 self.nodeLine = False
                 self.stopStatus = True
@@ -389,10 +388,17 @@ class compVision:
                 self.waitForCommand(qCommand)
                 qBreak.put(0)
                 self.stop = False
+                self.intersectionTime = time.time()
+                self.normalSteering = False
 
             else:
                 steering_raw = self.PD.get_control(self.newOffset)
                 steering = int((steering_raw)*0.2 + 52)
+
+            if (self.intersectionTime - time.time() > 2 and
+                    not self.normalSteering):
+                self.getOffset = self.getDataFromLines
+                self.normalSteering = True
 
                 # print(self.newOffset)
                 # print(steering)
@@ -515,23 +521,23 @@ class compVision:
 
         # 560
 
-        self.slowDown = True
+        self.currentSpeed = self.turningSpeed
 
         # Histogrammet har hittat båda linjerna
-        if self.leftHistogram > 10 and self.rightHistogram < 630:
+        if self.leftHistogram is not None and self.rightHistogram is not None:
             # Båda linjernas lutning har hittats
             if self.slopeLeft and self.slopeRight:
-                print("Case 1")
+                # print("Case 1")
 
                 # Här kan vi använda alla variabler
 
                 self.newOffset = (0.6 * self.midpointHistogram +
                                   0.5 * self.lineCenter)
-                self.slowDown = False
+                self.currentSpeed = self.normalSpeed
 
             # Endast vänstra linjens lutning har hittats
             elif self.slopeLeft:
-                print("Case 2")
+                # print("Case 2")
 
                 # Här kan vi använda
                 # self.leftHistogram
@@ -548,7 +554,7 @@ class compVision:
 
             # Endast högra linjens lutning har hittats
             elif self.slopeRight:
-                print("Case 3")
+                # print("Case 3")
                 # print(self.rightHistogram)
 
                 # Här kan vi använda
@@ -566,7 +572,7 @@ class compVision:
 
             # Inga lutningar har hittats
             else:
-                print("Case 4")
+                # print("Case 4")
 
                 # Här kan vi använda:
                 # self.leftHistogram
@@ -576,10 +582,10 @@ class compVision:
                 self.newOffset = self.midpointHistogram
 
         # Histogrammet har endast hittat vänstra linjen
-        elif self.leftHistogram > 10:
+        elif self.leftHistogram is not None:
             # Vänstra linjens lutning har hittats
             if self.slopeLeft:
-                print("Case 5")
+                # print("Case 5")
 
                 # Här kan vi använda:
                 # self.leftHistogram
@@ -595,7 +601,7 @@ class compVision:
                 pass
             # Ingen lutning har hittats
             else:
-                print("Case 6")
+                # print("Case 6")
 
                 # Här kan vi använda:
                 # self.leftHistogram
@@ -609,10 +615,10 @@ class compVision:
             pass
 
         # Histogrammet har endast hittat högra linjen
-        elif self.rightHistogram < 630:
+        elif self.rightHistogram is not None:
             # Vänstra linjens lutning har hittats
             if self.slopeRight:
-                print("Case 7")
+                # print("Case 7")
 
                 # Här kan vi anväda:
                 # self.rightHistogram
@@ -625,7 +631,7 @@ class compVision:
                 pass
             # Ingen lutning har hittats
             else:
-                print("Case 8")
+                # print("Case 8")
 
                 # Här kan vi använda:
                 # self.rightHistogram
@@ -635,7 +641,7 @@ class compVision:
                 pass
 
         else:
-            print("Case 9")
+            # print("Case 9")
             # print("Nothing detected")
             self.newOffset = self.lastOffset
 
@@ -656,35 +662,37 @@ class compVision:
 
         self.newOffset = int(self.newOffset)
 
+    def getOffsetStraightLeft(self):
+        """Get offset on straight, left line avalible."""
+        self.currentSpeed = self.normalSpeed
+        if self.leftHistogram is not None:
+            self.newOffset = (self.leftHistogram - 115)*2
+        else:
+            self.newOffset = - 50
+
     def getOffsetStraightRight(self):
         """Get offset on straight, right line avalible."""
+        self.currentSpeed = self.normalSpeed
         if self.rightHistogram is not None:
-            self.newOffset = self.rightHistogram - 560
+            self.newOffset = (self.rightHistogram - 530)*2
         else:
             self.newOffset = 50
 
-    def getOffsetStraightLeft(self):
-        """Get offset on straight, left line avalible."""
+    def getOffsetLeftTurn(self):
+        """Get offset on left turn."""
+        self.currentSpeed = self.turningSpeed
         if self.leftHistogram is not None:
-            self.newOffset = self.leftHistogram - 115
+            self.newOffset = (self.leftHistogram - 115)*2.5
         else:
-            self.newOffset = - 50
+            self.newOffset = - 150
 
     def getOffsetRightTurn(self):
         """Get offset on right turn."""
-        print("Case: Turn right")
-        print(self.rightHistogram)
-        if not self.rightHistogram == 385:
+        self.currentSpeed = self.turningSpeed
+        if self.rightHistogram is not None:
             self.newOffset = (self.rightHistogram - 530)*2.5
         else:
             self.newOffset = 150
-
-    def getOffsetLeftTurn(self):
-        """Get offset on left turn."""
-        if self.leftHistogram is not None:
-            self.newOffset = self.leftHistogram - 115
-        else:
-            self.newOffset = - 50
 
     def waitForCommand(self, qCommand):
         """Get steering command."""
