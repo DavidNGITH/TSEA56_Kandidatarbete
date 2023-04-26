@@ -412,7 +412,7 @@ class compVision:
 
             if (time.time() - self.intersectionTime > 3):
                 self.stopRequired = True
-                self.lastStopLineDistance
+                self.lastStopLineDistance = 0
 
             # print(self.newOffset)
             # print(steering)
