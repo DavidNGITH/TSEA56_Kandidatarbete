@@ -47,7 +47,7 @@ class compVision:
         # Hough settings
         self.rho = 1
         self.angle = np.pi / (180*1.8)
-        self.minThreshold = 0
+        self.minThreshold = 2
         self.minLineLength = 6
         self.maxLineGap = 3
 
@@ -248,7 +248,7 @@ class compVision:
             rightFitAverage = np.average(rightFit, axis=0)
             self.slopeRight = rightFitAverage[0]
             self.laneLines.append(self.makePoints(rightFitAverage, 1))
-
+        print("Length: {}".format(stopFit))
         if len(stopFit) > 5:
             stopFitAverage = np.average(stopFit, axis=0)
             self.makeStopLine(stopFitAverage, minX, maxX)
