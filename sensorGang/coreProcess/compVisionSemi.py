@@ -406,7 +406,7 @@ class compVision:
             if self.slopeLeft and self.slopeRight:
                 casePrint = "Case 1"
                 self.newOffset = (0.6 * self.midpointHistogram*2 +
-                                  0.5 * self.lineCenter)
+                                  0.5 * self.lineCenter)/1.7
                 self.currentSpeed = self.normalSpeed
 
                 # self.newOffset = self.midpointHistogram
