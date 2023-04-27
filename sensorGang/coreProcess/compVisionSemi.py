@@ -168,6 +168,8 @@ class compVision:
 
         width = maxX-minX
 
+        print("Width: {}".format(width))
+
         # If stopline
         if width > self.widthStopLine:
             # If stop required
