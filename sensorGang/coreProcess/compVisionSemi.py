@@ -96,10 +96,10 @@ class compVision:
         self.intersectionTime = 0
 
         # Get offset
-        self.getOffset = self.getCenterOffset
+        self.getOffset = self.getDataFromLines
 
         self.casesDict = {
-            0: self.getCenterOffset,
+            0: self.getDataFromLines,
             1: self.getOffsetStraightLeft,
             2: self.getOffsetStraightRight,
             3: self.getOffsetLeftTurn,
