@@ -4,8 +4,6 @@ from pynput import keyboard
 import paho.mqtt.client as mqtt
 import time
 
-currentSpeed = 0
-steerServo = 50
 
 state = True
 
@@ -26,38 +24,24 @@ mqtt_init()
 
 
 def main(key):
-    # mqtt_init()
-    global steerServo
-    global currentSpeed
-    if key == keyboard.Key.left:
-        steerServo -= 10
-        if steerServo < 0:
-            steerServo = 0
-        mqtt_client.publish("steering", str(steerServo))
-        print(steerServo)
-    elif key == keyboard.Key.right:
-        steerServo += 10
-        if steerServo >= 120:
-            steerServo = 120
-        mqtt_client.publish("steering", str(steerServo))
-        print(steerServo)
-    elif key == keyboard.Key.up:
-        if currentSpeed < 240:
-            currentSpeed += 10
-            mqtt_client.publish("speed", str(currentSpeed))
-            print(currentSpeed)
-            time.sleep(0.0025)
-    elif key == keyboard.Key.down:
-        if currentSpeed > 0:
-            currentSpeed -= 10
-            mqtt_client.publish("speed", str(currentSpeed))
-            print(currentSpeed)
-            time.sleep(0.0025)
-    elif key == keyboard.Key.space:
-        currentSpeed = 0
-        mqtt_client.publish("speed", str(currentSpeed))
-        mqtt_client.publish("steering", str(steerServo))
-        time.sleep(0.0025)
+    """Main function."""
+    if key == keyboard.KeyCode.from_char('1'):
+        mqtt_client.publish("command", "1")
+
+    elif key == keyboard.KeyCode.from_char('2'):
+        mqtt_client.publish("command", "2")
+
+    elif key == keyboard.KeyCode.from_char('3'):
+        mqtt_client.publish("command", "3")
+
+    elif key == keyboard.KeyCode.from_char('4'):
+        mqtt_client.publish("command", "4")
+
+    elif key == keyboard.KeyCode.from_char("g"):
+        mqtt_client.publish("mode", "2")
+
+    elif key == keyboard.KeyCode.from_char("s"):
+        mqtt_client.publish("stop", "2")
 
 
 def on_release(key):
@@ -65,15 +49,10 @@ def on_release(key):
         # Stop listener
         global state
         state = False
-        currentSpeed = 0
-        mqtt_client.publish("speed", str(currentSpeed))
         return False
 
 
 # Collect events until released
-"""with keyboard.Listener(on_press= main, on_release= on_release) as listener:
-    print("hej")
-    listener.join()"""
 
 l = keyboard.Listener(on_press=main, on_release=on_release)
 l.start()
