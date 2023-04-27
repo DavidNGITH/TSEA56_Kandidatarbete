@@ -335,14 +335,14 @@ class compVision:
             self.getOffset()  # Get offset
 
             # Checks if speed is updated
-            if self.currentSpeed is not self.lastSpeed:
-                # If turning speed
-                if self.currentSpeed == self.turningSpeed:
-                    self.slowDownTimer = time.time()  # Reset timer
-                    # If speed hasn't been sent already
-                    if self.speedToSend is not self.turningSpeed:
-                        self.speedToSend = self.turningSpeed
-                        qSpeed.put(self.speedToSend)
+            # if self.currentSpeed is not self.lastSpeed:
+            # If turning speed
+            if self.currentSpeed == self.turningSpeed:
+                self.slowDownTimer = time.time()  # Reset timer
+                # If speed hasn't been sent already
+                if self.speedToSend is not self.turningSpeed:
+                    self.speedToSend = self.turningSpeed
+                    qSpeed.put(self.speedToSend)
 
             # Switches to normal speed
             if (time.time() - self.slowDownTimer > 0.5 and
