@@ -35,11 +35,10 @@ class SemiAutonomous():
         self.mqttClient.on_message = self.onMessage
         self.mqttClient.subscribe(MQTT_TOPIC)
 
+        self.breakingStatus = 0
+
         # Init multiprocessing
         self.multiProcessing()
-
-        #
-        self.breakingStatus = 0
 
     def onMessage(self, client, userdata, message):
         """MQTT callback function."""
