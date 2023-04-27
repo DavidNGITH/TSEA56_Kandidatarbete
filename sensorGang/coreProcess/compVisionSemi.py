@@ -409,7 +409,7 @@ class compVision:
                 #                  0.5 * self.lineCenter)
                 # self.currentSpeed = self.normalSpeed
 
-                # self.newOffset = self.midpointHistogram
+                self.newOffset = self.midpointHistogram
 
             # Endast vänstra linjens lutning har hittats
             elif self.slopeLeft:
