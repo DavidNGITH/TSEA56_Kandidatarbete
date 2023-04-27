@@ -24,6 +24,7 @@ class compVision:
         self.laneLines = []
         self.lineCenter = None
         self.newOffset = 0
+        self.lastOffset = 0
 
         # ROIDIM: Upperleft, UpperRight, LowerRight, LowerLeft
         roiP1X = int(roiPerc[0] * self.width)
@@ -381,6 +382,8 @@ class compVision:
     def getDataFromLines(self):
         """Get offset from lines."""
         self.currentSpeed = self.turningSpeed
+
+        self.lastOffset = self.newOffset
 
         # Histogrammet har hittat båda linjerna
         if self.leftHistogram is not None and self.rightHistogram is not None:
