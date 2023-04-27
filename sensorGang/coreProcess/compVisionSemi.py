@@ -337,7 +337,7 @@ class compVision:
             # Checks if speed is updated
             # if self.currentSpeed is not self.lastSpeed:
             # If turning speed
-            if self.currentSpeed == self.turningSpeed:
+            if self.currentSpeed is not self.normalSpeed:
                 self.slowDownTimer = time.time()  # Reset timer
                 # If speed hasn't been sent already
                 if self.speedToSend is not self.turningSpeed:
@@ -466,13 +466,13 @@ class compVision:
 
             return
 
-        # print(casePrint)
+        print(casePrint)
 
         self.newOffset -= (self.center + 40)
 
         self.newOffset = int(self.newOffset)
 
-        print(self.newOffset)
+        # print(self.newOffset)
 
     def getOffsetStraightLeft(self):
         """Get offset on straight, left line avalible."""
@@ -494,7 +494,7 @@ class compVision:
 
     def getOffsetLeftTurn(self):
         """Get offset on left turn."""
-        self.currentSpeed = self.turningSpeed
+        self.currentSpeed = self.turningSpeed + 10
         self.intersectionTimer = 1.5
         if self.leftHistogram is not None:
             self.newOffset = (self.leftHistogram - 130)*3.5
@@ -503,7 +503,7 @@ class compVision:
 
     def getOffsetRightTurn(self):
         """Get offset on right turn."""
-        self.currentSpeed = self.turningSpeed
+        self.currentSpeed = self.turningSpeed + 10
         self.intersectionTimer = 1.5
         if self.rightHistogram is not None:
             self.newOffset = (self.rightHistogram - 530)*3
