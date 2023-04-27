@@ -14,7 +14,7 @@ MQTT_TOPIC = [("stop", 0), ("ping", 0), ("speed", 0),
 MQTT_TOPIC_UNSUB = ["stop", "ping", "speed", "PD/Kp", "PD/Kd", "command"]
 
 
-class Autonomous():
+class SemiAutonomous():
     """Class for autonomous driving."""
 
     def __init__(self, mqttClient: mqtt.Client(),
