@@ -364,6 +364,13 @@ class compVision:
             else:
                 steering_raw = self.PD.get_control(self.newOffset)
                 steering = int((steering_raw)*0.2 + 52)
+
+                if steering < 0:
+                    steering = 0
+
+                elif steering > 120:
+                    steering = 120
+
                 qSteering.put(steering)  # Send steering data to car
 
             # If in intersection and > 2.5 s
