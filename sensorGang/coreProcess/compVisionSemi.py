@@ -2,6 +2,7 @@
 import time
 import numpy as np
 import cv2
+from PD_reg import PDcontroller
 from videoStream import VideoStream
 from datetime import datetime
 import matplotlib.pyplot as plt
