@@ -282,7 +282,7 @@ class compVision:
 
         status = statusValue.value
 
-        qSpeed.put(self.normalSpeed)  # Start car
+        # qSpeed.put(self.normalSpeed)  # Start car
 
         while status:
 
@@ -346,13 +346,13 @@ class compVision:
                 # If speed hasn't been sent already
                 if self.speedToSend is not self.turningSpeed:
                     self.speedToSend = self.turningSpeed
-                    qSpeed.put(self.speedToSend)
+                    # qSpeed.put(self.speedToSend)
 
             # Switches to normal speed
             if (time.time() - self.slowDownTimer > 0.5 and
                     self.speedToSend is not self.normalSpeed):
                 self.speedToSend = self.normalSpeed
-                qSpeed.put(self.speedToSend)
+                # qSpeed.put(self.speedToSend)
 
             # If stopline
             if self.stopLine:
@@ -477,6 +477,11 @@ class compVision:
         self.newOffset = int(self.newOffset)
 
         # print(self.newOffset)
+
+        print("Left histo: {}".format(self.leftHistogram))
+        print("Left histo: {}".format(self.rightHistogram))
+        print("Middle histo: {}".format(self.midpointHistogram))
+        print("Crossing : {}".format(self.lineCenter))
 
     def getOffsetStraightLeft(self):
         """Get offset on straight, left line avalible."""
