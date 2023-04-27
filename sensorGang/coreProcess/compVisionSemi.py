@@ -477,7 +477,7 @@ class compVision:
     def getOffsetStraightLeft(self):
         """Get offset on straight, left line avalible."""
         self.currentSpeed = self.normalSpeed
-        self.intersectionTimer = 3
+        self.intersectionTimer = 2
         if self.leftHistogram is not None:
             self.newOffset = (self.leftHistogram - 130)*2
         else:
@@ -486,7 +486,7 @@ class compVision:
     def getOffsetStraightRight(self):
         """Get offset on straight, right line avalible."""
         self.currentSpeed = self.normalSpeed
-        self.intersectionTimer = 3
+        self.intersectionTimer = 2
         if self.rightHistogram is not None:
             self.newOffset = (self.rightHistogram - 530)*2
         else:
@@ -495,7 +495,7 @@ class compVision:
     def getOffsetLeftTurn(self):
         """Get offset on left turn."""
         self.currentSpeed = self.turningSpeed - 10
-        self.intersectionTimer = 2
+        self.intersectionTimer = 1.5
         if self.leftHistogram is not None:
             self.newOffset = (self.leftHistogram - 130)*3.5
         else:
@@ -504,7 +504,7 @@ class compVision:
     def getOffsetRightTurn(self):
         """Get offset on right turn."""
         self.currentSpeed = self.turningSpeed - 10
-        self.intersectionTimer = 2
+        self.intersectionTimer = 1.5
         if self.rightHistogram is not None:
             self.newOffset = (self.rightHistogram - 530)*3
         else:
