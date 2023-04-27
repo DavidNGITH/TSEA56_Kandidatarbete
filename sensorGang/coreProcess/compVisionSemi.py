@@ -41,7 +41,7 @@ class compVision:
 
         # Canny settings
         self.lowerThreshold = 135
-        self.upperThreshold = 200
+        self.upperThreshold = 195
         self.appetureSize = 3
 
         # Hough settings
@@ -91,11 +91,12 @@ class compVision:
 
         # Speed
         self.normalSpeed = 120
-        self.turningSpeed = 90
+        self.turningSpeed = 80
         self.currentSpeed = 110
         self.lastSpeed = 110
         self.speedToSend = None
         self.intersectionTime = 0
+        self.intersectionTimer = 3
 
         # Get offset
         self.getOffset = self.getDataFromLines
@@ -374,7 +375,7 @@ class compVision:
 
                 qSteering.put(steering)  # Send steering data to car
 
-            # If in intersection and > 2.5 s
+            # If in intersection and > 3 s
             if (time.time()-self.intersectionTime > 3 and
                     not self.normalSteering):
                 print("normal")
@@ -476,6 +477,7 @@ class compVision:
     def getOffsetStraightLeft(self):
         """Get offset on straight, left line avalible."""
         self.currentSpeed = self.normalSpeed
+        self.intersectionTimer = 3
         if self.leftHistogram is not None:
             self.newOffset = (self.leftHistogram - 130)*2
         else:
@@ -484,6 +486,7 @@ class compVision:
     def getOffsetStraightRight(self):
         """Get offset on straight, right line avalible."""
         self.currentSpeed = self.normalSpeed
+        self.intersectionTimer = 3
         if self.rightHistogram is not None:
             self.newOffset = (self.rightHistogram - 530)*2
         else:
@@ -492,6 +495,7 @@ class compVision:
     def getOffsetLeftTurn(self):
         """Get offset on left turn."""
         self.currentSpeed = self.turningSpeed - 10
+        self.intersectionTimer = 2
         if self.leftHistogram is not None:
             self.newOffset = (self.leftHistogram - 130)*3.5
         else:
@@ -500,6 +504,7 @@ class compVision:
     def getOffsetRightTurn(self):
         """Get offset on right turn."""
         self.currentSpeed = self.turningSpeed - 10
+        self.intersectionTimer = 2
         if self.rightHistogram is not None:
             self.newOffset = (self.rightHistogram - 530)*3
         else:
