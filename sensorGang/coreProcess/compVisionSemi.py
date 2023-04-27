@@ -47,7 +47,7 @@ class compVision:
         # Hough settings
         self.rho = 1
         self.angle = np.pi / (180*1.8)
-        self.minThreshold = 2
+        self.minThreshold = 3
         self.minLineLength = 6
         self.maxLineGap = 3
 
@@ -69,8 +69,8 @@ class compVision:
         self.slopeRight = None
 
         # Stop lines coordinates
-        self.widthStopLine = 250
-        self.widthNodeLine = 220
+        self.widthStopLine = 220
+        self.widthNodeLine = 170
 
         # Stop
         self.stopLine = False
@@ -171,7 +171,7 @@ class compVision:
         print("Width: {}".format(width))
 
         # If stopline
-        if width > self.widthStopLine:
+        if width > self.widthStopLine and width < 300:
             # If stop required
             if self.stopRequired:
                 self.stopLine = True
@@ -181,11 +181,11 @@ class compVision:
             # Left node
             if minX < 200:
                 self.stopLine = False
-                # print("Node to the left")
+                print("Node to the left")
             # Right node
             elif maxX > 400:
                 self.stopLine = False
-                # print("Node to the right")
+                print("Node to the right")
 
         else:
             # print("No stopline")
