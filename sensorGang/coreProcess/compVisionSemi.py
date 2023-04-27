@@ -464,7 +464,7 @@ class compVision:
 
             return
 
-        print(casePrint)
+        # print(casePrint)
 
         self.newOffset -= (self.center + 40)
 
