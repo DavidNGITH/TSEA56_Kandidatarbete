@@ -479,7 +479,7 @@ class compVision:
         # print(self.newOffset)
 
         print("Left histo: {}".format(self.leftHistogram))
-        print("Left histo: {}".format(self.rightHistogram))
+        print("Right histo: {}".format(self.rightHistogram))
         print("Middle histo: {}".format(self.midpointHistogram))
         print("Crossing : {}".format(self.lineCenter))
 
