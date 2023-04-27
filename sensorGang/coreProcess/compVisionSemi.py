@@ -462,6 +462,8 @@ class compVision:
 
         self.newOffset = int(self.newOffset)
 
+        print(self.newOffset)
+
     def getOffsetStraightLeft(self):
         """Get offset on straight, left line avalible."""
         self.currentSpeed = self.normalSpeed
