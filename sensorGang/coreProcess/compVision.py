@@ -513,28 +513,6 @@ class compVision:
 
     def getDataFromLines(self):
         """Get offset from lines."""
-        # HISTOGRAM
-        # self.leftHistogram
-        # self.rightHistogram
-        # self.midpointHistogram
-
-        # POINTS
-        # self.xPointLeft
-        # self.xPointRight
-        # self.midpointFromPoints
-
-        # INTERCEPT
-        # self.lineCenter
-        # self.slopeRight
-        # self.slopeLeft
-
-        # print("Right histogram: {}".format(self.rightHistogram))
-        # print("Left histogram: {}".format(self.leftHistogram))
-        # print("Midpoint histogram: {}".format(self.midpointHistogram))
-        # print("Crossing: {}".format(self.lineCenter))
-
-        # 560
-
         self.currentSpeed = self.turningSpeed
 
         # Histogrammet har hittat båda linjerna
@@ -542,9 +520,6 @@ class compVision:
             # Båda linjernas lutning har hittats
             if self.slopeLeft and self.slopeRight:
                 # print("Case 1")
-
-                # Här kan vi använda alla variabler
-
                 self.newOffset = (0.6 * self.midpointHistogram +
                                   0.5 * self.lineCenter)
                 self.currentSpeed = self.normalSpeed
@@ -552,47 +527,18 @@ class compVision:
             # Endast vänstra linjens lutning har hittats
             elif self.slopeLeft:
                 # print("Case 2")
-
-                # Här kan vi använda
-                # self.leftHistogram
-                # self.rightHistogram
-                # self.midpointHistogram
-
-                # self.slopeLeft
-                # self.xPointLeft
-
-                # print(self.leftHistogram)
-
                 self.newOffset = (self.midpointHistogram -
                                   1/self.slopeLeft * 420)
 
             # Endast högra linjens lutning har hittats
             elif self.slopeRight:
                 # print("Case 3")
-                # print(self.rightHistogram)
-
-                # Här kan vi använda
-                # self.leftHistogram
-                # self.rightHistogram
-                # self.midpointHistogram
-
-                # self.slopeRight
-                # self.xPointRight
-
-                # print(self.slopeRight)
-
                 self.newOffset = (self.midpointHistogram -
                                   1/self.slopeRight * 370)
 
             # Inga lutningar har hittats
             else:
                 # print("Case 4")
-
-                # Här kan vi använda:
-                # self.leftHistogram
-                # self.rightHistogram
-                # self.midpointHistogram
-
                 self.newOffset = self.midpointHistogram
 
         # Histogrammet har endast hittat vänstra linjen
@@ -600,14 +546,6 @@ class compVision:
             # Vänstra linjens lutning har hittats
             if self.slopeLeft:
                 # print("Case 5")
-
-                # Här kan vi använda:
-                # self.leftHistogram
-                # self.xPointLeft
-                # self.slopeLeft
-
-                # Tar reda på hur många pixlar mellan linjer
-
                 midpointHistogram = (
                     self.width - self.leftHistogram)/2 + self.center
                 self.newOffset = midpointHistogram
@@ -616,10 +554,6 @@ class compVision:
             # Ingen lutning har hittats
             else:
                 # print("Case 6")
-
-                # Här kan vi använda:
-                # self.leftHistogram
-
                 midpointHistogram = (
                     self.width - self.leftHistogram)/2 + self.center
                 self.newOffset = midpointHistogram
@@ -633,12 +567,6 @@ class compVision:
             # Vänstra linjens lutning har hittats
             if self.slopeRight:
                 # print("Case 7")
-
-                # Här kan vi anväda:
-                # self.rightHistogram
-                # self.xPointRight
-                # self.slopeRight
-
                 midpointHistogram = self.center - (self.rightHistogram)/2
                 self.newOffset = midpointHistogram
 
@@ -646,9 +574,6 @@ class compVision:
             # Ingen lutning har hittats
             else:
                 # print("Case 8")
-
-                # Här kan vi använda:
-                # self.rightHistogram
                 midpointHistogram = self.center - (self.rightHistogram)/2
                 self.newOffset = midpointHistogram
 
@@ -656,25 +581,11 @@ class compVision:
 
         else:
             # print("Case 9")
-            # print("Nothing detected")
             self.newOffset = self.lastOffset
 
             return
 
-        # print(self.newOffset)
-        # print(self.lastOffset)
-
         self.newOffset -= (self.center + 40)
-
-        # print("Offset: {}".format(self.newOffset))
-
-        # print(self.newOffset)
-
-        # if self.lastOffset:
-        #    if abs((self.newOffset-self.lastOffset)/self.lastOffset) > 0.10:
-        #        print("Change in offset to large")
-        #        self.newOffset = self.lastOffset
-        #        return
 
         self.newOffset = int(self.newOffset)
 
