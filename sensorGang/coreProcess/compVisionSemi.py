@@ -177,11 +177,11 @@ class compVision:
         elif width < self.widthNodeLine:
             # Left node
             if minX < 200:
-                pass
+                self.stopLine = False
                 # print("Node to the left")
             # Right node
             elif maxX > 400:
-                pass
+                self.stopLine = False
                 # print("Node to the right")
 
         else:
