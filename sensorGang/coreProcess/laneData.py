@@ -114,3 +114,4 @@ def getOffsetRightTurn(self):
         self.newOffset = (self.rightHistogram - 530)*3
     else:
         self.newOffset = 150
+
