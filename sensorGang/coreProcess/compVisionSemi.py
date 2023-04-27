@@ -97,14 +97,14 @@ class compVision:
         self.intersectionTime = 0
 
         # Get offset
-        self.getOffset = laneData.getDataFromLines
+        self.getOffset = self.getDataFromLines
 
         self.casesDict = {
-            0: laneData.getDataFromLines,
-            1: laneData.getOffsetStraightLeft,
-            2: laneData.getOffsetStraightRight,
-            3: laneData.getOffsetLeftTurn,
-            4: laneData.getOffsetRightTurn
+            0: self.getDataFromLines,
+            1: self.getOffsetStraightLeft,
+            2: self.getOffsetStraightRight,
+            3: self.getOffsetLeftTurn,
+            4: self.getOffsetRightTurn
         }
 
     def displayImage(self):
@@ -368,7 +368,7 @@ class compVision:
             if (time.time()-self.intersectionTime > 2.5 and
                     not self.normalSteering):
                 print("normal")
-                self.getOffset = laneData.getDataFromLines
+                self.getOffset = self.getDataFromLines
                 self.normalSteering = True
 
             # Sets stop required
