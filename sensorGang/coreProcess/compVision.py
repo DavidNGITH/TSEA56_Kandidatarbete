@@ -5,6 +5,7 @@ import cv2
 from videoStream import VideoStream
 from datetime import datetime
 import matplotlib.pyplot as plt
+import laneData
 
 from videoStreamFile import VideoStreamFile
 
@@ -23,7 +24,6 @@ class compVision:
         self.img = None
         self.laneLines = []
         self.lineCenter = None
-        self.lastOffset = 0
         self.newOffset = 0
 
         # ROIDIM: Upperleft, UpperRight, LowerRight, LowerLeft
@@ -62,25 +62,17 @@ class compVision:
 
         # Find lines
         self.laneLines = []
-        self.stopLine = False
-        self.nodeLine = False
         self.xPointRight = None
         self.xPointLeft = None
         self.slopeLeft = None
         self.slopeRight = None
-        self.stopAtLine = True
-        self.stopLineTimer = 0
-        self.stopTimer = 0
-        self.stopStatus = False
 
         # Stop lines coordinates
         self.widthStopLine = 250
         self.widthNodeLine = 220
-        # self.heightMin = 200
-        self.heightMax = 390
 
         # Stop
-        self.stop = False
+        self.stopLine = False
         self.stopLineDistance = 0  # Distance to stop line
         self.lastStopLineDistance = 0
         self.stopRequired = True
@@ -105,14 +97,14 @@ class compVision:
         self.intersectionTime = 0
 
         # Get offset
-        self.getOffset = self.getDataFromLines
+        self.getOffset = laneData.getDataFromLines
 
         self.casesDict = {
-            0: self.getCenterOffset,
-            1: self.getOffsetStraightLeft,
-            2: self.getOffsetStraightRight,
-            3: self.getOffsetLeftTurn,
-            4: self.getOffsetRightTurn
+            0: laneData.getDataFromLines,
+            1: laneData.getOffsetStraightLeft,
+            2: laneData.getOffsetStraightRight,
+            3: laneData.getOffsetLeftTurn,
+            4: laneData.getOffsetRightTurn
         }
 
     def displayImage(self):
@@ -169,52 +161,31 @@ class compVision:
         """Create endpoints for stop line."""
         slope, intercept = line
 
-        x1 = int(minX)
-        x2 = int(maxX)
-
         y1 = int(slope * minX + intercept)
         y2 = int(slope * maxX + intercept)
 
         width = maxX-minX
-        height = (y1+y2)/2
 
-        if height < self.heightMax:
-            if width > self.widthStopLine:
-
-                print("Yes, stopline")
-                self.stopLineDistance = abs(self.height-height)
-                # print("Stopline distance: {}".format(self.stopLineDistance))
-
-                if self.stopLineDistance > self.lastStopLineDistance:
-                    if self.stopRequired:
-                        print("Stopping")
-                        self.stop = True
-                        self.stopRequired = False
-                    else:
-                        print("Making stop required")
-                        self.stopRequired = True
-                        self.getOffset = self.getDataFromLines
-                else:
-                    print("Already stopped")
-                    self.stop = False
-
+        # If stopline
+        if width > self.widthStopLine:
+            # If stop required
+            if self.stopRequired:
                 self.stopLine = True
-                self.lastStopLineDistance = self.stopLineDistance
-            elif width < self.widthNodeLine:
-                if minX < 200:
-                    # print("Node to the left")
-                    self.stopLine = True
 
-                elif maxX > 400:
-                    # print("Node to the right")
-                    self.stopLine = True
+        # Checks if node
+        elif width < self.widthNodeLine:
+            # Left node
+            if minX < 200:
+                pass
+                # print("Node to the left")
+            # Right node
+            elif maxX > 400:
+                pass
+                # print("Node to the right")
 
         else:
             # print("No stopline")
             self.stopLine = False
-            self.stop = False
-
-        # self.stopLineCoordinates = [(x1, y1), (x2, y2)]
 
     def lineIntercept(self, lineSegments):
         """Handle detected lines from Hough transform."""
@@ -278,10 +249,6 @@ class compVision:
             stopFitAverage = np.average(stopFit, axis=0)
             self.makeStopLine(stopFitAverage, minX, maxX)
 
-        else:
-            self.stopLine = False
-            self.nodeLine = False
-
         try:
             self.lineCenter = ((rightFitAverage[1]-leftFitAverage[1]) /
                                (leftFitAverage[0]-rightFitAverage[0]))
@@ -291,19 +258,29 @@ class compVision:
             # print("Not enough lines captured")
             return
 
+    def waitForCommand(self, qCommand):
+        """Get steering command."""
+        while qCommand.empty():
+            time.sleep(0.01)
+
+        getCommand = qCommand.get()
+
+        if not getCommand == 10:
+            self.getOffset = self.casesDict[getCommand]
+
     def getCenterOffset(self, qSteering, statusValue, qSpeed, qBreak,
                         qCommand, qPD):
         """Calculate the center offset in frame."""
         threadStream = VideoStream(self.resolution)  # Creates Video stream
-        # threadStream = VideoStreamFile()
         threadStream.start()  # Starts Video stream
 
         status = statusValue.value
 
-        qSpeed.put(self.normalSpeed)
+        qSpeed.put(self.normalSpeed)  # Start car
 
         while status:
 
+            # Handles PD messages from computer
             if qPD.empty() is False:
                 message = qPD.get()
                 if message[0] == 0:
@@ -311,13 +288,7 @@ class compVision:
                 else:
                     self.PD.updateKp(message[1])
 
-            # t1 = time.time()
-
             self.img = threadStream.read()  # Retrive image
-
-            # self.undistortImage() # Undistort image
-
-            # self.orgImg = self.img # Save original image
 
             # Apply canny
             self.img = cv2.Canny(self.img, self.lowerThreshold,
@@ -327,15 +298,19 @@ class compVision:
 
             # Histogram calc from canny image
             histogram = np.sum(self.img[400:480, 5:635], axis=0)
+
+            # Left histogram
             self.leftHistogram = np.argmax(histogram[:int(self.center-60)]) + 5
             if self.leftHistogram == 5:
                 self.leftHistogram = None
 
+            # Right histogram
             self.rightHistogram = (np.argmax(histogram[int(self.center+60):]) +
                                    self.center + 65)
             if self.rightHistogram == self.center + 65:
                 self.rightHistogram = None
 
+            # Midpoint from histogram
             if (self.rightHistogram is not None and
                     self.leftHistogram is not None):
                 self.midpointHistogram = int((self.rightHistogram -
@@ -353,280 +328,53 @@ class compVision:
 
             self.lineIntercept(lineSegments)  # Calc line equations
 
-            # t2 = time.time()
-
-            # print("Time elapsed: {} in ms".format((t2-t1)*1000))
-
-            # Add lines to original image
-            # self.addLines()
-
-            self.lastSpeed = self.currentSpeed
+            self.lastSpeed = self.currentSpeed  # Set last speed to current
 
             self.getOffset()  # Get offset
 
-            self.lastOffset = self.newOffset
-
+            # Checks if speed is updated
             if self.currentSpeed is not self.lastSpeed:
+                # If turning speed
                 if self.currentSpeed == self.turningSpeed:
-                    self.slowDownTimer = time.time()
+                    self.slowDownTimer = time.time()  # Reset timer
+                    # If speed hasn't been sent already
                     if self.speedToSend is not self.turningSpeed:
                         self.speedToSend = self.turningSpeed
                         qSpeed.put(self.speedToSend)
 
+            # Switches to normal speed
             if (time.time() - self.slowDownTimer > 0.5 and
                     self.speedToSend is not self.normalSpeed):
                 self.speedToSend = self.normalSpeed
                 qSpeed.put(self.speedToSend)
 
-            # y5 = [(self.newOffset + self.center, 0),
-            #      (self.newOffset + self.center, self.height)]
-
-            # self.drawLine(y5, (128,0,128), 2) # Calculated offset
-
-            # steering = int((self.newOffset + self.center)*3/8 - 60)
-
-            # if self.stopLine or self.nodeLine:
-            if self.stop:
-                self.stopTimer = time.time()
-                qBreak.put(1)
+            # If stopline
+            if self.stopLine:
+                qBreak.put(1)  # Apply break
+                self.waitForCommand(qCommand)  # Get command
+                qBreak.put(0)  # Release break
                 self.stopLine = False
-                self.nodeLine = False
-                self.stopStatus = True
-                # print("Stop line or node line detected")
-
-                self.waitForCommand(qCommand)
-                qBreak.put(0)
-                self.stop = False
                 self.intersectionTime = time.time()
                 self.normalSteering = False
 
+            # PD controller
             else:
                 steering_raw = self.PD.get_control(self.newOffset)
                 steering = int((steering_raw)*0.2 + 52)
 
+            qSteering.put(steering)  # Send steering data to car
+
+            # If in intersection and > 2.5 s
             if (time.time()-self.intersectionTime > 2.5 and
                     not self.normalSteering):
                 print("normal")
-                self.getOffset = self.getDataFromLines
+                self.getOffset = laneData.getDataFromLines
                 self.normalSteering = True
 
+            # Sets stop required
             if (time.time() - self.intersectionTime > 4):
                 self.stopRequired = True
-                self.lastStopLineDistance = 0
 
-            # print(self.newOffset)
-            # print(steering)
-
-            if steering < 0:
-                steering = 0
-
-            elif steering > 120:
-                steering = 120
-
-            qSteering.put(steering)
-
-            # if self.stopStatus and (time.time() - self.stopTimer > 3):
-            #    self.stopStatus = False
-            #    qBreak.put(0)
-
-            # print("Steering: {}".format(steering))
-
-            # self.displayROI() # Display ROI
-
-            # Display stop line
-            # if self.stopLine:
-            # self.drawLine(self.stopLine, (0,0,255), 5)
-
-            # self.saveImageData() # Save image
-
-            # self.displayImage() # Display image
-
-            status = statusValue.value
-
-            # t2 = time.time()
-
-            # print("Time elapsed: {} in ms".format((t2-t1)*1000))
+            status = statusValue.value  # Check status value
 
         threadStream.stop()  # Stop stream
-
-    def saveImageData(self):
-        """Save self.img with data to file."""
-        turnInstruction = None
-
-        try:
-            if ((self.lineCenter - self.center) > 0):
-                turnInstruction = "TurnRight"
-
-            else:
-                turnInstruction = "TurnLeft"
-        except Exception:
-            turnInstruction = "NoLines"
-
-        self.img = cv2.putText(
-            img=self.img,
-            text=turnInstruction,
-            org=(int(0.10*self.width), int(0.9 * self.height)),
-            fontFace=cv2.FONT_HERSHEY_DUPLEX,
-            fontScale=0.5,
-            color=(125, 246, 55),
-            thickness=1
-        )
-
-        cv2.imwrite("savedImages/{}_{}.jpeg".format(turnInstruction,
-                    str(datetime.now())), self.img)
-
-    def addLines(self):
-        """Add detected lines to image."""
-        lineImage = np.zeros_like(self.orgImg)
-        if self.laneLines is not None:
-            for line in self.laneLines:
-                for x1, y1, x2, y2 in line:
-                    cv2.line(lineImage, (x1, y1), (x2, y2), (0, 0, 255), 2)
-
-        if (self.lineCenter is not None):
-            pass
-            # cv2.line(lineImage, (int(self.lineCenter), 0),
-            #         (int(self.lineCenter), int(self.height)), (0, 255, 0), 2)
-
-        cv2.line(lineImage, (int(self.center), 0),
-                 (int(self.center), int(self.height)), (255, 0, 0), 2)
-        self.img = cv2.addWeighted(self.orgImg, 0.8, lineImage, 1, 1)
-
-    def displayROI(self):
-        """Display ROI lines on image."""
-        self.img = cv2.line(
-            self.img, self.roiDim[0], self.roiDim[1], (0, 140, 255), 2)
-        self.img = cv2.line(
-            self.img, self.roiDim[1], self.roiDim[2], (0, 140, 255), 2)
-        self.img = cv2.line(
-            self.img, self.roiDim[2], self.roiDim[3], (0, 140, 255), 2)
-        self.img = cv2.line(
-            self.img, self.roiDim[3], self.roiDim[0], (0, 140, 255), 2)
-
-        # print("ROI coordinates: {}, {}, {}, {}".format(
-        #    self.roiDim[0], self.roiDim[1], self.roiDim[2], self.roiDim[3]))
-
-    def drawLine(self, coordinates, color, width):
-        """Draw line on image."""
-        self.img = cv2.line(
-            self.img, coordinates[0], coordinates[1], color, width)
-
-    def getDataFromLines(self):
-        """Get offset from lines."""
-        self.currentSpeed = self.turningSpeed
-
-        # Histogrammet har hittat båda linjerna
-        if self.leftHistogram is not None and self.rightHistogram is not None:
-            # Båda linjernas lutning har hittats
-            if self.slopeLeft and self.slopeRight:
-                # print("Case 1")
-                self.newOffset = (0.6 * self.midpointHistogram +
-                                  0.5 * self.lineCenter)
-                self.currentSpeed = self.normalSpeed
-
-            # Endast vänstra linjens lutning har hittats
-            elif self.slopeLeft:
-                # print("Case 2")
-                self.newOffset = (self.midpointHistogram -
-                                  1/self.slopeLeft * 420)
-
-            # Endast högra linjens lutning har hittats
-            elif self.slopeRight:
-                # print("Case 3")
-                self.newOffset = (self.midpointHistogram -
-                                  1/self.slopeRight * 370)
-
-            # Inga lutningar har hittats
-            else:
-                # print("Case 4")
-                self.newOffset = self.midpointHistogram
-
-        # Histogrammet har endast hittat vänstra linjen
-        elif self.leftHistogram is not None:
-            # Vänstra linjens lutning har hittats
-            if self.slopeLeft:
-                # print("Case 5")
-                midpointHistogram = (
-                    self.width - self.leftHistogram)/2 + self.center
-                self.newOffset = midpointHistogram
-
-                pass
-            # Ingen lutning har hittats
-            else:
-                # print("Case 6")
-                midpointHistogram = (
-                    self.width - self.leftHistogram)/2 + self.center
-                self.newOffset = midpointHistogram
-
-                pass
-
-            pass
-
-        # Histogrammet har endast hittat högra linjen
-        elif self.rightHistogram is not None:
-            # Vänstra linjens lutning har hittats
-            if self.slopeRight:
-                # print("Case 7")
-                midpointHistogram = self.center - (self.rightHistogram)/2
-                self.newOffset = midpointHistogram
-
-                pass
-            # Ingen lutning har hittats
-            else:
-                # print("Case 8")
-                midpointHistogram = self.center - (self.rightHistogram)/2
-                self.newOffset = midpointHistogram
-
-                pass
-
-        else:
-            # print("Case 9")
-            self.newOffset = self.lastOffset
-
-            return
-
-        self.newOffset -= (self.center + 40)
-
-        self.newOffset = int(self.newOffset)
-
-    def getOffsetStraightLeft(self):
-        """Get offset on straight, left line avalible."""
-        self.currentSpeed = self.normalSpeed
-        if self.leftHistogram is not None:
-            self.newOffset = (self.leftHistogram - 140)*2
-        else:
-            self.newOffset = - 50
-
-    def getOffsetStraightRight(self):
-        """Get offset on straight, right line avalible."""
-        self.currentSpeed = self.normalSpeed
-        if self.rightHistogram is not None:
-            self.newOffset = (self.rightHistogram - 530)*2
-        else:
-            self.newOffset = 50
-
-    def getOffsetLeftTurn(self):
-        """Get offset on left turn."""
-        self.currentSpeed = self.turningSpeed - 10
-        if self.leftHistogram is not None:
-            self.newOffset = (self.leftHistogram - 140)*3.5
-        else:
-            self.newOffset = - 150
-
-    def getOffsetRightTurn(self):
-        """Get offset on right turn."""
-        self.currentSpeed = self.turningSpeed - 10
-        if self.rightHistogram is not None:
-            self.newOffset = (self.rightHistogram - 530)*3
-        else:
-            self.newOffset = 150
-
-    def waitForCommand(self, qCommand):
-        """Get steering command."""
-        while qCommand.empty():
-            time.sleep(0.01)
-
-        getCommand = qCommand.get()
-
-        if not getCommand == 10:
-            self.getOffset = self.casesDict[getCommand]

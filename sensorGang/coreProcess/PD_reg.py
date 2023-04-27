@@ -20,6 +20,13 @@ class PDcontroller:
         self.PD_value = self.Kp*error + self.derivative_term
         self.last_error = error
         self.update_steering()
+
+        if self.steering < 0:
+            self.steering = 0
+
+        elif self.steering > 120:
+            self.steering = 120
+
         return self.steering
 
     def update_steering(self):
