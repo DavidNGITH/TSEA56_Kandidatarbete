@@ -5,7 +5,6 @@ import cv2
 from videoStream import VideoStream
 from datetime import datetime
 import matplotlib.pyplot as plt
-import laneData
 
 from videoStreamFile import VideoStreamFile
 
@@ -97,10 +96,10 @@ class compVision:
         self.intersectionTime = 0
 
         # Get offset
-        self.getOffset = self.getDataFromLines
+        self.getOffset = self.getCenterOffset
 
         self.casesDict = {
-            0: self.getDataFromLines,
+            0: self.getCenterOffset,
             1: self.getOffsetStraightLeft,
             2: self.getOffsetStraightRight,
             3: self.getOffsetLeftTurn,
