@@ -350,19 +350,20 @@ class compVision:
 
             # If stopline
             if self.stopLine:
+                print("Stopline")
                 qBreak.put(1)  # Apply break
                 self.waitForCommand(qCommand)  # Get command
                 qBreak.put(0)  # Release break
                 self.stopLine = False
                 self.intersectionTime = time.time()
                 self.normalSteering = False
+                self.stopRequired = False
 
             # PD controller
             else:
                 steering_raw = self.PD.get_control(self.newOffset)
                 steering = int((steering_raw)*0.2 + 52)
-
-            qSteering.put(steering)  # Send steering data to car
+                qSteering.put(steering)  # Send steering data to car
 
             # If in intersection and > 2.5 s
             if (time.time()-self.intersectionTime > 2.5 and
