@@ -405,8 +405,8 @@ class compVision:
             # Båda linjernas lutning har hittats
             if self.slopeLeft and self.slopeRight:
                 casePrint = "Case 1"
-                self.newOffset = (0.6 * self.midpointHistogram*2 +
-                                  0.5 * self.lineCenter)/1.7
+                self.newOffset = (0.6 * self.midpointHistogram +
+                                  0.4 * self.lineCenter)
                 self.currentSpeed = self.normalSpeed
 
                 # self.newOffset = self.midpointHistogram
@@ -474,7 +474,7 @@ class compVision:
 
         print(casePrint)
 
-        self.newOffset -= (self.center + 40)
+        self.newOffset -= (self.center)
 
         self.newOffset = int(self.newOffset)
 
