@@ -90,7 +90,7 @@ class compVision:
         self.normalSteering = True
 
         # Speed
-        self.normalSpeed = 100
+        self.normalSpeed = 120
         self.turningSpeed = 90
         self.currentSpeed = 110
         self.lastSpeed = 110
@@ -374,14 +374,14 @@ class compVision:
                 qSteering.put(steering)  # Send steering data to car
 
             # If in intersection and > 2.5 s
-            if (time.time()-self.intersectionTime > 2.5 and
+            if (time.time()-self.intersectionTime > 3 and
                     not self.normalSteering):
                 print("normal")
                 self.getOffset = self.getDataFromLines
                 self.normalSteering = True
 
             # Sets stop required
-            if (time.time() - self.intersectionTime > 4):
+            if (time.time() - self.intersectionTime > 4.5):
                 self.stopRequired = True
 
             status = statusValue.value  # Check status value
@@ -476,7 +476,7 @@ class compVision:
         """Get offset on straight, left line avalible."""
         self.currentSpeed = self.normalSpeed
         if self.leftHistogram is not None:
-            self.newOffset = (self.leftHistogram - 140)*2
+            self.newOffset = (self.leftHistogram - 130)*2
         else:
             self.newOffset = - 50
 
@@ -492,7 +492,7 @@ class compVision:
         """Get offset on left turn."""
         self.currentSpeed = self.turningSpeed - 10
         if self.leftHistogram is not None:
-            self.newOffset = (self.leftHistogram - 140)*3.5
+            self.newOffset = (self.leftHistogram - 130)*3.5
         else:
             self.newOffset = - 150
 
