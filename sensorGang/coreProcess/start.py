@@ -62,7 +62,8 @@ while True:
         elif modeSetting == 2:
             # Semi autonoumous
             print("SemiAutonomous")
-            mode = SemiAutonomous(mqttClient, TIME_OUT_TIME, ROI_PERC)
+            mode = SemiAutonomous(
+                mqttClient, TIME_OUT_TIME, ROI_PERC, RESOLUTION)
 
         else:
             # Autonomous
