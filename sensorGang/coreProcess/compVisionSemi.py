@@ -90,7 +90,7 @@ class compVision:
         self.normalSteering = True
 
         # Speed
-        self.normalSpeed = 110
+        self.normalSpeed = 100
         self.turningSpeed = 85
         self.currentSpeed = 110
         self.lastSpeed = 110
