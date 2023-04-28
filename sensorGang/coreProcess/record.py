@@ -11,6 +11,7 @@ def record(statusValue, resolution, framerate):
     camera = PiCamera()
     camera.resolution = resolution
     camera.framerate = framerate
+    camera.shutter_speed = 10000
 
     print("Starting recording")
     # camera.start_preview()
