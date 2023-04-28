@@ -499,7 +499,7 @@ class compVision:
         self.currentSpeed = self.normalSpeed
         self.intersectionTimer = 2
         if self.rightHistogram is not None:
-            self.newOffset = (self.rightHistogram - 530)*2
+            self.newOffset = (self.rightHistogram - 540)*2
         else:
             self.newOffset = 50
 
