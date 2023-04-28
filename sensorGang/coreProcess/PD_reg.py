@@ -24,7 +24,7 @@ class PDcontroller:
         return self.steering
 
     def update_steering(self):
-        if abs(self.PD_value) > 10:
+        if abs(self.PD_value) > 0:
             if self.PD_value < 0:
                 self.steering = (self.PD_value * 0.7)
             elif self.PD_value > 0:
