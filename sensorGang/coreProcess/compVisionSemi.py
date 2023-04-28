@@ -474,7 +474,7 @@ class compVision:
 
         print(casePrint)
 
-        self.newOffset -= (self.center + 10)
+        self.newOffset -= (self.center + 30)
 
         self.newOffset = int(self.newOffset)
 
