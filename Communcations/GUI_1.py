@@ -53,7 +53,6 @@ class Ui_Dialog(object):
         self.crs_data = "A to B"
         self.lat_pos_data = 0
         self.route_plan_data = "A to B to D to F"
-
         self.map_node_dict = {"A": [799, 440], "B": [570, 500], "C": [720, 517], "D": [
             570, 573], "E": [720, 555], "F": [638, 642], "G": [807, 642], "H": [862, 502]}
         self.previous_rs = "A"
@@ -123,22 +122,22 @@ class Ui_Dialog(object):
         self.stop_car.setStyleSheet("background-color: red")
         self.stop_car.setObjectName("stop_car")
 
-        # KEYBOARD
-        self.upbutton = QtWidgets.QPushButton(Dialog)
-        self.upbutton.setGeometry(QtCore.QRect(110, 550, 81, 26))
-        self.upbutton.setObjectName("upbutton")
+        # SEMI AUTOMATIC COMMANDS
+        self.next_stop_label = QtWidgets.QPushButton(Dialog)
+        self.next_stop_label.setGeometry(QtCore.QRect(160, 550, 80, 40))
+        self.next_stop_label.setObjectName("next_stop_label")
 
-        self.downbutton = QtWidgets.QPushButton(Dialog)
-        self.downbutton.setGeometry(QtCore.QRect(110, 610, 81, 26))
-        self.downbutton.setObjectName("downbutton")
+        self.next_node_label = QtWidgets.QPushButton(Dialog)
+        self.next_node_label.setGeometry(QtCore.QRect(160, 600, 80, 40))
+        self.next_node_label.setObjectName("next_node_label")
 
-        self.leftbutton = QtWidgets.QPushButton(Dialog)
-        self.leftbutton.setGeometry(QtCore.QRect(20, 580, 81, 26))
-        self.leftbutton.setObjectName("leftbutton")
+        self.semi_command_3 = QtWidgets.QPushButton(Dialog)
+        self.semi_command_3.setGeometry(QtCore.QRect(60, 550, 80, 40))
+        self.semi_command_3.setObjectName("semi_command_3")
 
-        self.rightbutton = QtWidgets.QPushButton(Dialog)
-        self.rightbutton.setGeometry(QtCore.QRect(200, 580, 81, 26))
-        self.rightbutton.setObjectName("rightbutton")
+        self.semi_command_4 = QtWidgets.QPushButton(Dialog)
+        self.semi_command_4.setGeometry(QtCore.QRect(60, 600, 80, 40))
+        self.semi_command_4.setObjectName("semi_command_4")
         ###
 
         # textbox which sends commands
@@ -146,9 +145,9 @@ class Ui_Dialog(object):
         self.send_command.setGeometry(QtCore.QRect(280, 425, 120, 30))
         self.send_command.setObjectName("send_command")
 
-        self.manual_control_label = QtWidgets.QLabel(Dialog)
-        self.manual_control_label.setGeometry(QtCore.QRect(110, 510, 101, 16))
-        self.manual_control_label.setObjectName("manual_control_label")
+        self.semi_control_label = QtWidgets.QLabel(Dialog)
+        self.semi_control_label.setGeometry(QtCore.QRect(80, 510, 180, 16))
+        self.semi_control_label.setObjectName("semi_control_label")
 
         self.Command_input_box = QtWidgets.QTextEdit(Dialog)
         self.Command_input_box.setGeometry(QtCore.QRect(30, 410, 241, 64))
@@ -436,14 +435,14 @@ class Ui_Dialog(object):
         self.auto_mode.setText(_translate("Dialog", "Automatic mode"))
         self.start_car.setText(_translate("Dialog", "START"))
         self.stop_car.setText(_translate("Dialog", "STOP"))
-        self.upbutton.setText(_translate("Dialog", "Up"))
-        self.downbutton.setText(_translate("Dialog", "Down"))
-        self.leftbutton.setText(_translate("Dialog", "Left"))
-        self.rightbutton.setText(_translate("Dialog", "Right"))
+        self.next_stop_label.setText(_translate("Dialog", "NEXT \nSTOP"))
+        self.next_node_label.setText(_translate("Dialog", "NEXT \nNODE"))
+        self.semi_command_3.setText(_translate("Dialog", "Left"))
+        self.semi_command_4.setText(_translate("Dialog", "Right"))
         self.send_command.setText(_translate("Dialog", "Send command"))
 
-        self.manual_control_label.setText(
-            _translate("Dialog", "Manual control"))
+        self.semi_control_label.setText(
+            _translate("Dialog", "Semi-automatic Controls"))
         self.command_input_label.setText(_translate("Dialog", "Command input"))
         self.drive_info_label.setText(_translate("Dialog", "Drive info"))
         self.time_label.setText(_translate("Dialog", "Time:"))
@@ -466,6 +465,10 @@ class Ui_Dialog(object):
         # start and stop
         self.start_car.clicked.connect(self.on_start_car_click)
         self.stop_car.clicked.connect(self.on_stop_car_click)
+
+        # Semi-auto controls
+        self.next_stop_label.clicked.connect(self.on_next_stop_click)
+        self.next_node_label.clicked.connect(self.on_next_node_click)
 
     def on_manual_mode_click(self):
         # This method is called when manual_mode is clicked
@@ -528,6 +531,12 @@ class Ui_Dialog(object):
         self.mqtt_client.publish("steering", self.steering)
         self.plot_data(self.save_car_speed_data)
         print("STOP")
+
+    def on_next_stop_click(self):
+        print("Next stop")
+
+    def on_next_node_click(self):
+        print("Next node")
 
     def mqtt_init(self):
         # initate connection
