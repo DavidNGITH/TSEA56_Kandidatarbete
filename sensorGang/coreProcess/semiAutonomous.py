@@ -155,6 +155,8 @@ class SemiAutonomous():
 
         self.mqttClient.unsubscribe(MQTT_TOPIC_UNSUB)  # MQTT unsibscribe
 
+        print("STOOOOOOPS")
+
     def mainLoop(self):
         """Publish data to MQTT broker."""
         while self.statusHandleMessage.value:
@@ -171,6 +173,7 @@ class SemiAutonomous():
                     # print("Distance: {} cm".format(distance))
                     self.mqttClient.publish("data/distance", distance)
                 elif messageToSend[0] == 2:
+
                     self.mqttClient.publish("data/obstacle", messageToSend[1])
 
             if not self.qOffsetData.empty():

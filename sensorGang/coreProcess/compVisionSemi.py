@@ -407,6 +407,8 @@ class compVision:
 
         threadStream.stop()  # Stop stream
 
+        print("STOOOOOOPsipopsi")
+
     def getDataFromLines(self):
         """Get offset from lines."""
         self.currentSpeed = self.turningSpeed
