@@ -158,27 +158,27 @@ class SemiAutonomous():
     def mainLoop(self):
         """Publish data to MQTT broker."""
         while self.statusHandleMessage.value:
-            print("status: {}".format(self.statusHandleMessage))
+            # print("status: {}".format(self.statusHandleMessage))
             if not self.qI2CDataRecived.empty():
                 messageToSend = self.qI2CDataRecived.get()
                 # Hall effect
                 if messageToSend[0] == 1:
                     speed = int((messageToSend[1]/10) * 8 * np.pi)
-                    print("Speed: {} cm/s".format(speed))
+                    # print("Speed: {} cm/s".format(speed))
                     self.mqttClient.publish("data/speed", speed)
                 # Distance
                 elif messageToSend[0] == 0:
                     distance = int(1.1 * messageToSend[1])
-                    print("Distance: {} cm".format(distance))
+                    # print("Distance: {} cm".format(distance))
                     self.mqttClient.publish("data/distance", distance)
                 elif messageToSend[0] == 2:
                     obstacle = messageToSend[1]
-                    print("Obstacle: {} cm".format(obstacle))
+                    # print("Obstacle: {} cm".format(obstacle))
                     self.mqttClient.publish("data/obstacle", obstacle)
 
             if not self.qOffsetData.empty():
                 latPos = self.qOffsetData.get()
-                print("Lat_pos: {} cm".format(latPos))
+                # print("Lat_pos: {} cm".format(latPos))
                 self.mqttClient.publish("data/lat_pos", latPos)
 
             time.sleep(0.01)

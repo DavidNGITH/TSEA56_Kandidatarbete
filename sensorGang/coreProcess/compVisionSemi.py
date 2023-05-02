@@ -404,8 +404,6 @@ class compVision:
 
             t2 = time.time()
 
-            print("time in ms: {}".format((t2-t1)*1000))
-
         threadStream.stop()  # Stop stream
 
     def getDataFromLines(self):
@@ -481,12 +479,12 @@ class compVision:
                 pass
 
         else:
-            print("Case 9")
+            # print("Case 9")
             self.newOffset = self.lastOffset
 
             return
 
-        print(casePrint)
+        # print(casePrint)
 
         self.newOffset -= (self.center+50)
 
@@ -494,10 +492,10 @@ class compVision:
 
         # print(self.newOffset)
 
-        print("Left histo: {}".format(self.leftHistogram))
+        """print("Left histo: {}".format(self.leftHistogram))
         print("Right histo: {}".format(self.rightHistogram))
         print("Middle histo: {}".format(self.midpointHistogram))
-        print("Crossing : {}".format(self.lineCenter))
+        print("Crossing : {}".format(self.lineCenter))"""
 
     def getOffsetStraightLeft(self):
         """Get offset on straight, left line avalible."""
