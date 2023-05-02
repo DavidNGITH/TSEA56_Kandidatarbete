@@ -235,15 +235,15 @@ class compVision:
                     fit = np.polyfit((x1, x2), (y1, y2), 1)
                     slope = fit[0]
                     intercept = fit[1]
-                    if slope < -1:
+                    if slope < -2:
                         if x1 < leftRegionBoundary and x2 < leftRegionBoundary:
                             leftFit.append((slope, intercept))
-                    elif slope > 1:
+                    elif slope > 2:
                         if (x1 > rightRegionBoundary and
                                 x2 > rightRegionBoundary):
                             rightFit.append((slope, intercept))
 
-                    elif (slope < 0.1 and slope > -0.1 and
+                    elif (slope < 1 and slope > -1 and
                           x1 > 0.15 * self.width and x2 < 0.85 * self.width):
 
                         stopFit.append((slope, intercept))
