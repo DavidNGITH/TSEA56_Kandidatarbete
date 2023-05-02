@@ -76,7 +76,7 @@ class SemiAutonomous():
                     self.stop()
                     return
                 elif message[0] == "ping":
-                    print("Recived ping in autonomous")
+                    # print("Recived ping in autonomous")
                     pingTime = time.time()
 
                 elif message[0] == "speed":
