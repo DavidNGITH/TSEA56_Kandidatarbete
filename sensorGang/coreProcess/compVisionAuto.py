@@ -190,7 +190,7 @@ class compVision:
                 print("Node to the left")
             # Right node
             elif maxX > 400:
-                if ((time.time() - self.nodeTimeOut > 1) and
+                if ((time.time() - self.nodeTimeOut > 2) and
                         (time.time() - self.nodeTimeOutStopLine > 2.5)):
                     self.nodeTimeOut = time.time()
                     if not qCommand.empty():
@@ -296,6 +296,8 @@ class compVision:
         qSpeed.put(self.normalSpeed)  # Start car
 
         self.getCommand = qCommand.get()
+
+        self.nodeTimeOut = time.time()
 
         while status:
             t1 = time.time()
