@@ -285,6 +285,7 @@ class compVision:
         qSpeed.put(self.normalSpeed)  # Start car
 
         while status:
+            t1 = time.time()
 
             # Handles PD messages from computer
             if qPD.empty() is False:
@@ -391,6 +392,10 @@ class compVision:
                 self.stopRequired = True
 
             status = statusValue.value  # Check status value
+
+            t2 = time.time()
+
+            print("time in ms: {}".format((t2-t1)*1000))
 
         threadStream.stop()  # Stop stream
 
