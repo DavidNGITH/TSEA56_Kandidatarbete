@@ -9,9 +9,10 @@ from PD_reg import PDcontroller
 
 
 MQTT_TOPIC = [("stop", 0), ("ping", 0), ("speed", 0),
-              ("PD/Kp", 0), ("PD/Kd", 0), ("command", 0)]
+              ("PD/Kp", 0), ("PD/Kd", 0), ("command/turning", 0)]
 
-MQTT_TOPIC_UNSUB = ["stop", "ping", "speed", "PD/Kp", "PD/Kd", "command"]
+MQTT_TOPIC_UNSUB = ["stop", "ping", "speed",
+                    "PD/Kp", "PD/Kd", "command/turning"]
 
 
 class SemiAutonomous():
@@ -88,8 +89,8 @@ class SemiAutonomous():
                 elif message[0] == "PD/Kd":
                     print("Recived Kd data in autonomous")
                     qPD.put((1, message[1]/100))
-                elif message[0] == "command":
-                    print("Recived command data in autonomous")
+                elif message[0] == "command/turning":
+                    print("Recived command/turning data in autonomous")
                     qCommand.put(message[1])
 
             if not qSteering.empty():
@@ -123,12 +124,14 @@ class SemiAutonomous():
                     data = I2C_proc.get()
                     if (int(data[0][1]) < 40) & (self.object is False):
                         print("Obstacle")
-                        I2C_proc.send((2, 1))
+                        I2C_proc.send((2, 1))  # Break
+                        qI2CDataRecived.put((2, "True"))
                         self.object = True
                     elif (int(data[0][1]) >= 40) & (self.object):
                         print("Release")
                         if self.breakingStatus == 0:
-                            I2C_proc.send((2, 0))
+                            qI2CDataRecived.put((2, "False"))
+                            I2C_proc.send((2, 0))  # Release break
                             self.object = False
                     if time.time() - sendI2C > 1:
                         qI2CDataRecived.put(data[0])
@@ -156,14 +159,18 @@ class SemiAutonomous():
         while self.statusHandleMessage.value:
             if not self.qI2CDataRecived.empty():
                 messageToSend = self.qI2CDataRecived.get()
-                if messageToSend[0]:
+                # Hall effect
+                if messageToSend[0] == 1:
                     speed = int((messageToSend[1]/10) * 8 * np.pi)
                     # print("Speed: {} cm/s".format(speed))
                     self.mqttClient.publish("data/speed", speed)
-                else:
+                # Distance
+                elif messageToSend[0] == 0:
                     distance = int(1.1 * messageToSend[1])
                     # print("Distance: {} cm".format(distance))
                     self.mqttClient.publish("data/distance", distance)
+                elif messageToSend[0] == 2:
+                    self.mqttClient.publish("data/obstacle", messageToSend[1])
 
             time.sleep(0.01)
 
