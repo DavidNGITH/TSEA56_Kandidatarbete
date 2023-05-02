@@ -266,8 +266,6 @@ class compVision:
 
     def waitForCommand(self, qCommand):
         """Get steering command."""
-        while qCommand.empty():
-            time.sleep(0.01)
 
         getCommand = qCommand.get()
 

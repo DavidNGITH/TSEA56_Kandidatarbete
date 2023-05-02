@@ -215,6 +215,9 @@ class Autonomous():
         self.statusCenterOffset = multiprocessing.Value('i', 1)
         self.statusHandleMessage = multiprocessing.Value('i', 1)
 
+        for instruct in self.turningInstruct:
+            self.qCommand.put(instruct)
+
         self.p1 = multiprocessing.Process(target=self.handleMessage,
                                           args=(self.qMessageMQTT,
                                                 self.qI2CDataRecived,
