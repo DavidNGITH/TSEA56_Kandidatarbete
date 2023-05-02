@@ -113,6 +113,7 @@ class compVision:
         self.stopAtNode = False
         self.getCommand = 0
         self.nodeTimeOut = 0
+        self.nodeTimeOutStopLine = 0
 
     def displayImage(self):
         """Display self.image on screen."""
@@ -179,6 +180,7 @@ class compVision:
         if width > self.widthStopLine and width < 300:
             # If stop required
             if self.stopRequired:
+                self.nodeTimeOutStopLine = time.time()
                 self.stopLine = True
 
         # Checks if node
@@ -188,14 +190,15 @@ class compVision:
                 print("Node to the left")
             # Right node
             elif maxX > 400:
-                if time.time() - self.nodeTimeOut > 1:
+                if ((time.time() - self.nodeTimeOut > 1) and
+                        (time.time() - self.nodeTimeOutStopLine > 2.5)):
                     self.nodeTimeOut = time.time()
                     if not qCommand.empty():
                         self.getCommand = qCommand.get()
                     else:
                         self.stopAtNode = True
 
-                print("Node to the right")
+                    print("Node to the right")
 
         else:
             # print("No stopline")
