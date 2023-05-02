@@ -541,9 +541,11 @@ class Ui_Dialog(object):
         print("Next node")
 
     def on_keep_right_click(self):
+        self.mqtt_client.publish("command/turning", "4")
         print("Keep right")
 
     def on_keep_left_click(self):
+        self.mqtt_client.publish("command/turning", "3")
         print("Keep left")
 
     def mqtt_init(self):
