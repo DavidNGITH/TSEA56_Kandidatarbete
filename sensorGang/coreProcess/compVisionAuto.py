@@ -61,6 +61,11 @@ class compVision:
         self.roiFile[0] = int(self.roiFile[0] * self.height / 480)
         self.roiFile[2] = int(self.roiFile[2] * self.height / 480)
 
+        # Histogram
+        self.leftHistogram = 0
+        self.rightHistogram = 0
+        self.midpointHistogram = 0
+
         # Find lines
         self.laneLines = []
         self.xPointRight = None
@@ -114,6 +119,9 @@ class compVision:
         self.getCommand = 0
         self.nodeTimeOut = 0
         self.nodeTimeOutStopLine = 0
+
+        self.lineDetected = False
+        self.lineDetectedTimer = 0
 
     def displayImage(self):
         """Display self.image on screen."""
