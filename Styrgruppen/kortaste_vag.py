@@ -49,13 +49,13 @@ def kortaste_vag(graph, start, goal):
             return path[current_node], directionlist
 
         # Uppdaterar distans och kortaste väg för varje granne till nuvarande nod
-        for neighbor, weightdist in graph[current_node].items():
-            new_distance = distance[current_node] + weightdist[0]
+        for neighbor, weight_and_direction in graph[current_node].items():
+            new_distance = distance[current_node] + weight_and_direction[0]
             if new_distance < distance[neighbor]:
                 distance[neighbor] = new_distance
                 path[neighbor] = path[current_node] + [neighbor]
 
-                directions[neighbor] = weightdist[1]
+                directions[neighbor] = weight_and_direction[1]
                 # print(path)
 
     # Returnera None om det inte finns väg från start till slut
