@@ -124,20 +124,20 @@ class Ui_Dialog(object):
 
         # SEMI AUTOMATIC COMMANDS
         self.next_stop_label = QtWidgets.QPushButton(Dialog)
-        self.next_stop_label.setGeometry(QtCore.QRect(160, 550, 80, 40))
+        self.next_stop_label.setGeometry(QtCore.QRect(60, 600, 80, 40))
         self.next_stop_label.setObjectName("next_stop_label")
 
         self.next_node_label = QtWidgets.QPushButton(Dialog)
         self.next_node_label.setGeometry(QtCore.QRect(160, 600, 80, 40))
         self.next_node_label.setObjectName("next_node_label")
 
-        self.semi_command_3 = QtWidgets.QPushButton(Dialog)
-        self.semi_command_3.setGeometry(QtCore.QRect(60, 550, 80, 40))
-        self.semi_command_3.setObjectName("semi_command_3")
+        self.keep_right_label = QtWidgets.QPushButton(Dialog)
+        self.keep_right_label.setGeometry(QtCore.QRect(160, 550, 80, 40))
+        self.keep_right_label.setObjectName("keep_right_label")
 
-        self.semi_command_4 = QtWidgets.QPushButton(Dialog)
-        self.semi_command_4.setGeometry(QtCore.QRect(60, 600, 80, 40))
-        self.semi_command_4.setObjectName("semi_command_4")
+        self.keep_left_label = QtWidgets.QPushButton(Dialog)
+        self.keep_left_label.setGeometry(QtCore.QRect(60, 550, 80, 40))
+        self.keep_left_label.setObjectName("keep_left_label")
         ###
 
         # textbox which sends commands
@@ -437,8 +437,8 @@ class Ui_Dialog(object):
         self.stop_car.setText(_translate("Dialog", "STOP"))
         self.next_stop_label.setText(_translate("Dialog", "NEXT \nSTOP"))
         self.next_node_label.setText(_translate("Dialog", "NEXT \nNODE"))
-        self.semi_command_3.setText(_translate("Dialog", "Left"))
-        self.semi_command_4.setText(_translate("Dialog", "Right"))
+        self.keep_right_label.setText(_translate("Dialog", "Right"))
+        self.keep_left_label.setText(_translate("Dialog", "Left"))
         self.send_command.setText(_translate("Dialog", "Send command"))
 
         self.semi_control_label.setText(
@@ -469,6 +469,8 @@ class Ui_Dialog(object):
         # Semi-auto controls
         self.next_stop_label.clicked.connect(self.on_next_stop_click)
         self.next_node_label.clicked.connect(self.on_next_node_click)
+        self.keep_right_label.clicked.connect(self.on_keep_right_click)
+        self.keep_left_label.clicked.connect(self.on_keep_left_click)
 
     def on_manual_mode_click(self):
         # This method is called when manual_mode is clicked
@@ -538,12 +540,18 @@ class Ui_Dialog(object):
     def on_next_node_click(self):
         print("Next node")
 
+    def on_keep_right_click(self):
+        print("Keep right")
+
+    def on_keep_left_click(self):
+        print("Keep left")
+
     def mqtt_init(self):
         # initate connection
         MQTT_TOPIC = [("data/distance", 0), ("data/speed", 0),
-                      ("data/crs", 0), ("data/lat_pos", 0), ("data/route_plan", 0)]
+                      ("data/crs", 0), ("data/lat_pos", 0), ("data/route_plan", 0), ("data/obstacle", 0)]
         try:
-            broker_ip = "10.241.242.186"
+            broker_ip = "10.241.226.165"
             broker_port = 1883
             self.mqtt_client = mqtt.Client()
             self.mqtt_client.username_pw_set("tsea56G09", "mindset")
@@ -596,9 +604,7 @@ class Ui_Dialog(object):
                 ########################################### SENSOR GÄNGET MÅSTE SÄGA HUR DOM SKA SKICKA DATAT ############
 
             if message[0] == "data/lat_pos":
-                print("lat_pos recieved")
-                # self.lat_pos_data = message[1]
-                # print(self.lat_pos_data)
+                self.lat_pos_data = message[1]
                 self.lateral_pos_display.setText(str(self.lat_pos_data))
 
             if message[0] == "data/route_plan":
@@ -606,6 +612,12 @@ class Ui_Dialog(object):
                 # self.route_plan_data = message[1]
                 # print(self.route_plan_data)
                 self.routeplan_display.setText(str(self.route_plan_data))
+
+            if message[0] == "data/obstacle":
+                self.obs_det_bool = message[1]
+                print(self.obs_det_bool)
+                self.obs_det_display.setText(str(self.obs_det_bool))
+
         else:
             pass
 
