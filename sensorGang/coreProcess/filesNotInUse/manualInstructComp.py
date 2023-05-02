@@ -12,7 +12,7 @@ mqtt_client = mqtt.Client()
 
 def mqtt_init():
 
-    broker_ip = "10.241.242.186"
+    broker_ip = "10.241.226.165"
     broker_port = 1883
     mqtt_client.username_pw_set("tsea56G09", "mindset")
     mqtt_client.connect(broker_ip, broker_port)
@@ -26,16 +26,16 @@ mqtt_init()
 def main(key):
     """Main function."""
     if key == keyboard.KeyCode.from_char('1'):
-        mqtt_client.publish("command", "1")
+        mqtt_client.publish("command/turning", "1")
 
     elif key == keyboard.KeyCode.from_char('2'):
-        mqtt_client.publish("command", "2")
+        mqtt_client.publish("command/turning", "2")
 
     elif key == keyboard.KeyCode.from_char('3'):
-        mqtt_client.publish("command", "3")
+        mqtt_client.publish("command/turning", "3")
 
     elif key == keyboard.KeyCode.from_char('4'):
-        mqtt_client.publish("command", "4")
+        mqtt_client.publish("command/turning", "4")
 
     elif key == keyboard.KeyCode.from_char("g"):
         mqtt_client.publish("mode", "2")
