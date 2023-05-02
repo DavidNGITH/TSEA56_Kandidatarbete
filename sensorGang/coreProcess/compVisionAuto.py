@@ -326,7 +326,7 @@ class compVision:
 
             self.img = cv2.cvtColor(self.img, cv2.COLOR_BGR2GRAY)
 
-            ret, self.img = cv2.threshold(self.img, 50, 255, cv2.THRESH_BINARY)
+            ret, self.img = cv2.threshold(self.img, 45, 255, cv2.THRESH_BINARY)
 
             # self.img = cv2.GaussianBlur(self.img, (3, 3), 0)  # Blur img
 
@@ -373,7 +373,7 @@ class compVision:
             self.lineIntercept(lineSegments, qCommand)  # Calc line equations
 
             if (self.lineDetected is True and
-                    time.time() - self.lineDetectedTime > 0.5):
+                    time.time() - self.lineDetectedTimer > 0.5):
                 self.lineDetected = False
 
             if self.lineDetected is True:
