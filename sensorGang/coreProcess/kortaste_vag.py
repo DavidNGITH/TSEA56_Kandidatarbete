@@ -50,11 +50,3 @@ def kortaste_vag(graph, start, goal):
 
     # Returnera None om det inte finns väg från start till slut
     return None
-
-
-road_map = 'road_map.txt'
-graph = read_graph_from_file(road_map)
-start = input('Enter start node: ')  # nån raw för att python 3
-end = input('Enter end node: ')
-
-print('kortaste_vag: ', kortaste_vag(graph, start, end))
