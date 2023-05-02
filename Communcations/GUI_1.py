@@ -10,51 +10,65 @@
 import sys
 import paho.mqtt.client as mqtt
 from PyQt5 import QtCore, QtWidgets, QtGui
-from PyQt5.QtGui import QIcon, QPixmap
+from PyQt5.QtGui import QIcon, QPixmap, QPainter, QPen
+from PyQt5.QtWidgets import QApplication, QGraphicsView, QGraphicsScene, QGraphicsEllipseItem, QGraphicsLineItem, QGraphicsTextItem
+from PyQt5.QtCore import QPointF, Qt
 import time
 import multiprocessing
 import keyboard
+import matplotlib.pyplot as plt
 
 
 class Ui_Dialog(object):
+    # Class for the GUI
+
     def setupUi(self, Dialog):
         Dialog.setObjectName("Dialog")
         Dialog.resize(986, 672)
 
-        #starts time
+        self.graphicsView = QGraphicsView(Dialog)
+        self.graphicsView.setGeometry(QtCore.QRect(550, 390, 392, 280))
+        self.graphicsView.setObjectName("graphicsView")
+        self.graphicsView.setScene(QGraphicsScene())
+        self.graphicsView.setRenderHint(QPainter.Antialiasing)
+        # starts time
         self.update_time_bool = False
         self.current_time = "0"
         self.start = time.time()
-
-        self.distance_to_obj = "0"
-
         self.type_of_mode = ""
         self.qData = multiprocessing.Queue()
 
-        #bool for starting car
+        # bool for starting car
         self.is_driving = False
-
+        self.distance_to_obj = "0"
         self.car_distance_driven = 0
         self.car_speed_data = 0
         self.delta_t1_speed = 0
         self.delta_t2_speed = 0
-        #initate straight ahead and zero speed
+        # initate straight ahead and zero speed
         self.speed = 0
         self.steering = 50
+        self.breaking = 0
         self.obs_det_bool = False
         self.crs_data = "A to B"
         self.lat_pos_data = 0
         self.route_plan_data = "A to B to D to F"
-        self.map_node_dict = {"A":[799, 440], "B":[570, 500], "C":[720, 517], "D":[570, 573], "E":[720, 555], "F":[638, 642], "G":[807, 642], "H":[862, 502]}
+        self.map_node_dict = {"A": [799, 440], "B": [570, 500], "C": [720, 517], "D": [
+            570, 573], "E": [720, 555], "F": [638, 642], "G": [807, 642], "H": [862, 502]}
         self.previous_rs = "A"
+        self.nodes = list()
+        self.setup_nodes(self.map_node_dict)
+        # Log data lists
+        self.save_car_speed_data = []
+        self.save_distance_to_obj = []
+        self.save_car_distance_driven = []
+        self.save_speed = []
+        self.save_steering = []
+        self.save_car_breaking = []
+        self.save_obs_det_bool = []
+        self.save_lat_pos_data = []
 
-       
-        
-
-
-
-
-
+        ################################## GUI LABEL AND BUTTONS ################################
         self.obst_det_head = QtWidgets.QLabel(Dialog)
         self.obst_det_head.setGeometry(QtCore.QRect(140, 20, 131, 16))
         self.obst_det_head.setObjectName("obst_det_head")
@@ -81,59 +95,59 @@ class Ui_Dialog(object):
         self.drive_mode_head.setGeometry(QtCore.QRect(20, 180, 91, 16))
         self.drive_mode_head.setObjectName("drive_mode_head")
 
-        #manual mode
+        # manual mode
         self.manual_mode = QtWidgets.QPushButton(Dialog)
         self.manual_mode.setGeometry(QtCore.QRect(20, 220, 161, 26))
         self.manual_mode.setObjectName("manual_mode")
 
-        #semi-automatic
+        # semi-automatic
         self.semi_auto_mode = QtWidgets.QPushButton(Dialog)
         self.semi_auto_mode.setGeometry(QtCore.QRect(20, 270, 161, 31))
         self.semi_auto_mode.setObjectName("semi_auto_mode")
 
-        #automatic
+        # automatic
         self.auto_mode = QtWidgets.QPushButton(Dialog)
         self.auto_mode.setGeometry(QtCore.QRect(20, 320, 161, 31))
         self.auto_mode.setObjectName("auto_mode")
 
-        #start button to initate car
+        # start button to initate car
         self.start_car = QtWidgets.QPushButton(Dialog)
         self.start_car.setGeometry(QtCore.QRect(240, 230, 141, 51))
         self.start_car.setStyleSheet("background-color: green")
         self.start_car.setObjectName("start_car")
 
-        #stop button
+        # stop button
         self.stop_car = QtWidgets.QPushButton(Dialog)
         self.stop_car.setGeometry(QtCore.QRect(240, 300, 141, 51))
         self.stop_car.setStyleSheet("background-color: red")
         self.stop_car.setObjectName("stop_car")
 
-        #KEYBOARD
-        self.upbutton = QtWidgets.QPushButton(Dialog)
-        self.upbutton.setGeometry(QtCore.QRect(110, 550, 81, 26))
-        self.upbutton.setObjectName("upbutton")
+        # SEMI AUTOMATIC COMMANDS
+        self.next_stop_label = QtWidgets.QPushButton(Dialog)
+        self.next_stop_label.setGeometry(QtCore.QRect(60, 600, 80, 40))
+        self.next_stop_label.setObjectName("next_stop_label")
 
-        self.downbutton = QtWidgets.QPushButton(Dialog)
-        self.downbutton.setGeometry(QtCore.QRect(110, 610, 81, 26))
-        self.downbutton.setObjectName("downbutton")
+        self.next_node_label = QtWidgets.QPushButton(Dialog)
+        self.next_node_label.setGeometry(QtCore.QRect(160, 600, 80, 40))
+        self.next_node_label.setObjectName("next_node_label")
 
-        self.leftbutton = QtWidgets.QPushButton(Dialog)
-        self.leftbutton.setGeometry(QtCore.QRect(20, 580, 81, 26))
-        self.leftbutton.setObjectName("leftbutton")
+        self.keep_right_label = QtWidgets.QPushButton(Dialog)
+        self.keep_right_label.setGeometry(QtCore.QRect(160, 550, 80, 40))
+        self.keep_right_label.setObjectName("keep_right_label")
 
-        self.rightbutton = QtWidgets.QPushButton(Dialog)
-        self.rightbutton.setGeometry(QtCore.QRect(200, 580, 81, 26))
-        self.rightbutton.setObjectName("rightbutton")
+        self.keep_left_label = QtWidgets.QPushButton(Dialog)
+        self.keep_left_label.setGeometry(QtCore.QRect(60, 550, 80, 40))
+        self.keep_left_label.setObjectName("keep_left_label")
         ###
 
-        #textbox which sends commands
+        # textbox which sends commands
         self.send_command = QtWidgets.QPushButton(Dialog)
         self.send_command.setGeometry(QtCore.QRect(280, 425, 120, 30))
         self.send_command.setObjectName("send_command")
 
-        self.manual_control_label = QtWidgets.QLabel(Dialog)
-        self.manual_control_label.setGeometry(QtCore.QRect(110, 510, 101, 16))
-        self.manual_control_label.setObjectName("manual_control_label")
+        self.semi_control_label = QtWidgets.QLabel(Dialog)
+        self.semi_control_label.setGeometry(QtCore.QRect(80, 510, 180, 16))
+        self.semi_control_label.setObjectName("semi_control_label")
 
         self.Command_input_box = QtWidgets.QTextEdit(Dialog)
         self.Command_input_box.setGeometry(QtCore.QRect(30, 410, 241, 64))
@@ -189,17 +203,20 @@ class Ui_Dialog(object):
         self.banan_map = QPixmap('banspecifikation.png')
         self.image_label.setPixmap(self.banan_map)
         self.image_label.setScaledContents(True)
-        self.banan_map = self.banan_map.scaled(392, 280, QtCore.Qt.KeepAspectRatio, QtCore.Qt.FastTransformation)
-        self.image_label.resize(self.banan_map.width(), self.banan_map.height())
+        self.banan_map = self.banan_map.scaled(
+            392, 280, QtCore.Qt.KeepAspectRatio, QtCore.Qt.FastTransformation)
+        self.image_label.resize(self.banan_map.width(),
+                                self.banan_map.height())
 
         self.car_pos_label = QtWidgets.QLabel(Dialog)
         self.car_pos_label.setGeometry(QtCore.QRect(100, 100, 20, 20))
         self.car_pos_label.setObjectName("car_pos_label")
         self.car_pos_label.resize(10, 10)
-        self.car_pos_label.move(self.map_node_dict["A"][0], self.map_node_dict["A"][1])
-        self.car_pos_label.setStyleSheet("border: 5px solid blue; border-radius: 5px;")
+        self.car_pos_label.move(
+            self.map_node_dict["A"][0], self.map_node_dict["A"][1])
+        self.car_pos_label.setStyleSheet(
+            "border: 5px solid blue; border-radius: 5px;")
 
-                                    
         self.time_display = QtWidgets.QTextBrowser(Dialog)
         self.time_display.setGeometry(QtCore.QRect(670, 50, 301, 31))
         self.time_display.setObjectName("time_display")
@@ -207,6 +224,7 @@ class Ui_Dialog(object):
         self.drive_distance_display = QtWidgets.QTextBrowser(Dialog)
         self.drive_distance_display.setGeometry(QtCore.QRect(670, 90, 301, 31))
         self.drive_distance_display.setObjectName("drive_distance_display")
+        self.drive_distance_display.setText(str(int(self.car_distance_driven)))
 
         self.speed_display = QtWidgets.QTextBrowser(Dialog)
         self.speed_display.setGeometry(QtCore.QRect(670, 130, 301, 31))
@@ -238,14 +256,13 @@ class Ui_Dialog(object):
         self.routeplan_display.setObjectName("routeplan_display")
         self.routeplan_display.setText(str(self.route_plan_data))
 
-
-
-
         self.retranslateUi(Dialog)
         QtCore.QMetaObject.connectSlotsByName(Dialog)
 
         self.connect_buttons()
+        ################################## END GUI LABEL AND BUTTONS ################################
 
+        ################################## MQTT AND TIMER INITS ################################
         self.mqtt_init()
 
         self.timer = QtCore.QTimer()
@@ -258,78 +275,174 @@ class Ui_Dialog(object):
 
         self.drivingtimer = QtCore.QTimer()
         self.drivingtimer.timeout.connect(self.drive_function)
-        self.drivingtimer.start(25)
+        self.drivingtimer.start(50)
 
-        self.distanceupdate_timer = QtCore.QTimer()
-        #self.distanceupdate_timer.timeout.connect(self.updatedistancedriven)
-        #self.drivingtimer.start(1000)
+        self.pingtimer = QtCore.QTimer()
+        self.pingtimer.timeout.connect(self.ping_raspberry)
+        self.pingtimer.start(2000)
 
+        self.log_data_timer = QtCore.QTimer()
+        self.log_data_timer.timeout.connect(self.log_data)
+        self.log_data_timer.start(100)  # 1000 = every sec
+
+    def ping_raspberry(self):
+        # print("PING")
+        self.mqtt_client.publish("ping", "1")
+
+    def setup_nodes(self, node_dictionary):
+        for node, position in node_dictionary.items():
+            node_item = QGraphicsEllipseItem(-5, -5, 10, 10)
+            node_item.setBrush(Qt.red)
+            node_item.setPos(position[0]-550, position[1]-390)
+            # self.scene().addItem(node_item)
+            label_item = QGraphicsTextItem(str(node))
+            label_item.setPos(
+                QPointF(position[0] + 10 - 550, position[1]-390-12))
+            self.nodes.append([node_item, label_item])
+
+        # Add the label to the QGraphicsScene
+        for i in self.nodes:
+            self.graphicsView.scene().addItem(i[0])
+            self.graphicsView.scene().addItem(i[1])
+        print(f"Node: {node}, Pos: {position}")
 
     def drive_function(self):
-        if ((self.type_of_mode == "Manual") & (self.is_driving)):
-            hotkey = keyboard.get_hotkey_name()
-            #print(hotkey)
-            if (hotkey == "uppil") | (hotkey == "up"):
-                if self.speed <= 251:
-                    self.speed += 4
-                print(self.speed)
-                self.throttle_display.setText(str(self.speed))
-            if (hotkey == "nedpil") | (hotkey == "down"):
-                if self.speed > 4:
-                    self.speed -= 4
-                print(self.speed)
-                self.throttle_display.setText(str(self.speed))
-            if (hotkey == "högerpil") | (hotkey == "right"):
-                if self.steering <= 96:
-                    self.steering += 4
-                self.bearing_display.setText(str(self.steering))
-            if (hotkey == "vänsterpil") | (hotkey == "left"):
-                if self.steering >= 4:
-                    self.steering -= 4
-                self.bearing_display.setText(str(self.steering))
-            if hotkey == "space":
-                self.speed = 0
-                self.steering = 50
-                self.throttle_display.setText(str(self.speed))
-                self.bearing_display.setText(str(self.steering))
-            if hotkey != "":
-                self.mqtt_client.publish("speed", self.speed)
-                self.mqtt_client.publish("steering", self.steering)
+        hotkey = keyboard.get_hotkey_name()
+        hotkey_functions = {
+            "uppil": self.set_speed_up,
+            "up": self.set_speed_up,
+            "nedpil": self.set_speed_down,
+            "down": self.set_speed_down,
+            "högerpil": self.set_steering_right,
+            "right": self.set_steering_right,
+            "vänsterpil": self.set_steering_left,
+            "left": self.set_steering_left,
+            "B": self.set_breaking_on,
+            "b": self.set_breaking_on,
+            "G": self.set_breaking_off,
+            "g": self.set_breaking_off,
+            "space": self.set_speed_and_steering_zero
+        }
+        function = hotkey_functions.get(hotkey)
+        if function:
+            function()
+
+    def set_speed_up(self):
+        if self.type_of_mode == "Manual" and self.is_driving and self.speed <= 251:
+            self.speed += 4
+            self.throttle_display.setText(str(self.speed))
+            self.mqtt_client.publish("speed", self.speed)
+
+    def set_speed_down(self):
+        if self.type_of_mode == "Manual" and self.is_driving and self.speed > 4:
+            self.speed -= 4
+            self.throttle_display.setText(str(self.speed))
+            self.mqtt_client.publish("speed", self.speed)
+
+    def set_steering_right(self):
+        if self.type_of_mode == "Manual" and self.is_driving and self.steering <= 120:
+            self.steering += 4
+            self.bearing_display.setText(str(self.steering))
+            self.mqtt_client.publish("steering", self.steering)
+
+    def set_steering_left(self):
+        if self.type_of_mode == "Manual" and self.is_driving and self.steering >= 4:
+            self.steering -= 4
+            self.bearing_display.setText(str(self.steering))
+            self.mqtt_client.publish("steering", self.steering)
+
+    def set_breaking_on(self):
+        print(self.is_driving)
+        print(self.type_of_mode)
+        print(self.breaking)
+        if self.type_of_mode == "Manual" and self.is_driving and self.breaking == 0:
+            self.breaking = 1
+            print("Breaking")
+            # self.speed = 0
+            self.mqtt_client.publish("breaking", self.breaking)
+            # self.mqtt_client.publish("speed", self.speed)
+            self.throttle_display.setText(str(self.speed))
+            self.bearing_display.setText(str(self.steering))
+
+    def set_breaking_off(self):
+        if self.type_of_mode == "Manual" and self.is_driving and self.breaking == 1:
+            self.breaking = 0
+            # self.speed = 0
+            self.mqtt_client.publish("breaking", self.breaking)
+            self.mqtt_client.publish("speed", self.speed)
+            self.throttle_display.setText(str(self.speed))
+            self.bearing_display.setText(str(self.steering))
+
+    def set_speed_and_steering_zero(self):
+        if self.type_of_mode == "Manual" and self.is_driving:
+            self.speed = 0
+            self.steering = 50
+            self.throttle_display.setText(str(self.speed))
+            self.bearing_display.setText(str(self.steering))
+            self.mqtt_client.publish("speed", self.speed)
+            self.mqtt_client.publish("steering", self.steering)
 
     def update_time(self):
         # get the current time and format it as a string
         if self.update_time_bool:
-            self.current_time = (str(round(time.time() - self.start,2)))
+            self.current_time = (str(round(time.time() - self.start, 2)))
         # set the text of the time_label widget to the current time
-        else:
-            #start = time.time()
-            pass
         self.time_display.setText(self.current_time)
+
+    def log_data(self):
+        if self.update_time_bool:
+            self.save_car_speed_data.append(
+                [self.car_speed_data, self.current_time])
+            self.save_distance_to_obj.append(
+                [self.distance_to_obj, self.current_time])
+            self.save_car_distance_driven.append(
+                [self.car_distance_driven, self.current_time])
+            self.save_speed.append([self.speed, self.current_time])
+            self.save_steering.append([self.steering, self.current_time])
+            self.save_car_breaking.append([self.breaking, self.current_time])
+            self.save_obs_det_bool.append(
+                [self.obs_det_bool, self.current_time])
+            self.save_lat_pos_data.append(
+                [self.lat_pos_data, self.current_time])
+
+            # print(self.save_car_speed_data)
+
+    def plot_data(self, data_list):
+        i1 = 0
+        x_values = []  # time
+        y_values = []  # data
+        for i1 in data_list:
+            x_values.append(i1[1])
+            y_values.append(i1[0])
+
+        plt.plot(x_values, y_values)
+        plt.gcf().autofmt_xdate()
+        plt.show()
+        print("plotted")
 
     def retranslateUi(self, Dialog):
         _translate = QtCore.QCoreApplication.translate
-        Dialog.setWindowTitle(_translate("Dialog", "Very fast taxicar, vroom vroom"))
-
+        Dialog.setWindowTitle(_translate(
+            "Dialog", "Very fast taxicar, vroom vroom"))
         self.obst_det_head.setText(_translate("Dialog", "Obstacle detection:"))
-
         self.obst_det_label.setText(_translate("Dialog", "Obstacle detected"))
-
-        self.obst_dist_label.setText(_translate("Dialog", "Distance to obstacle"))
-
+        self.obst_dist_label.setText(
+            _translate("Dialog", "Distance to obstacle"))
         self.drive_mode_head.setText(_translate("Dialog", "Drive mode:"))
-
         self.manual_mode.setText(_translate("Dialog", "Manual mode"))
-        self.semi_auto_mode.setText(_translate("Dialog", "Semi-automatic mode"))
+        self.semi_auto_mode.setText(
+            _translate("Dialog", "Semi-automatic mode"))
         self.auto_mode.setText(_translate("Dialog", "Automatic mode"))
         self.start_car.setText(_translate("Dialog", "START"))
         self.stop_car.setText(_translate("Dialog", "STOP"))
-        self.upbutton.setText(_translate("Dialog", "Up"))
-        self.downbutton.setText(_translate("Dialog", "Down"))
-        self.leftbutton.setText(_translate("Dialog", "Left"))
-        self.rightbutton.setText(_translate("Dialog", "Right"))
+        self.next_stop_label.setText(_translate("Dialog", "NEXT \nSTOP"))
+        self.next_node_label.setText(_translate("Dialog", "NEXT \nNODE"))
+        self.keep_right_label.setText(_translate("Dialog", "Right"))
+        self.keep_left_label.setText(_translate("Dialog", "Left"))
         self.send_command.setText(_translate("Dialog", "Send command"))
 
-        self.manual_control_label.setText(_translate("Dialog", "Manual control"))
+        self.semi_control_label.setText(
+            _translate("Dialog", "Semi-automatic Controls"))
         self.command_input_label.setText(_translate("Dialog", "Command input"))
         self.drive_info_label.setText(_translate("Dialog", "Drive info"))
         self.time_label.setText(_translate("Dialog", "Time:"))
@@ -341,16 +454,23 @@ class Ui_Dialog(object):
         self.lat_pos_label.setText(_translate("Dialog", "Lateral position:"))
         self.routeplan_label.setText(_translate("Dialog", "Planned route:"))
         self.map_label.setText(_translate("Dialog", "Map:"))
-        
+
     def connect_buttons(self):
+        # hej
         self.manual_mode.clicked.connect(self.on_manual_mode_click)
         self.semi_auto_mode.clicked.connect(self.on_semi_auto_mode_click)
         self.auto_mode.clicked.connect(self.on_auto_mode_click)
         self.send_command.clicked.connect(self.on_send_command)
 
-        #start and stop
+        # start and stop
         self.start_car.clicked.connect(self.on_start_car_click)
         self.stop_car.clicked.connect(self.on_stop_car_click)
+
+        # Semi-auto controls
+        self.next_stop_label.clicked.connect(self.on_next_stop_click)
+        self.next_node_label.clicked.connect(self.on_next_node_click)
+        self.keep_right_label.clicked.connect(self.on_keep_right_click)
+        self.keep_left_label.clicked.connect(self.on_keep_left_click)
 
     def on_manual_mode_click(self):
         # This method is called when manual_mode is clicked
@@ -365,135 +485,148 @@ class Ui_Dialog(object):
             self.mqtt_client.publish("mode", 2)
             self.type_of_mode = "Semi-automatic"
             print(self.type_of_mode)
-        
+
     def on_auto_mode_click(self):
         # This method is called when auto_mode is clicked
+
         if not self.is_driving:
             self.mqtt_client.publish("mode", 3)
             self.type_of_mode = "Automatic"
             print(self.type_of_mode)
-    
+
     def on_send_command(self):
         # This method is called when send command is clicked
         self.mqtt_client.publish("data/command")
-
-        print(self.Command_input_box.toPlainText())
+        try:
+            stringlist = (self.Command_input_box.toPlainText()).rsplit(": ")
+            print("Topic: " + stringlist[0])
+            print("Command: " + stringlist[1])
+        except IndexError:
+            print("Error: Wrong input")
 
     def on_start_car_click(self):
-        #starts car
+        # starts car
         self.update_time_bool = 1
-        #timer counter
-        self.start = time.time()  
-        #starts first measured time for calculating distance 
+        # timer counter
+        self.start = time.time()
+        # starts first measured time for calculating distance
         self.delta_t1_speed = time.time()
-        self.is_driving = True 
+        self.is_breaking = 0
+        self.breaking = 0
+        self.is_driving = True
         print("START")
 
     def on_stop_car_click(self):
-        #stops car
+        # stops car
         self.current_time = "0"
         self.update_time_bool = 0
         self.is_driving = False
 
-        self.speed = 0  #reset speed
-        self.steering = 50 #reset wheels
-
+        self.speed = 0  # reset speed
+        self.steering = 50  # reset wheels
+        self.is_breaking = 0
         self.throttle_display.setText(str(self.speed))
         self.bearing_display.setText(str(self.steering))
 
         self.mqtt_client.publish("stop", "1")
         self.mqtt_client.publish("speed", self.speed)
         self.mqtt_client.publish("steering", self.steering)
+        self.plot_data(self.save_car_speed_data)
         print("STOP")
 
+    def on_next_stop_click(self):
+        print("Next stop")
+
+    def on_next_node_click(self):
+        print("Next node")
+
+    def on_keep_right_click(self):
+        print("Keep right")
+
+    def on_keep_left_click(self):
+        print("Keep left")
+
     def mqtt_init(self):
-    #initate connection
+        # initate connection
+        MQTT_TOPIC = [("data/distance", 0), ("data/speed", 0),
+                      ("data/crs", 0), ("data/lat_pos", 0), ("data/route_plan", 0), ("data/obstacle", 0)]
         try:
-            broker_ip = "10.241.242.186"
+            broker_ip = "10.241.226.165"
             broker_port = 1883
             self.mqtt_client = mqtt.Client()
             self.mqtt_client.username_pw_set("tsea56G09", "mindset")
             self.mqtt_client.connect(broker_ip, broker_port)
-            self.mqtt_client.subscribe("data/distance")
-            self.mqtt_client.subscribe("data/speed")
-            self.mqtt_client.subscribe("data/crs")
-            self.mqtt_client.subscribe("data/lat_pos")
-            self.mqtt_client.subscribe("data/route_plan")
+            self.mqtt_client.subscribe(MQTT_TOPIC)
             self.mqtt_client.loop_start()
             self.mqtt_client.on_message = self.on_message
-        except: 
+        except:
             print("Failed to setup connection")
 
     def on_message(self, client, userdata, message):
         m = str(message.payload.decode("utf-8"))
         t = message.topic
-        self.qData.put((t,m))
-        print("Recieved message")
-        
+        self.qData.put((t, m))
+
     def updatedata(self):
         if not self.qData.empty():
-            print("updating data")
             message = self.qData.get()
             if message[0] == "data/distance":
-                #print ("Distance recieved")
                 self.distance_to_obj = message[1]
-                #print(self.distance_to_obj)
                 self.obs_dist_display.setText(str(self.distance_to_obj))
-            
+
             if message[0] == "data/speed":
-                print ("Speed recieved")
-                #self.num_of_speeds += 1
-                #recieves speed and shows it on the gui
+                # recieves speed and shows it on the gui
                 self.car_speed_data = float(message[1])
-                print(type(self.car_speed_data))
-                print(self.car_speed_data)
                 self.speed_display.setText(str(self.car_speed_data))
-                #checks if car is driving and then prints distance based on a difference in time
+                # checks if car is driving and then prints distance based on a difference in time
                 if self.is_driving:
                     self.delta_t2_speed = time.time()
                     delta_t = self.delta_t2_speed - self.delta_t1_speed
                     self.delta_t1_speed = self.delta_t2_speed
                     self.car_distance_driven += self.car_speed_data*delta_t
-                    self.drive_distance_display.setText(str(int(self.car_distance_driven)))
+                    self.drive_distance_display.setText(
+                        str(int(self.car_distance_driven)))
 
             ################### Throttle and Bearing data given from gui #####################
-            
+
             if message[0] == "data/crs":
-                print ("crs recieved")
+                print("crs recieved")
                 self.crs_data = str(message[1])
-                #print(self.crs_data)
-                self.crs_display.setText(str(self.previous_rs + " -> " + self.crs_data))
+                # print(self.crs_data)
+                self.crs_display.setText(
+                    str(self.previous_rs + " -> " + self.crs_data))
                 self.previous_rs = self.crs_data
                 ########################################### SENSOR GÄNGET MÅSTE SÄGA HUR DOM SKA SKICKA DATAT ############
                 ########################################### SENSOR GÄNGET MÅSTE SÄGA HUR DOM SKA SKICKA DATAT ############
-                self.car_pos_label.move(self.map_node_dict[self.crs_data][0], self.map_node_dict[self.crs_data][1])
+                self.car_pos_label.move(
+                    self.map_node_dict[self.crs_data][0], self.map_node_dict[self.crs_data][1])
                 ########################################### SENSOR GÄNGET MÅSTE SÄGA HUR DOM SKA SKICKA DATAT ############
                 ########################################### SENSOR GÄNGET MÅSTE SÄGA HUR DOM SKA SKICKA DATAT ############
 
             if message[0] == "data/lat_pos":
-                print ("lat_pos recieved")
-                #self.lat_pos_data = message[1]
-                #print(self.lat_pos_data)
+                self.lat_pos_data = message[1]
                 self.lateral_pos_display.setText(str(self.lat_pos_data))
 
             if message[0] == "data/route_plan":
-                print ("route_plan recieved")
-                #self.route_plan_data = message[1]
-                #print(self.route_plan_data)
+                print("route_plan recieved")
+                # self.route_plan_data = message[1]
+                # print(self.route_plan_data)
                 self.routeplan_display.setText(str(self.route_plan_data))
-        else:
-            pass            
-            
 
-                #print(self.qData.get()[1])
-           
-        
-        
-    #def time_printer():
-    #    self.time_display.
+            if message[0] == "data/obstacle":
+                self.obs_det_bool = message[1]
+                print(self.obs_det_bool)
+                self.obs_det_display.setText(str(self.obs_det_bool))
+
+        else:
+            pass
+
+            # print(self.qData.get()[1])
+
 
 def randomspeed():
     return 10
+
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
