@@ -91,9 +91,9 @@ class compVision:
 
         # Speed
         self.normalSpeed = 100
-        self.turningSpeed = 85
-        self.currentSpeed = 110
-        self.lastSpeed = 110
+        self.turningSpeed = 80
+        self.currentSpeed = self.normalSpeed
+        self.lastSpeed = self.normalSpeed
         self.speedToSend = None
         self.intersectionTime = 0
         self.intersectionTimer = 3
@@ -297,7 +297,7 @@ class compVision:
 
             self.img = threadStream.read()  # Retrive image
 
-            self.img = cv2.GaussianBlur(self.img, (5, 5), 4)  # Blur img
+            self.img = cv2.GaussianBlur(self.img, (3, 3), 0)  # Blur img
 
             # Apply canny
             self.img = cv2.Canny(self.img, self.lowerThreshold,
