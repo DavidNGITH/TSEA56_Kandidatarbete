@@ -44,7 +44,6 @@ def kortaste_vag(graph, start, goal):
         if current_node == goal:
             for i in directions:
                 if i in path[current_node]:
-                    print(directions[i])
                     directionlist.append(directions[i])
             return path[current_node], directionlist
 
