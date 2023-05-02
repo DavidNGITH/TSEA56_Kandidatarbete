@@ -164,19 +164,22 @@ class SemiAutonomous():
                 # Hall effect
                 if messageToSend[0] == 1:
                     speed = int((messageToSend[1]/10) * 8 * np.pi)
-                    # print("Speed: {} cm/s".format(speed))
+                    print("Speed: {} cm/s".format(speed))
                     self.mqttClient.publish("data/speed", speed)
                 # Distance
                 elif messageToSend[0] == 0:
                     distance = int(1.1 * messageToSend[1])
-                    # print("Distance: {} cm".format(distance))
+                    print("Distance: {} cm".format(distance))
                     self.mqttClient.publish("data/distance", distance)
                 elif messageToSend[0] == 2:
-
-                    self.mqttClient.publish("data/obstacle", messageToSend[1])
+                    obstacle = messageToSend[1]
+                    print("Obstacle: {} cm".format(obstacle))
+                    self.mqttClient.publish("data/obstacle", obstacle)
 
             if not self.qOffsetData.empty():
-                self.mqttClient.publish("data/lat_pos", self.qOffsetData.get())
+                latPos = self.qOffsetData.get()
+                print("Lat_pos: {} cm".format(latPos))
+                self.mqttClient.publish("data/lat_pos", latPos)
 
             time.sleep(0.01)
 
