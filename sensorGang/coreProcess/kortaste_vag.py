@@ -14,7 +14,6 @@ def read_graph_from_file(road_map):
                 graph[node2] = {}
             graph[node1][node2] = [weight, int(direction)]
             # graph[node2][node1] = weight
-    print(graph)
     return graph
 
 
@@ -44,7 +43,6 @@ def kortaste_vag(graph, start, goal):
         if current_node == goal:
             for i in directions:
                 if i in path[current_node]:
-                    print(directions[i])
                     directionlist.append(directions[i])
             return path[current_node], directionlist
 
