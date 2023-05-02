@@ -345,7 +345,8 @@ class compVision:
 
             self.getOffset()  # Get offset
 
-            qOffsetData.put(self.newOffset)  # Send offset data to computer
+            # Send offset data to computer
+            qOffsetData.put(str(self.newOffset))
 
             # Checks if speed is updated
             # if self.currentSpeed is not self.lastSpeed:

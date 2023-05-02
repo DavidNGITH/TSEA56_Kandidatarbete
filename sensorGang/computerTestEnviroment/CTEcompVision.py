@@ -293,9 +293,15 @@ class compVision:
 
             # Apply gaussian blur
 
-            self.img = cv2.GaussianBlur(self.img, (self.gaussianKernelSize,
-                                                   self.gaussianKernelSize),
-                                        5)
+            self.img = cv2.cvtColor(self.img, cv2.COLOR_BGR2GRAY)
+
+            # self.img = cv2.GaussianBlur(self.img, (self.gaussianKernelSize,
+            #                                       self.gaussianKernelSize),
+            #                            5)
+
+            ret, self.img = cv2.threshold(self.img, 50, 255, cv2.THRESH_BINARY)
+
+            self.displayImage()  # Display image
 
             # Apply canny
             self.img = cv2.Canny(self.img, self.lowerThreshold,
