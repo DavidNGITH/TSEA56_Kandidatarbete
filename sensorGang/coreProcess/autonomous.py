@@ -29,7 +29,7 @@ class Autonomous():
         self.end = input("ENDNODE:")
 
         self.turningInstruct = kv.kortaste_vag(
-            self.graph, self.start, self.end)[1]
+            self.graph, "A", "H")[1]
 
         self.timeOut = timeOut
 
