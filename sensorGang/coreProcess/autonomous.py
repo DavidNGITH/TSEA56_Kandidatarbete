@@ -25,11 +25,11 @@ class Autonomous():
         # Calculate shortest path
         self.road_map = 'road_map.txt'
         self.graph = kv.read_graph_from_file(self.road_map)
-        self.start = input("STARTNODE:")  # nån raw för att python 3
-        self.end = input("ENDNODE:")
+        self.start = str(input("STARTNODE:")[0])  # nån raw för att python 3
+        self.end = str(input("ENDNODE:")[0])
 
         self.turningInstruct = kv.kortaste_vag(
-            self.graph, "A", "H")[1]
+            self.graph, self.start, self.end)[1]
 
         self.timeOut = timeOut
 
