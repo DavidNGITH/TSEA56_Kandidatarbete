@@ -275,7 +275,7 @@ class compVision:
             self.getOffset = self.casesDict[getCommand]
 
     def getCenterOffset(self, qSteering, statusValue, qSpeed, qBreak,
-                        qCommand, qPD):
+                        qCommand, qPD, qOffsetData):
         """Calculate the center offset in frame."""
         threadStream = VideoStream(self.resolution)  # Creates Video stream
         threadStream.start()  # Starts Video stream
@@ -340,6 +340,8 @@ class compVision:
             self.lastSpeed = self.currentSpeed  # Set last speed to current
 
             self.getOffset()  # Get offset
+
+            qOffsetData.put(self.newOffset)  # Send offset data to computer
 
             # Checks if speed is updated
             # if self.currentSpeed is not self.lastSpeed:

@@ -51,7 +51,8 @@ class SemiAutonomous():
             print("Couldn't read mqtt message")
 
     def handleMessage(self, qMessageMQTT, qI2CDataRecived,
-                      qSteering, qSpeed, qBreak, qCommand, qPD, status):
+                      qSteering, qSpeed, qBreak, qCommand,
+                      qPD, qOffsetData, status):
         """Handle messages from other processes."""
         print("In handleMessage autonomous!")
         I2C_proc = i2cHandle.I2C()
@@ -172,6 +173,9 @@ class SemiAutonomous():
                 elif messageToSend[0] == 2:
                     self.mqttClient.publish("data/obstacle", messageToSend[1])
 
+            if not self.qOffsetData.empty():
+                self.mqttClient.publish("data/lat_pos", self.qOffsetData.get())
+
             time.sleep(0.01)
 
         print("Main loop autonomous stopped")
@@ -186,6 +190,7 @@ class SemiAutonomous():
         self.qBreak = multiprocessing.Queue()
         self.qCommand = multiprocessing.Queue()
         self.qPD = multiprocessing.Queue()
+        self.qOffsetData = multiprocessing.Queue()
 
         self.statusCenterOffset = multiprocessing.Value('i', 1)
         self.statusHandleMessage = multiprocessing.Value('i', 1)
@@ -198,6 +203,7 @@ class SemiAutonomous():
                                                 self.qBreak,
                                                 self.qCommand,
                                                 self.qPD,
+                                                self.qOffsetData,
                                                 self.statusHandleMessage))
 
         self.p2 = multiprocessing.Process(target=self.laneData.getCenterOffset,
@@ -206,7 +212,8 @@ class SemiAutonomous():
                                                 self.qSpeed,
                                                 self.qBreak,
                                                 self.qCommand,
-                                                self.qPD))
+                                                self.qPD,
+                                                self.qOffsetData))
 
         self.p1.start()  # Starts handleMessage process
         self.p2.start()  # Starts getCenterOffset process
