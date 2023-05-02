@@ -155,11 +155,10 @@ class SemiAutonomous():
 
         self.mqttClient.unsubscribe(MQTT_TOPIC_UNSUB)  # MQTT unsibscribe
 
-        print("STOOOOOOPS")
-
     def mainLoop(self):
         """Publish data to MQTT broker."""
         while self.statusHandleMessage.value:
+            print("status: {}".format(self.statusHandleMessage))
             if not self.qI2CDataRecived.empty():
                 messageToSend = self.qI2CDataRecived.get()
                 # Hall effect
