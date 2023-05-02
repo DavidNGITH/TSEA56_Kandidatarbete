@@ -91,7 +91,7 @@ class compVision:
 
         # Speed
         self.normalSpeed = 100
-        self.turningSpeed = 80
+        self.turningSpeed = 85
         self.currentSpeed = self.normalSpeed
         self.lastSpeed = self.normalSpeed
         self.speedToSend = None
