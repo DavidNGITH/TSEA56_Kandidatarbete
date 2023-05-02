@@ -22,6 +22,15 @@ class Autonomous():
     def __init__(self, mqttClient: mqtt.Client(),
                  timeOut, roiPerc, resolution=(640, 480)):
         """Set up variables and processes."""
+        # Calculate shortest path
+        self.road_map = 'road_map.txt'
+        self.graph = kv.read_graph_from_file(self.road_map)
+        self.start = input("STARTNODE:")  # nån raw för att python 3
+        self.end = input("ENDNODE:")
+
+        self.turningInstruct = kv.kortaste_vag(
+            self.graph, self.start, self.end)[1]
+
         self.timeOut = timeOut
 
         # PD-Controller        Kp  Kd
@@ -38,15 +47,6 @@ class Autonomous():
         self.mqttClient.subscribe(MQTT_TOPIC)
 
         self.breakingStatus = 0
-
-        # Calculate shortest path
-        self.road_map = 'road_map.txt'
-        self.graph = kv.read_graph_from_file(self.road_map)
-        self.start = input("STARTNODE:")  # nån raw för att python 3
-        self.end = input("ENDNODE:")
-
-        self.turningInstruct = kv.kortaste_vag(
-            self.graph, self.start, self.end)[1]
 
         print(self.turningInstruct)
 
