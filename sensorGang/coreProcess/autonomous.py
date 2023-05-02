@@ -1,5 +1,5 @@
 """Handles the autonomous driving."""
-from compVisionSemi import compVision
+from compVisionAuto import compVision
 import multiprocessing
 import time
 import paho.mqtt.client as mqtt
