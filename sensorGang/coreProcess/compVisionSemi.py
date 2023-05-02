@@ -297,7 +297,11 @@ class compVision:
 
             self.img = threadStream.read()  # Retrive image
 
-            self.img = cv2.GaussianBlur(self.img, (3, 3), 0)  # Blur img
+            self.img = cv2.cvtColor(self.img, cv2.COLOR_BGR2GRAY)
+
+            ret, self.img = cv2.threshold(self.img, 50, 255, cv2.THRESH_BINARY)
+
+            # self.img = cv2.GaussianBlur(self.img, (3, 3), 0)  # Blur img
 
             # Apply canny
             self.img = cv2.Canny(self.img, self.lowerThreshold,
