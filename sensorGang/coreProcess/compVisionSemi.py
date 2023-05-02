@@ -285,6 +285,7 @@ class compVision:
         qSpeed.put(self.normalSpeed)  # Start car
 
         while status:
+            t1 = time.time()
 
             # Handles PD messages from computer
             if qPD.empty() is False:
@@ -295,6 +296,8 @@ class compVision:
                     self.PD.updateKp(message[1])
 
             self.img = threadStream.read()  # Retrive image
+
+            self.img = cv2.GaussianBlur(self.img, (5, 5), 4)  # Blur img
 
             # Apply canny
             self.img = cv2.Canny(self.img, self.lowerThreshold,
@@ -391,6 +394,10 @@ class compVision:
                 self.stopRequired = True
 
             status = statusValue.value  # Check status value
+
+            t2 = time.time()
+
+            print("time in ms: {}".format((t2-t1)*1000))
 
         threadStream.stop()  # Stop stream
 
