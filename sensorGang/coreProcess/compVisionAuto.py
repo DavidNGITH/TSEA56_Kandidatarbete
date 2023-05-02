@@ -120,9 +120,6 @@ class compVision:
         self.nodeTimeOut = 0
         self.nodeTimeOutStopLine = 0
 
-        self.lineDetected = False
-        self.lineDetectedTimer = 0
-
     def displayImage(self):
         """Display self.image on screen."""
         cv2.imshow("Bild", self.img)
@@ -186,8 +183,6 @@ class compVision:
 
         # If stopline
         if width > self.widthStopLine and width < 300:
-            self.lineDetected = True
-            self.lineDetectedTimer = time.time()
             # If stop required
             if self.stopRequired:
                 self.nodeTimeOutStopLine = time.time()
@@ -195,8 +190,6 @@ class compVision:
 
         # Checks if node
         elif width < self.widthNodeLine:
-            self.lineDetected = True
-            self.lineDetectedTimer = time.time()
             # Left node
             if minX < 200:
                 print("Node to the left")
@@ -371,15 +364,6 @@ class compVision:
                                            maxLineGap=self.minLineLength)
 
             self.lineIntercept(lineSegments, qCommand)  # Calc line equations
-
-            if (self.lineDetected is True and
-                    time.time() - self.lineDetectedTimer > 0.5):
-                self.lineDetected = False
-
-            if self.lineDetected is True:
-                self.leftHistogram = self.lastLeftHistogram
-                self.rightHistogram = self.lastRightHistogram
-                self.midpointHistogram = self.lastMidpointHistogram
 
             self.lastSpeed = self.currentSpeed  # Set last speed to current
 
