@@ -178,6 +178,8 @@ class compVision:
 
         # If stopline
         if width > self.widthStopLine and width < 300:
+            self.lineDetected = True
+            self.lineDetectedTimer = time.time()
             # If stop required
             if self.stopRequired:
                 self.nodeTimeOutStopLine = time.time()
@@ -185,6 +187,8 @@ class compVision:
 
         # Checks if node
         elif width < self.widthNodeLine:
+            self.lineDetected = True
+            self.lineDetectedTimer = time.time()
             # Left node
             if minX < 200:
                 print("Node to the left")
@@ -324,6 +328,10 @@ class compVision:
 
             self.regionOfInterest()  # Apply ROI
 
+            self.lastLeftHistogram = self.leftHistogram
+            self.lastRightHistogram = self.rightHistogram
+            self.lastMidpointHistogram = self.midpointHistogram
+
             # Histogram calc from canny image
             histogram = np.sum(self.img[400:480, 5:635], axis=0)
 
@@ -355,6 +363,15 @@ class compVision:
                                            maxLineGap=self.minLineLength)
 
             self.lineIntercept(lineSegments, qCommand)  # Calc line equations
+
+            if (self.lineDetected is True and
+                    time.time() - self.lineDetectedTime > 0.5):
+                self.lineDetected = False
+
+            if self.lineDetected is True:
+                self.leftHistogram = self.lastLeftHistogram
+                self.rightHistogram = self.lastRightHistogram
+                self.midpointHistogram = self.lastMidpointHistogram
 
             self.lastSpeed = self.currentSpeed  # Set last speed to current
 
