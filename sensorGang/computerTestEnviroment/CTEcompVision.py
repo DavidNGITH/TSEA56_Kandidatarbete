@@ -81,6 +81,8 @@ class compVision:
         # self.heightMin = 200
         self.heightMax = 390
 
+        self.gaussianKernelSize = 5
+
     def displayImage(self):
         """Display self.image on screen."""
         cv2.imshow("Bild", self.img)
@@ -288,6 +290,12 @@ class compVision:
             # self.undistortImage() # Undistort image
 
             self.orgImg = self.img  # Save original image
+
+            # Apply gaussian blur
+
+            self.img = cv2.GaussianBlur(self.img, (self.gaussianKernelSize,
+                                                   self.gaussianKernelSize),
+                                        5)
 
             # Apply canny
             self.img = cv2.Canny(self.img, self.lowerThreshold,
