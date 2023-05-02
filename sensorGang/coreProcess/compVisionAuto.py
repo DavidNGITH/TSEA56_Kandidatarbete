@@ -262,7 +262,7 @@ class compVision:
             self.slopeRight = rightFitAverage[0]
             self.laneLines.append(self.makePoints(rightFitAverage, 1))
 
-        if len(stopFit) > 0:
+        # if len(stopFit) > 0:
             # print("Length: {}".format(len(stopFit)))
         if len(stopFit) > 5:
             stopFitAverage = np.average(stopFit, axis=0)
