@@ -1,5 +1,18 @@
-
 # -*- coding: utf-8 -*-
+
+    # A,B:1 0 #rakt
+    # A,C:7 1 #vänster
+    # B,A:1 0 #rakt 
+    # B,C:2 1 #vänster
+    # C,G:1 1 #vänster 
+    # D,C:1 2 #Höger
+    # D,H:1 0 #rakt
+    # E,B:1 1 #Vänster
+    # E,H:1 2 #Höger
+    # F,D:1 0 #rakt
+    # G,E:1 2 #Höger 
+    # G,F:1 0 #rakt
+    # H,G:1 0 #rakt
 
 def read_graph_from_file(road_map):
     graph = {}
