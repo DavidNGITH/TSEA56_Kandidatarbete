@@ -103,10 +103,10 @@ class compVision:
 
         self.casesDict = {
             0: self.getDataFromLines,
-            1: self.getOffsetStraightLeft,
-            2: self.getOffsetStraightRight,
-            3: self.getOffsetLeftTurn,
-            4: self.getOffsetRightTurn
+            # 1: self.getOffsetStraightLeft,
+            # 2: self.getOffsetStraightRight,
+            1: self.getOffsetLeftTurn,
+            2: self.getOffsetRightTurn
         }
 
         # Nodes
