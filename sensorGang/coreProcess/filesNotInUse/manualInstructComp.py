@@ -38,7 +38,7 @@ def main(key):
         mqtt_client.publish("command/turning", "4")
 
     elif key == keyboard.KeyCode.from_char("g"):
-        mqtt_client.publish("mode", "2")
+        mqtt_client.publish("mode", "3")
 
     elif key == keyboard.KeyCode.from_char("s"):
         mqtt_client.publish("stop", "2")

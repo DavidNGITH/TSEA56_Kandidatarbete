@@ -6,6 +6,7 @@ import paho.mqtt.client as mqtt
 import i2cHandle
 import numpy as np
 from PD_reg import PDcontroller
+import kortaste_vag as kv
 
 
 MQTT_TOPIC = [("stop", 0), ("ping", 0), ("speed", 0),
@@ -15,7 +16,7 @@ MQTT_TOPIC_UNSUB = ["stop", "ping", "speed",
                     "PD/Kp", "PD/Kd", "command/turning"]
 
 
-class SemiAutonomous():
+class Autonomous():
     """Class for autonomous driving."""
 
     def __init__(self, mqttClient: mqtt.Client(),
@@ -37,6 +38,17 @@ class SemiAutonomous():
         self.mqttClient.subscribe(MQTT_TOPIC)
 
         self.breakingStatus = 0
+
+        # Calculate shortest path
+        self.road_map = 'road_map.txt'
+        self.graph = kv.read_graph_from_file(self.road_map)
+        self.start = input('Enter start node: ')  # nån raw för att python 3
+        self.end = input('Enter end node: ')
+
+        self.turningInstruct = kv.kortaste_vag(
+            self.graph, self.start, self.end)[1]
+
+        print(self.turningInstruct)
 
         # Init multiprocessing
         self.multiProcessing()
