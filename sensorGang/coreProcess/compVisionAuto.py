@@ -109,6 +109,11 @@ class compVision:
             4: self.getOffsetRightTurn
         }
 
+        # Nodes
+        self.stopAtNode = False
+        self.getCommand = 0
+        self.nodeTimeOut = 0
+
     def displayImage(self):
         """Display self.image on screen."""
         cv2.imshow("Bild", self.img)
@@ -159,7 +164,7 @@ class compVision:
 
         return [[x1, y1, x2, y2]]
 
-    def makeStopLine(self, line, minX, maxX):
+    def makeStopLine(self, line, minX, maxX, qCommand):
         """Create endpoints for stop line."""
         slope, intercept = line
 
@@ -180,18 +185,23 @@ class compVision:
         elif width < self.widthNodeLine:
             # Left node
             if minX < 200:
-                self.stopLine = False
                 print("Node to the left")
             # Right node
             elif maxX > 400:
-                self.stopLine = False
+                if time.time() - self.nodeTimeOut > 1:
+                    self.nodeTimeOut = time.time()
+                    if not qCommand.empty():
+                        self.getCommand = qCommand.get()
+                    else:
+                        self.stopAtNode = True
+
                 print("Node to the right")
 
         else:
             # print("No stopline")
             self.stopLine = False
 
-    def lineIntercept(self, lineSegments):
+    def lineIntercept(self, lineSegments, qCommand):
         """Handle detected lines from Hough transform."""
         self.laneLines = []
         self.xPointLeft = None
@@ -253,7 +263,7 @@ class compVision:
             print("Length: {}".format(len(stopFit)))
         if len(stopFit) > 5:
             stopFitAverage = np.average(stopFit, axis=0)
-            self.makeStopLine(stopFitAverage, minX, maxX)
+            self.makeStopLine(stopFitAverage, minX, maxX, qCommand)
 
         try:
             self.lineCenter = ((rightFitAverage[1]-leftFitAverage[1]) /
@@ -273,7 +283,7 @@ class compVision:
             self.getOffset = self.casesDict[getCommand]
 
     def getCenterOffset(self, qSteering, statusValue, qSpeed, qBreak,
-                        qCommand, qPD, qOffsetData):
+                        qCommand, qPD, qOffsetData, statusAutonomous):
         """Calculate the center offset in frame."""
         threadStream = VideoStream(self.resolution)  # Creates Video stream
         threadStream.start()  # Starts Video stream
@@ -281,6 +291,8 @@ class compVision:
         status = statusValue.value
 
         qSpeed.put(self.normalSpeed)  # Start car
+
+        self.getCommand = qCommand.get()
 
         while status:
             t1 = time.time()
@@ -337,7 +349,7 @@ class compVision:
                                            minLineLength=self.minLineLength,
                                            maxLineGap=self.minLineLength)
 
-            self.lineIntercept(lineSegments)  # Calc line equations
+            self.lineIntercept(lineSegments, qCommand)  # Calc line equations
 
             self.lastSpeed = self.currentSpeed  # Set last speed to current
 
@@ -366,9 +378,7 @@ class compVision:
             if self.stopLine:
                 print("Stopline")
                 qSteering.put(52)  # Send steering data to car
-                qBreak.put(1)  # Apply break
-                self.waitForCommand(qCommand)  # Get command
-                qBreak.put(0)  # Release break
+                self.getOffset = self.casesDict[self.getCommand]
                 self.stopLine = False
                 self.intersectionTime = time.time()
                 self.normalSteering = False
@@ -399,6 +409,12 @@ class compVision:
                 self.stopRequired = True
 
             status = statusValue.value  # Check status value
+
+            if self.stopAtNode:
+                qSpeed.put(0)
+                qBreak.put(1)
+                statusAutonomous.value = 0
+                status = 0
 
             t2 = time.time()
 

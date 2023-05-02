@@ -67,7 +67,7 @@ class Autonomous():
 
     def handleMessage(self, qMessageMQTT, qI2CDataRecived,
                       qSteering, qSpeed, qBreak, qCommand,
-                      qPD, qOffsetData, status):
+                      qPD, qOffsetData, statusAutonomous, status):
         """Handle messages from other processes."""
         print("In handleMessage autonomous!")
         I2C_proc = i2cHandle.I2C()
@@ -87,7 +87,6 @@ class Autonomous():
                         I2C_proc.close()
                     except Exception:
                         print("Couldn't read i2c")
-                    qCommand.put(10)
                     self.stop()
                     return
                 elif message[0] == "ping":
@@ -160,6 +159,15 @@ class Autonomous():
 
                 i2cTimeElapsed = time.time()
 
+            if not statusAutonomous:
+                print("Recived stop in autonomous")
+                try:
+                    I2C_proc.close()
+                except Exception:
+                    print("Couldn't read i2c")
+                self.stop()
+                return
+
             time.sleep(0.01)
 
     def stop(self):
@@ -214,6 +222,7 @@ class Autonomous():
 
         self.statusCenterOffset = multiprocessing.Value('i', 1)
         self.statusHandleMessage = multiprocessing.Value('i', 1)
+        self.statusAutonomous = multiprocessing.Value('i', 1)
 
         for instruct in self.turningInstruct:
             self.qCommand.put(instruct)
@@ -227,6 +236,7 @@ class Autonomous():
                                                 self.qCommand,
                                                 self.qPD,
                                                 self.qOffsetData,
+                                                self.statusAutonomous,
                                                 self.statusHandleMessage))
 
         self.p2 = multiprocessing.Process(target=self.laneData.getCenterOffset,
@@ -236,7 +246,8 @@ class Autonomous():
                                                 self.qBreak,
                                                 self.qCommand,
                                                 self.qPD,
-                                                self.qOffsetData))
+                                                self.qOffsetData,
+                                                self.statusAutonomous))
 
         self.p1.start()  # Starts handleMessage process
         self.p2.start()  # Starts getCenterOffset process
