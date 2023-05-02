@@ -28,6 +28,9 @@ class Autonomous():
         self.start = str(input("STARTNODE:")[0])  # nån raw för att python 3
         self.end = str(input("ENDNODE:")[0])
 
+        print(self.start)
+        print(self.end)
+
         self.turningInstruct = kv.kortaste_vag(
             self.graph, self.start, self.end)[1]
 
