@@ -95,8 +95,8 @@ class compVision:
         self.normalSteering = True
 
         # Speed
-        self.normalSpeed = 90
-        self.turningSpeed = 80
+        self.normalSpeed = 100
+        self.turningSpeed = 85
         self.currentSpeed = self.normalSpeed
         self.lastSpeed = self.normalSpeed
         self.speedToSend = None
@@ -319,7 +319,7 @@ class compVision:
 
             self.img = cv2.cvtColor(self.img, cv2.COLOR_BGR2GRAY)
 
-            ret, self.img = cv2.threshold(self.img, 45, 255, cv2.THRESH_BINARY)
+            ret, self.img = cv2.threshold(self.img, 65, 255, cv2.THRESH_BINARY)
 
             # self.img = cv2.GaussianBlur(self.img, (3, 3), 0)  # Blur img
 
@@ -545,7 +545,7 @@ class compVision:
 
     def getOffsetLeftTurn(self):
         """Get offset on left turn."""
-        self.currentSpeed = self.turningSpeed + 5
+        self.currentSpeed = self.turningSpeed + 15
         self.intersectionTimer = 1.75
         if self.leftHistogram is not None:
             self.newOffset = (self.leftHistogram - 130)*3.5
@@ -554,7 +554,7 @@ class compVision:
 
     def getOffsetRightTurn(self):
         """Get offset on right turn."""
-        self.currentSpeed = self.turningSpeed + 5
+        self.currentSpeed = self.turningSpeed + 15
         self.intersectionTimer = 1.75
         if self.rightHistogram is not None:
             self.newOffset = (self.rightHistogram - 530)*3

@@ -300,7 +300,7 @@ class compVision:
             #                            5)
 
             ret, self.img = cv2.threshold(
-                self.img, 45, 255, cv2.THRESH_BINARY)
+                self.img, 70, 255, cv2.THRESH_BINARY)
 
             self.displayImage()  # Display image
 
