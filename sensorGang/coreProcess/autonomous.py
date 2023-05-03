@@ -78,7 +78,7 @@ class Autonomous():
 
         while status.value:
             if not qMessageMQTT.empty():
-                print("qMessage not empty")
+                # print("qMessage not empty")
                 message = qMessageMQTT.get()
 
                 if message[0] == "stop":
