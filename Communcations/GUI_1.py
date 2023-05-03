@@ -283,7 +283,7 @@ class Ui_Dialog(object):
 
         self.log_data_timer = QtCore.QTimer()
         self.log_data_timer.timeout.connect(self.log_data)
-        self.log_data_timer.start(100)  # 1000 = every sec
+        self.log_data_timer.start(1000)  # 1000 = every sec
 
     def ping_raspberry(self):
         # print("PING")
