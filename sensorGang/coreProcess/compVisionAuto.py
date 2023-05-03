@@ -548,7 +548,11 @@ class compVision:
         self.currentSpeed = self.turningSpeed + 15
         self.intersectionTimer = 1.75
         if self.leftHistogram is not None:
-            self.newOffset = (self.leftHistogram - 130)*3.5
+            self.newOffset = (self.leftHistogram - 130)
+            if self.newOffset >= 0:
+                return
+            else:
+                self.newOffset *= 3.5
         else:
             self.newOffset = - 150
 
@@ -557,6 +561,10 @@ class compVision:
         self.currentSpeed = self.turningSpeed + 15
         self.intersectionTimer = 1.75
         if self.rightHistogram is not None:
-            self.newOffset = (self.rightHistogram - 530)*3
+            self.newOffset = (self.leftHistogram - 130)
+            if self.newOffset <= 0:
+                return
+            else:
+                self.newOffset *= 3.5
         else:
             self.newOffset = 150
