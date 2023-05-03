@@ -414,7 +414,7 @@ class compVision:
             # If in intersection and > 3 s
             if (time.time()-self.intersectionTime > 3 and
                     not self.normalSteering):
-                # print("normal")
+                print("normal")
                 self.getOffset = self.getDataFromLines
                 self.normalSteering = True
 
@@ -514,7 +514,7 @@ class compVision:
 
         # print(casePrint)
 
-        self.newOffset -= (self.center+50)
+        self.newOffset -= (self.center+55)
 
         self.newOffset = int(self.newOffset)
 
@@ -548,7 +548,7 @@ class compVision:
         self.currentSpeed = self.turningSpeed + 15
         self.intersectionTimer = 1.75
         if self.leftHistogram is not None:
-            self.newOffset = (self.leftHistogram - 100)
+            self.newOffset = (self.leftHistogram - 115)
             if self.newOffset >= 0:
                 return
             else:
