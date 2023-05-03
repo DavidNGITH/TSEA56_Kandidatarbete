@@ -414,7 +414,7 @@ class compVision:
             # If in intersection and > 3 s
             if (time.time()-self.intersectionTime > 3 and
                     not self.normalSteering):
-                print("normal")
+                # print("normal")
                 self.getOffset = self.getDataFromLines
                 self.normalSteering = True
 
