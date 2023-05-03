@@ -95,8 +95,8 @@ class compVision:
         self.normalSteering = True
 
         # Speed
-        self.normalSpeed = 100
-        self.turningSpeed = 85
+        self.normalSpeed = 90
+        self.turningSpeed = 80
         self.currentSpeed = self.normalSpeed
         self.lastSpeed = self.normalSpeed
         self.speedToSend = None
@@ -545,7 +545,7 @@ class compVision:
 
     def getOffsetLeftTurn(self):
         """Get offset on left turn."""
-        self.currentSpeed = self.turningSpeed + 15
+        self.currentSpeed = self.turningSpeed + 5
         self.intersectionTimer = 1.75
         if self.leftHistogram is not None:
             self.newOffset = (self.leftHistogram - 130)*3.5
@@ -554,7 +554,7 @@ class compVision:
 
     def getOffsetRightTurn(self):
         """Get offset on right turn."""
-        self.currentSpeed = self.turningSpeed + 15
+        self.currentSpeed = self.turningSpeed + 5
         self.intersectionTimer = 1.75
         if self.rightHistogram is not None:
             self.newOffset = (self.rightHistogram - 530)*3
