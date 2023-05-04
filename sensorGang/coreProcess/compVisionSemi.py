@@ -299,7 +299,7 @@ class compVision:
 
             self.img = cv2.cvtColor(self.img, cv2.COLOR_BGR2GRAY)
 
-            ret, self.img = cv2.threshold(self.img, 50, 255, cv2.THRESH_BINARY)
+            ret, self.img = cv2.threshold(self.img, 65, 255, cv2.THRESH_BINARY)
 
             # self.img = cv2.GaussianBlur(self.img, (3, 3), 0)  # Blur img
 
