@@ -514,7 +514,7 @@ class compVision:
 
         # print(casePrint)
 
-        self.newOffset -= (self.center+55)
+        self.newOffset -= (self.center)
 
         self.newOffset = int(self.newOffset)
 
