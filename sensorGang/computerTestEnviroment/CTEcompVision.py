@@ -287,7 +287,7 @@ class compVision:
 
             self.img = threadStream.read()  # Retrive image
 
-            # self.undistortImage() # Undistort image
+            # self.undistortImage()  # Undistort image
 
             self.orgImg = self.img  # Save original image
 
