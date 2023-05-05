@@ -108,8 +108,6 @@ class compVision:
 
         self.casesDict = {
             0: self.getDataFromLines,
-            # 1: self.getOffsetStraightLeft,
-            # 2: self.getOffsetStraightRight,
             1: self.getOffsetLeftTurn,
             2: self.getOffsetRightTurn
         }
@@ -281,14 +279,6 @@ class compVision:
             self.lineCenter = None
             # print("Not enough lines captured")
             return
-
-    def waitForCommand(self, qCommand):
-        """Get steering command."""
-
-        getCommand = qCommand.get()
-
-        if not getCommand == 10:
-            self.getOffset = self.casesDict[getCommand]
 
     def getCenterOffset(self, qSteering, statusValue, qSpeed, qBreak,
                         qCommand, qPD, qOffsetData, statusAutonomous):
@@ -524,24 +514,6 @@ class compVision:
         print("Right histo: {}".format(self.rightHistogram))
         print("Middle histo: {}".format(self.midpointHistogram))
         print("Crossing : {}".format(self.lineCenter))"""
-
-    def getOffsetStraightLeft(self):
-        """Get offset on straight, left line avalible."""
-        self.currentSpeed = self.normalSpeed
-        self.intersectionTimer = 2
-        if self.leftHistogram is not None:
-            self.newOffset = (self.leftHistogram - 130)*2
-        else:
-            self.newOffset = - 50
-
-    def getOffsetStraightRight(self):
-        """Get offset on straight, right line avalible."""
-        self.currentSpeed = self.normalSpeed
-        self.intersectionTimer = 2
-        if self.rightHistogram is not None:
-            self.newOffset = (self.rightHistogram - 540)*2
-        else:
-            self.newOffset = 50
 
     def getOffsetLeftTurn(self):
         """Get offset on left turn."""

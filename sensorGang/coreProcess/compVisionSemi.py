@@ -103,10 +103,8 @@ class compVision:
 
         self.casesDict = {
             0: self.getDataFromLines,
-            1: self.getOffsetStraightLeft,
-            2: self.getOffsetStraightRight,
-            3: self.getOffsetLeftTurn,
-            4: self.getOffsetRightTurn
+            1: self.getOffsetLeftTurn,
+            2: self.getOffsetRightTurn
         }
 
     def displayImage(self):
@@ -497,30 +495,16 @@ class compVision:
         print("Middle histo: {}".format(self.midpointHistogram))
         print("Crossing : {}".format(self.lineCenter))"""
 
-    def getOffsetStraightLeft(self):
-        """Get offset on straight, left line avalible."""
-        self.currentSpeed = self.normalSpeed
-        self.intersectionTimer = 2
-        if self.leftHistogram is not None:
-            self.newOffset = (self.leftHistogram - 130)*2
-        else:
-            self.newOffset = - 50
-
-    def getOffsetStraightRight(self):
-        """Get offset on straight, right line avalible."""
-        self.currentSpeed = self.normalSpeed
-        self.intersectionTimer = 2
-        if self.rightHistogram is not None:
-            self.newOffset = (self.rightHistogram - 540)*2
-        else:
-            self.newOffset = 50
-
     def getOffsetLeftTurn(self):
         """Get offset on left turn."""
         self.currentSpeed = self.turningSpeed + 15
         self.intersectionTimer = 1.75
         if self.leftHistogram is not None:
-            self.newOffset = (self.leftHistogram - 130)*3.5
+            self.newOffset = (self.leftHistogram - 115)
+            if self.newOffset >= 0:
+                return
+            else:
+                self.newOffset *= 3.5
         else:
             self.newOffset = - 150
 
@@ -529,6 +513,10 @@ class compVision:
         self.currentSpeed = self.turningSpeed + 15
         self.intersectionTimer = 1.75
         if self.rightHistogram is not None:
-            self.newOffset = (self.rightHistogram - 530)*3
+            self.newOffset = (self.rightHistogram - 530)
+            if self.newOffset <= 0:
+                return
+            else:
+                self.newOffset *= 3.5
         else:
             self.newOffset = 150
