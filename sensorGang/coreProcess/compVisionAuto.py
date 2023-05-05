@@ -451,7 +451,7 @@ class compVision:
             elif self.slopeRight:
                 casePrint = "Case 3"
                 self.newOffset = (self.midpointHistogram -
-                                  1/self.slopeRight * 400)
+                                  1/self.slopeRight * 380)
 
             # Inga lutningar har hittats
             else:
@@ -505,7 +505,7 @@ class compVision:
         # print(casePrint)
 
         # Lower -> more right, Higher -> more left
-        self.newOffset -= (self.center+50)
+        self.newOffset -= (self.center+40)
 
         self.newOffset = int(self.newOffset)
 
