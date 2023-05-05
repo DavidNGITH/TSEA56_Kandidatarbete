@@ -283,7 +283,7 @@ class Ui_Dialog(object):
 
         self.log_data_timer = QtCore.QTimer()
         self.log_data_timer.timeout.connect(self.log_data)
-        self.log_data_timer.start(100)  # 1000 = every sec
+        self.log_data_timer.start(1000)  # 1000 = every sec
 
     def ping_raspberry(self):
         # print("PING")
@@ -524,7 +524,7 @@ class Ui_Dialog(object):
 
         self.speed = 0  # reset speed
         self.steering = 50  # reset wheels
-        self.is_breaking = 0
+        self.is_breaking = 1
         self.throttle_display.setText(str(self.speed))
         self.bearing_display.setText(str(self.steering))
 
@@ -541,9 +541,11 @@ class Ui_Dialog(object):
         print("Next node")
 
     def on_keep_right_click(self):
+        self.mqtt_client.publish("command/turning", "4")
         print("Keep right")
 
     def on_keep_left_click(self):
+        self.mqtt_client.publish("command/turning", "3")
         print("Keep left")
 
     def mqtt_init(self):
@@ -551,7 +553,7 @@ class Ui_Dialog(object):
         MQTT_TOPIC = [("data/distance", 0), ("data/speed", 0),
                       ("data/crs", 0), ("data/lat_pos", 0), ("data/route_plan", 0), ("data/obstacle", 0)]
         try:
-            broker_ip = "10.241.226.165"
+            broker_ip = "10.241.215.114"
             broker_port = 1883
             self.mqtt_client = mqtt.Client()
             self.mqtt_client.username_pw_set("tsea56G09", "mindset")
