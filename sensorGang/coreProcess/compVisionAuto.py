@@ -194,7 +194,7 @@ class compVision:
             # Right node
             elif maxX > 400:
                 if ((time.time() - self.nodeTimeOut > 2) and
-                        (time.time() - self.nodeTimeOutStopLine > 2.5)):
+                        (time.time() - self.nodeTimeOutStopLine > 3)):
                     self.nodeTimeOut = time.time()
                     if not qCommand.empty():
                         self.getCommand = qCommand.get()
