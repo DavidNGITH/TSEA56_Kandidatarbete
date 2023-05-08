@@ -426,6 +426,7 @@ class compVision:
                 if qCommand.empty() is False:
                     print("Get next command")
                     self.instructions = qCommand.get()  # Get next assignment
+                    self.getCommand = self.instructions.pop(0)
                     self.nodeStopTimer = time.time()
                     self.stopAtNode = False
 
@@ -437,7 +438,7 @@ class compVision:
 
             if self.stopped and (time.time() - self.nodeStopTimer > 2):
                 print("Start driving again")
-                self.nodeTimeOut = time.time() - 1
+                self.nodeTimeOut = time.time()-0.5
                 qBreak.put(0)
                 self.stopAtNode = False
                 self.stopped = False
