@@ -41,6 +41,7 @@ def on_message(client, userdata, message):
         m = int(message.payload.decode("utf-8"))
         t = message.topic
         q.put((t, m))
+        print("Message: {}, topic: {}".format(m, t))
     except Exception as e:
         print("Couldn't read mqtt message")
         print(e)
