@@ -315,27 +315,51 @@ class compVision:
             # self.displayImage()
             # Histogram calc from canny image
             histogram = np.sum(self.img[400:480, 5:635], axis=0)
+            histogram2 = np.sum(self.img[400:480, 0:640], axis=0)
             self.leftHistogram = np.argmax(histogram[:int(self.center-60)]) + 5
             self.rightHistogram = (np.argmax(histogram[int(self.center+60):]) +
                                    self.center + 65)
             self.midpointHistogram = int((self.rightHistogram -
                                           self.leftHistogram)
                                          / 2 + self.leftHistogram)
+            self.leftHistogram2 = None
+            for i in range(0, self.center-60):
+                if histogram2[i] != 0:
+                    self.leftHistogram2 = i
+                    break
+
+            self.rightHistogram2 = None
+            for i in range(self.width-1, self.center + 60, -1):
+                print(i)
+                if histogram2[i] != 0:
+                    self.rightHistogram2 = i
+                    break
+            if (self.rightHistogram2 is not None and
+                    self.leftHistogram2 is not None):
+                self.midpointHistogram2 = int((self.rightHistogram2 -
+                                              self.leftHistogram2)
+                                              / 2 + self.leftHistogram2)
 
             y1 = [(self.leftHistogram, 0), (self.leftHistogram, self.height)]
 
             y2 = [(self.rightHistogram, 0),
                   (self.rightHistogram, self.height)]
 
-            y3 = [(self.midpointHistogram, 0),
-                  (self.midpointHistogram, self.height)]
+            plt.plot(histogram2)
+            plt.vlines(self.leftHistogram, ymin=0,
+                       ymax=self.height, colors='red')
+            plt.vlines(self.rightHistogram, ymin=0,
+                       ymax=self.height, colors='red')
+            plt.vlines(self.midpointHistogram, ymin=0,
+                       ymax=self.height, colors='red')
+            plt.vlines(self.leftHistogram2, ymin=0,
+                       ymax=self.height, colors='blue')
+            plt.vlines(self.rightHistogram2, ymin=0,
+                       ymax=self.height, colors='blue')
+            plt.vlines(self.midpointHistogram2, ymin=0,
+                       ymax=self.height, colors='blue')
 
-            # plt.plot(histogram)
-            # plt.vlines(self.leftHistogram, ymin=0,
-            # ymax=self.height, colors='red')
-            # plt.vlines(self.rightHistogram, ymin=0,
-            # ymax=self.height, colors='red')
-            # plt.show()
+            plt.show()
 
             # Apply Hough transfrom
             lineSegments = cv2.HoughLinesP(self.img, self.rho, self.angle,

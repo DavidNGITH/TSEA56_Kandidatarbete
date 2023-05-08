@@ -10,7 +10,7 @@ from PD_reg import PDcontroller
 
 MQTT_TOPIC = [("stop", 0), ("ping", 0), ("speed", 0),
               ("PD/Kp", 0), ("PD/Kd", 0), ("command/turning", 0),
-                                           ("command/stopnode", 0)]
+              ("command/stopnode", 0)]
 
 MQTT_TOPIC_UNSUB = ["stop", "ping", "speed",
                     "PD/Kp", "PD/Kd", "command/turning", "command/stopnode"]
@@ -193,17 +193,16 @@ class SemiAutonomous():
         """Initiate of processes."""
         self.qMessageMQTT = multiprocessing.Queue()     # Incoming MQTT message
         self.qSteering = multiprocessing.Queue()        # Steering data
-        # self.qMotors = multiprocessing.Queue()         # Speed data to motors
         self.qI2CDataRecived = multiprocessing.Queue()  # Recived I2C data
         self.qSpeed = multiprocessing.Queue()           # Speed data to motors
-        self.qBreak = multiprocessing.Queue()
-        self.qCommand = multiprocessing.Queue()
-        self.qCommandNode = multiprocessing.Queue()
-        self.qPD = multiprocessing.Queue()
-        self.qOffsetData = multiprocessing.Queue()
+        self.qBreak = multiprocessing.Queue()           # Break data to motors
+        self.qCommand = multiprocessing.Queue()         # Commands from pc
+        self.qCommandNode = multiprocessing.Queue()     # Node command from pc
+        self.qPD = multiprocessing.Queue()              # Kd and Kp values
+        self.qOffsetData = multiprocessing.Queue()      # Offsett data
 
-        self.statusCenterOffset = multiprocessing.Value('i', 1)
-        self.statusHandleMessage = multiprocessing.Value('i', 1)
+        self.statusCenterOffset = multiprocessing.Value('i', 1)     # Status
+        self.statusHandleMessage = multiprocessing.Value('i', 1)    # Status
 
         self.p1 = multiprocessing.Process(target=self.handleMessage,
                                           args=(self.qMessageMQTT,

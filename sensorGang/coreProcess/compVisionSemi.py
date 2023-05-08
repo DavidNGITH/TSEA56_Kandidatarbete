@@ -2,9 +2,7 @@
 import time
 import numpy as np
 import cv2
-from PD_reg import PDcontroller
 from videoStream import VideoStream
-from datetime import datetime
 import matplotlib.pyplot as plt
 
 from videoStreamFile import VideoStreamFile
@@ -22,7 +20,6 @@ class compVision:
         self.center = int(self.width/2)
 
         self.img = None
-        self.laneLines = []
         self.lineCenter = None
         self.newOffset = 0
         self.lastOffset = 0
@@ -62,7 +59,6 @@ class compVision:
         self.roiFile[2] = int(self.roiFile[2] * self.height / 480)
 
         # Find lines
-        self.laneLines = []
         self.xPointRight = None
         self.xPointLeft = None
         self.slopeLeft = None
@@ -75,23 +71,16 @@ class compVision:
         # Stop
         self.stopLine = False
         self.nodeLine = False
-        self.stopLineDistance = 0  # Distance to stop line
-        self.lastStopLineDistance = 0
         self.stopRequired = True
         self.nodeTimer = 0
         self.stopAtNode = False
         self.nodeTimeOut = 0
-        self.nodeTimeOutStopLine = 0
 
         # PD-Controller
         self.PD = PD
 
         # Cases
-        self.steerLeft = False
-        self.steerRight = False
         self.slowDownTimer = 0
-        self.slowDown = False
-        self.lastSlowDown = None
         self.normalSteering = True
 
         # Speed
@@ -110,20 +99,6 @@ class compVision:
             1: self.getOffsetLeftTurn,
             2: self.getOffsetRightTurn
         }
-
-    def displayImage(self):
-        """Display self.image on screen."""
-        cv2.imshow("Bild", self.img)
-        cv2.waitKey()
-        cv2.destroyAllWindows()
-
-    # Undistortioon
-    def undistortImage(self):
-        """Undistort self.img."""
-        self.img = cv2.remap(self.img, self.mx, self.my, cv2.INTER_LINEAR)
-        self.img = self.img[self.roiFile[1]:self.roiFile[1] +
-                            self.roiFile[3], self.roiFile[0]:self.roiFile[0] +
-                            self.roiFile[2]]
 
     # Region of interest
     def regionOfInterest(self):
@@ -163,23 +138,13 @@ class compVision:
 
     def makeStopLine(self, line, minX, maxX):
         """Create endpoints for stop line."""
-
-        slope, intercept = line
-
-        y1 = int(slope * minX + intercept)
-        y2 = int(slope * maxX + intercept)
-
         width = maxX-minX
-
-        print("Width: {}".format(width))
 
         # If stopline
         if width > self.widthStopLine and width < 300:
-            self.nodeTimeOutStopLine = time.time()
             # If stop required
             if self.stopRequired:
                 self.stopLine = True
-                self.nodeTimeOutStopLine = time.time()
 
         # Checks if node
         elif width < self.widthNodeLine:
@@ -189,9 +154,8 @@ class compVision:
             # Right node
             elif maxX > 400:
                 if (self.stopAtNode and
-                    (time.time() - self.nodeTimeOutStopLine > 3) and
+                    (time.time() - self.intersectionTime > 3) and
                         time.time()-self.nodeTimeOut > 2):
-                    self.nodeTimeOut = time.time()
                     self.nodeLine = True
                 else:
                     self.nodeLine = False
@@ -236,7 +200,7 @@ class compVision:
                                 x2 > rightRegionBoundary):
                             rightFit.append((slope, intercept))
 
-                    elif (slope < 0.1 and slope > -0.1 and
+                    elif (slope < 0.4 and slope > -0.4 and
                           x1 > 0.15 * self.width and x2 < 0.85 * self.width):
 
                         stopFit.append((slope, intercept))
@@ -255,8 +219,6 @@ class compVision:
             self.slopeRight = rightFitAverage[0]
             self.laneLines.append(self.makePoints(rightFitAverage, 1))
 
-        if len(stopFit) > 0:
-            print("Length: {}".format(len(stopFit)))
         if len(stopFit) > 5:
             stopFitAverage = np.average(stopFit, axis=0)
             self.makeStopLine(stopFitAverage, minX, maxX)
@@ -291,8 +253,6 @@ class compVision:
         qSpeed.put(self.normalSpeed)  # Start car
 
         while status:
-            t1 = time.time()
-
             # Handles PD messages from computer
             if qPD.empty() is False:
                 message = qPD.get()
@@ -305,11 +265,7 @@ class compVision:
 
             self.img = cv2.cvtColor(self.img, cv2.COLOR_BGR2GRAY)
 
-            # self.img = cv2.GaussianBlur(self.img, (5, 5), 5)
-
-            ret, self.img = cv2.threshold(self.img, 50, 255, cv2.THRESH_BINARY)
-
-            # self.img = cv2.GaussianBlur(self.img, (3, 3), 0)  # Blur img
+            self.img = cv2.threshold(self.img, 50, 255, cv2.THRESH_BINARY)[1]
 
             # Apply canny
             self.img = cv2.Canny(self.img, self.lowerThreshold,

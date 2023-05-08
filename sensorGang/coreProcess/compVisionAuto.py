@@ -171,7 +171,7 @@ class compVision:
 
         return [[x1, y1, x2, y2]]
 
-    def makeStopLine(self, line, minX, maxX, qCommand):
+    def makeStopLine(self, line, minX, maxX):
         """Create endpoints for stop line."""
         slope, intercept = line
 
@@ -272,7 +272,7 @@ class compVision:
             # print("Length: {}".format(len(stopFit)))
         if len(stopFit) > 5:
             stopFitAverage = np.average(stopFit, axis=0)
-            self.makeStopLine(stopFitAverage, minX, maxX, qCommand)
+            self.makeStopLine(stopFitAverage, minX, maxX)
 
         try:
             self.lineCenter = ((rightFitAverage[1]-leftFitAverage[1]) /
