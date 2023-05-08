@@ -80,6 +80,8 @@ class compVision:
         self.stopRequired = True
         self.nodeTimer = 0
         self.stopAtNode = True
+        self.nodeTimeOut = 0
+        self.nodeTimeOutStopLine = 0
 
         # PD-Controller
         self.PD = PD
@@ -176,6 +178,7 @@ class compVision:
             # If stop required
             if self.stopRequired:
                 self.stopLine = True
+                self.nodeTimeOutStopLine = time.time()
 
         # Checks if node
         elif width < self.widthNodeLine:
@@ -184,7 +187,10 @@ class compVision:
                 print("Node to the left")
             # Right node
             elif maxX > 400:
-                if self.stopAtNode:
+                if (self.stopAtNode and
+                    (time.time() - self.nodeTimeOutStopLine > 3) and
+                        time.time()-self.nodeTimeOut > 2):
+                    self.nodeTimeOut = time.time()
                     self.nodeLine = True
                 else:
                     self.nodeLine = False
@@ -298,9 +304,9 @@ class compVision:
 
             self.img = cv2.cvtColor(self.img, cv2.COLOR_BGR2GRAY)
 
-            self.img = cv2.GaussianBlur(self.img, (5, 5), 5)
+            # self.img = cv2.GaussianBlur(self.img, (5, 5), 5)
 
-            ret, self.img = cv2.threshold(self.img, 40, 255, cv2.THRESH_BINARY)
+            ret, self.img = cv2.threshold(self.img, 50, 255, cv2.THRESH_BINARY)
 
             # self.img = cv2.GaussianBlur(self.img, (3, 3), 0)  # Blur img
 
