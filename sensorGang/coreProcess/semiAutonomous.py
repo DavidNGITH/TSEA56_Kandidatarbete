@@ -9,8 +9,8 @@ from PD_reg import PDcontroller
 
 
 MQTT_TOPIC = [("stop", 0), ("ping", 0), ("speed", 0),
-              ("PD/Kp", 0), ("PD/Kd", 0), ("command/turning", 0,
-                                           ("command/stopnode", 0))]
+              ("PD/Kp", 0), ("PD/Kd", 0), ("command/turning", 0),
+                                           ("command/stopnode", 0)]
 
 MQTT_TOPIC_UNSUB = ["stop", "ping", "speed",
                     "PD/Kp", "PD/Kd", "command/turning", "command/stopnode"]

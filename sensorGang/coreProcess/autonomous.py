@@ -54,7 +54,7 @@ class Autonomous():
         self.turningInst = []
         self.turningPath = []
 
-        for i in range(len(self.stopPos) - 1):
+        for i in range(len(self.stopNodes) - 1):
             self.turningInst.append(kv.kortaste_vag(self.graph,
                                                     self.stopNodes[i],
                                                     self.stopNodes[i+1])[1])
@@ -76,7 +76,7 @@ class Autonomous():
             print("Couldn't read mqtt message")
 
         if t == "command/nodes":
-            if m is not "0":
+            if m != "0":
                 self.stopNodes.append(m)
             else:
                 self.recivedPath = True
