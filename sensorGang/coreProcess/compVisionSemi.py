@@ -161,8 +161,6 @@ class compVision:
 
     def makeStopLine(self, line, minX, maxX):
         """Create endpoints for stop line."""
-        self.stopLine = False
-        self.nodeLine = False
 
         slope, intercept = line
 
@@ -186,7 +184,10 @@ class compVision:
                 print("Node to the left")
             # Right node
             elif maxX > 400:
-                self.nodeLine = True
+                if self.stopAtNode:
+                    self.nodeLine = True
+                else:
+                    self.nodeLine = False
                 print("Node to the right")
 
     def lineIntercept(self, lineSegments):
@@ -377,8 +378,7 @@ class compVision:
                 self.stopRequired = False
 
             # If node line
-            if (self.nodeLine and self.stopAtNode and
-                    time.time()-self.nodeTimer > 2):
+            if (self.nodeLine and time.time()-self.nodeTimer > 2):
                 print("Stopping at Node")
                 qSteering.put(52)  # Send steering data to car
                 qBreak.put(1)  # Apply break
@@ -525,7 +525,7 @@ class compVision:
             if self.newOffset >= 0:
                 return
             else:
-                self.newOffset *= 3.5
+                self.newOffset *= 3.7
         else:
             self.newOffset = - 150
 
