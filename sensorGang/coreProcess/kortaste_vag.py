@@ -46,7 +46,8 @@ def kortaste_vag(graph, start, goal):
                     directionlist.append(directions[i])
             return path[current_node], directionlist
 
-        # Uppdaterar distans och kortaste väg för varje granne till nuvarande nod
+        # Uppdaterar distans och kortaste väg för varje
+        # granne till nuvarande nod
         for neighbor, weightdist in graph[current_node].items():
             new_distance = distance[current_node] + weightdist[0]
             if new_distance < distance[neighbor]:
@@ -58,3 +59,22 @@ def kortaste_vag(graph, start, goal):
 
     # Returnera None om det inte finns väg från start till slut
     return None
+
+
+if __name__ == '__main__':
+    road_map = 'road_map.txt'
+    graph = read_graph_from_file(road_map)
+
+    stopPos = ['A', 'G', 'D']
+
+    turningInstructs = []
+    turningPath = []
+
+    for i in range(len(stopPos) - 1):
+        turningInstructs.append(kortaste_vag(graph, stopPos[i],
+                                             stopPos[i+1])[1])
+        turningPath.append(kortaste_vag(graph, stopPos[i],
+                                        stopPos[i+1])[0])
+
+    print(turningPath)
+    print(turningInstructs)

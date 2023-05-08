@@ -9,10 +9,11 @@ from PD_reg import PDcontroller
 
 
 MQTT_TOPIC = [("stop", 0), ("ping", 0), ("speed", 0),
-              ("PD/Kp", 0), ("PD/Kd", 0), ("command/turning", 0)]
+              ("PD/Kp", 0), ("PD/Kd", 0), ("command/turning", 0,
+                                           ("command/stopnode", 0))]
 
 MQTT_TOPIC_UNSUB = ["stop", "ping", "speed",
-                    "PD/Kp", "PD/Kd", "command/turning"]
+                    "PD/Kp", "PD/Kd", "command/turning", "command/stopnode"]
 
 
 class SemiAutonomous():
@@ -93,7 +94,7 @@ class SemiAutonomous():
                 elif message[0] == "command/turning":
                     print("Recived command/turning data in semi autonomous")
                     qCommand.put(message[1])
-                elif message[0] == "command/node":
+                elif message[0] == "command/stopnode":
                     print("Recived command/node data in semi autonomous")
                     qCommandNode.put(message[1])
 

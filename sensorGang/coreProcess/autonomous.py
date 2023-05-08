@@ -10,10 +10,10 @@ import kortaste_vag as kv
 
 
 MQTT_TOPIC = [("stop", 0), ("ping", 0), ("speed", 0),
-              ("PD/Kp", 0), ("PD/Kd", 0), ("command/turning", 0)]
+              ("PD/Kp", 0), ("PD/Kd", 0), ("command/nodes", 0)]
 
 MQTT_TOPIC_UNSUB = ["stop", "ping", "speed",
-                    "PD/Kp", "PD/Kd", "command/turning"]
+                    "PD/Kp", "PD/Kd", "command/nodes"]
 
 
 class Autonomous():
@@ -22,18 +22,8 @@ class Autonomous():
     def __init__(self, mqttClient: mqtt.Client(),
                  timeOut, roiPerc, resolution=(640, 480)):
         """Set up variables and processes."""
-        # Calculate shortest path
-        self.road_map = 'road_map.txt'
-        self.graph = kv.read_graph_from_file(self.road_map)
-        self.start = str(input("STARTNODE:")[0])  # nån raw för att python 3
-        self.end = str(input("ENDNODE:")[0])
-
-        print(self.start)
-        print(self.end)
-
-        self.turningInstruct = kv.kortaste_vag(
-            self.graph, self.start, self.end)[1]
-
+        # Variables
+        self.breakingStatus = 0
         self.timeOut = timeOut
 
         # PD-Controller        Kp  Kd
@@ -46,15 +36,50 @@ class Autonomous():
 
         # Init MQTT
         self.mqttClient = mqttClient
-        self.mqttClient.on_message = self.onMessage
+        self.mqttClient.on_message = self.onMessagePath
         self.mqttClient.subscribe(MQTT_TOPIC)
 
-        self.breakingStatus = 0
+        # Calculate shortest path
+        self.recivedPath = False
+        self.stopNodes = []
 
-        print(self.turningInstruct)
+        while self.recivedPath is False:
+            time.sleep(0.01)
+
+        self.mqttClient.on_message = self.onMessage
+
+        self.road_map = 'road_map.txt'
+        self.graph = kv.read_graph_from_file(self.road_map)
+
+        self.turningInst = []
+        self.turningPath = []
+
+        for i in range(len(self.stopPos) - 1):
+            self.turningInst.append(kv.kortaste_vag(self.graph,
+                                                    self.stopNodes[i],
+                                                    self.stopNodes[i+1])[1])
+            self.turningPath.append(kv.kortaste_vag(self.graph,
+                                                    self.stopNodes[i],
+                                                    self.stopNodes[i+1])[0])
+        print(self.turningInst)
+        print(self.turningPath)
 
         # Init multiprocessing
         self.multiProcessing()
+
+    def onMessagePath(self, client, userdata, message):
+        """MQTT callback function for path."""
+        try:
+            m = message.payload.decode("utf-8")
+            t = message.topic
+        except Exception:
+            print("Couldn't read mqtt message")
+
+        if t == "command/nodes":
+            if m is not "0":
+                self.stopNodes.append(m)
+            else:
+                self.recivedPath = True
 
     def onMessage(self, client, userdata, message):
         """MQTT callback function."""
@@ -66,8 +91,8 @@ class Autonomous():
             print("Couldn't read mqtt message")
 
     def handleMessage(self, qMessageMQTT, qI2CDataRecived,
-                      qSteering, qSpeed, qBreak, qCommand,
-                      qPD, qOffsetData, statusAutonomous, status):
+                      qSteering, qSpeed, qBreak, qPD,
+                      qOffsetData, statusAutonomous, status):
         """Handle messages from other processes."""
         print("In handleMessage autonomous!")
         I2C_proc = i2cHandle.I2C()
@@ -104,9 +129,6 @@ class Autonomous():
                 elif message[0] == "PD/Kd":
                     print("Recived Kd data in autonomous")
                     qPD.put((1, message[1]/100))
-                elif message[0] == "command/turning":
-                    print("Recived command/turning data in autonomous")
-                    qCommand.put(message[1])
 
             if not qSteering.empty():
                 #                print("Recived steering")
@@ -217,6 +239,7 @@ class Autonomous():
         self.qSpeed = multiprocessing.Queue()           # Speed data to motors
         self.qBreak = multiprocessing.Queue()
         self.qCommand = multiprocessing.Queue()
+        self.qPath = multiprocessing.Queue()
         self.qPD = multiprocessing.Queue()
         self.qOffsetData = multiprocessing.Queue()
 
@@ -224,8 +247,10 @@ class Autonomous():
         self.statusHandleMessage = multiprocessing.Value('i', 1)
         self.statusAutonomous = multiprocessing.Value('i', 1)
 
-        for instruct in self.turningInstruct:
+        for instruct in self.turningInst:
             self.qCommand.put(instruct)
+        for path in self.turningPath:
+            self.qPath.put(instruct)
 
         self.p1 = multiprocessing.Process(target=self.handleMessage,
                                           args=(self.qMessageMQTT,
@@ -233,7 +258,6 @@ class Autonomous():
                                                 self.qSteering,
                                                 self.qSpeed,
                                                 self.qBreak,
-                                                self.qCommand,
                                                 self.qPD,
                                                 self.qOffsetData,
                                                 self.statusAutonomous,
@@ -245,6 +269,7 @@ class Autonomous():
                                                 self.qSpeed,
                                                 self.qBreak,
                                                 self.qCommand,
+                                                self.qPath,
                                                 self.qPD,
                                                 self.qOffsetData,
                                                 self.statusAutonomous))

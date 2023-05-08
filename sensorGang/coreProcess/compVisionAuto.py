@@ -115,8 +115,11 @@ class compVision:
         # Nodes
         self.stopAtNode = False
         self.getCommand = 0
+        self.instructions = []
         self.nodeTimeOut = 0
         self.nodeTimeOutStopLine = 0
+        self.nodeStopTimer = 0
+        self.stopped = False
 
     def displayImage(self):
         """Display self.image on screen."""
@@ -187,7 +190,7 @@ class compVision:
                 self.stopLine = True
 
         # Checks if node
-        elif width < self.widthNodeLine:
+        elif width < self.widthNodeLine and not self.stopped:
             # Left node
             if minX < 200:
                 print("Node to the left")
@@ -196,8 +199,8 @@ class compVision:
                 if ((time.time() - self.nodeTimeOut > 2) and
                         (time.time() - self.nodeTimeOutStopLine > 3)):
                     self.nodeTimeOut = time.time()
-                    if not qCommand.empty():
-                        self.getCommand = qCommand.get()
+                    if not self.instructions:
+                        self.getCommand = self.instructions.pop(0)
                     else:
                         self.stopAtNode = True
 
@@ -281,7 +284,7 @@ class compVision:
             return
 
     def getCenterOffset(self, qSteering, statusValue, qSpeed, qBreak,
-                        qCommand, qPD, qOffsetData, statusAutonomous):
+                        qCommand, qPath, qPD, qOffsetData, statusAutonomous):
         """Calculate the center offset in frame."""
         threadStream = VideoStream(self.resolution)  # Creates Video stream
         threadStream.start()  # Starts Video stream
@@ -290,7 +293,9 @@ class compVision:
 
         qSpeed.put(self.normalSpeed)  # Start car
 
-        self.getCommand = qCommand.get()
+        self.instructions = qCommand.get()  # First assignment
+
+        self.getCommand = self.instructions.pop(0)  # First turning instuction
 
         self.nodeTimeOut = time.time()
 
@@ -415,10 +420,23 @@ class compVision:
             status = statusValue.value  # Check status value
 
             if self.stopAtNode:
-                qSpeed.put(0)
+                self.stopped = True
                 qBreak.put(1)
-                statusAutonomous.value = 0
-                status = 0
+
+                if qCommand.empty() is not False:
+                    self.instructions = qCommand.get()  # Get next assignment
+                    self.nodeStopTimer = time.time()
+
+                else:
+                    qSpeed.put(0)
+                    statusAutonomous.value = 0
+                    status = 0
+
+            if self.stopAtNode and time.time() - self.nodeStopTimer > 2:
+                self.nodeTimeOut = time.time()
+                qBreak.put(0)
+                self.stopAtNode = False
+                self.stopped = False
 
             t2 = time.time()
 
