@@ -78,6 +78,7 @@ class Autonomous():
         if t == "command/nodes":
             if m != "0":
                 self.stopNodes.append(m)
+                print(m)
             else:
                 self.recivedPath = True
 
