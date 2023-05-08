@@ -79,6 +79,7 @@ class compVision:
         self.lastStopLineDistance = 0
         self.stopRequired = True
         self.nodeTimer = 0
+        self.stopAtNode = True
 
         # PD-Controller
         self.PD = PD
