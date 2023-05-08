@@ -426,13 +426,14 @@ class compVision:
                 if qCommand.empty() is not False:
                     self.instructions = qCommand.get()  # Get next assignment
                     self.nodeStopTimer = time.time()
+                    self.stopAtNode = False
 
                 else:
                     qSpeed.put(0)
                     statusAutonomous.value = 0
                     status = 0
 
-            if self.stopAtNode and time.time() - self.nodeStopTimer > 2:
+            if self.stopped and (time.time() - self.nodeStopTimer > 2):
                 self.nodeTimeOut = time.time()
                 qBreak.put(0)
                 self.stopAtNode = False
