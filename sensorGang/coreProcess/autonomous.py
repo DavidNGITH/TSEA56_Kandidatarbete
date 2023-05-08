@@ -182,7 +182,7 @@ class Autonomous():
 
                 i2cTimeElapsed = time.time()
 
-            if not statusAutonomous:
+            if statusAutonomous.value == 0:
                 print("Recived stop in autonomous")
                 try:
                     I2C_proc.close()

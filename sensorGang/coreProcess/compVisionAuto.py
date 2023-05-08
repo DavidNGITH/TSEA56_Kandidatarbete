@@ -444,6 +444,8 @@ class compVision:
 
             t2 = time.time()
 
+        print("CompVision stopped")
+
         threadStream.stop()  # Stop stream
 
     def getDataFromLines(self):
