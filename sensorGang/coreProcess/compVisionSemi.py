@@ -382,7 +382,7 @@ class compVision:
                 print("Stopping at Node")
                 qSteering.put(52)  # Send steering data to car
                 qBreak.put(1)  # Apply break
-                while not qCommand.empty() or not qCommandNode.empty():
+                while qCommand.empty() and qCommandNode.empty():
                     time.sleep(0.01)
                 self.stopAtNode = False
                 self.nodeLine = False
