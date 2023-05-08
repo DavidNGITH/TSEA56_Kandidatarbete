@@ -175,6 +175,7 @@ class compVision:
 
         # If stopline
         if width > self.widthStopLine and width < 300:
+            self.nodeTimeOutStopLine = time.time()
             # If stop required
             if self.stopRequired:
                 self.stopLine = True
