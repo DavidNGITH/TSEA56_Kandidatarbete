@@ -423,7 +423,7 @@ class compVision:
                 self.stopped = True
                 qBreak.put(1)
 
-                if qCommand.empty() is not False:
+                if qCommand.empty() is False:
                     print("Get next command")
                     self.instructions = qCommand.get()  # Get next assignment
                     self.nodeStopTimer = time.time()
