@@ -79,7 +79,7 @@ class compVision:
         self.lastStopLineDistance = 0
         self.stopRequired = True
         self.nodeTimer = 0
-        self.stopAtNode = True
+        self.stopAtNode = False
         self.nodeTimeOut = 0
         self.nodeTimeOutStopLine = 0
 
@@ -385,7 +385,7 @@ class compVision:
                 self.stopRequired = False
 
             # If node line
-            if (self.nodeLine and time.time()-self.nodeTimer > 2):
+            if (self.nodeLine and (time.time()-self.nodeTimer > 2)):
                 print("Stopping at Node")
                 qSteering.put(52)  # Send steering data to car
                 qBreak.put(1)  # Apply break
