@@ -199,7 +199,7 @@ class compVision:
                 if ((time.time() - self.nodeTimeOut > 2) and
                         (time.time() - self.nodeTimeOutStopLine > 3)):
                     self.nodeTimeOut = time.time()
-                    if not self.instructions:
+                    if self.instructions:
                         self.getCommand = self.instructions.pop(0)
                     else:
                         self.stopAtNode = True
