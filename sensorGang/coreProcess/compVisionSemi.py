@@ -417,6 +417,7 @@ class compVision:
                 while not qCommandNode.empty():
                     qCommandNode.get()
 
+                print("Stopping at next node")
                 self.stopAtNode = True
 
             status = statusValue.value  # Check status value
