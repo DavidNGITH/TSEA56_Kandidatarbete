@@ -74,9 +74,11 @@ class compVision:
 
         # Stop
         self.stopLine = False
+        self.nodeLine = False
         self.stopLineDistance = 0  # Distance to stop line
         self.lastStopLineDistance = 0
         self.stopRequired = True
+        self.nodeTimer = 0
 
         # PD-Controller
         self.PD = PD
@@ -96,7 +98,6 @@ class compVision:
         self.lastSpeed = self.normalSpeed
         self.speedToSend = None
         self.intersectionTime = 0
-        self.intersectionTimer = 3
 
         # Get offset
         self.getOffset = self.getDataFromLines
@@ -159,6 +160,9 @@ class compVision:
 
     def makeStopLine(self, line, minX, maxX):
         """Create endpoints for stop line."""
+        self.stopLine = False
+        self.nodeLine = False
+
         slope, intercept = line
 
         y1 = int(slope * minX + intercept)
@@ -178,16 +182,11 @@ class compVision:
         elif width < self.widthNodeLine:
             # Left node
             if minX < 200:
-                self.stopLine = False
                 print("Node to the left")
             # Right node
             elif maxX > 400:
-                self.stopLine = False
+                self.nodeLine = True
                 print("Node to the right")
-
-        else:
-            # print("No stopline")
-            self.stopLine = False
 
     def lineIntercept(self, lineSegments):
         """Handle detected lines from Hough transform."""
@@ -273,7 +272,7 @@ class compVision:
             self.getOffset = self.casesDict[getCommand]
 
     def getCenterOffset(self, qSteering, statusValue, qSpeed, qBreak,
-                        qCommand, qPD, qOffsetData):
+                        qCommand, qCommandNode, qPD, qOffsetData):
         """Calculate the center offset in frame."""
         threadStream = VideoStream(self.resolution)  # Creates Video stream
         threadStream.start()  # Starts Video stream
@@ -374,6 +373,19 @@ class compVision:
                 self.normalSteering = False
                 self.stopRequired = False
 
+            # If node line
+            if (self.nodeLine and self.stopAtNode and
+                    time.time()-self.nodeTimer > 2):
+                print("Stopping at Node")
+                qSteering.put(52)  # Send steering data to car
+                qBreak.put(1)  # Apply break
+                while not qCommand.empty() or not qCommandNode.empty():
+                    time.sleep(0.01)
+                self.stopAtNode = False
+                self.nodeLine = False
+                self.nodeTimer = time.time()
+                qBreak.put(0)
+
             # PD controller
             else:
                 steering_raw = self.PD.get_control(self.newOffset)
@@ -397,6 +409,12 @@ class compVision:
             # Sets stop required
             if (time.time() - self.intersectionTime > 4.5):
                 self.stopRequired = True
+
+            if not qCommandNode.empty():
+                while not qCommandNode.empty():
+                    qCommandNode.get()
+
+                self.stopAtNode = True
 
             status = statusValue.value  # Check status value
 
@@ -498,7 +516,6 @@ class compVision:
     def getOffsetLeftTurn(self):
         """Get offset on left turn."""
         self.currentSpeed = self.turningSpeed + 15
-        self.intersectionTimer = 1.75
         if self.leftHistogram is not None:
             self.newOffset = (self.leftHistogram - 115)
             if self.newOffset >= 0:
@@ -511,7 +528,6 @@ class compVision:
     def getOffsetRightTurn(self):
         """Get offset on right turn."""
         self.currentSpeed = self.turningSpeed + 15
-        self.intersectionTimer = 1.75
         if self.rightHistogram is not None:
             self.newOffset = (self.rightHistogram - 530)
             if self.newOffset <= 0:

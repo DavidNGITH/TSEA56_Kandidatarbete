@@ -51,7 +51,7 @@ class SemiAutonomous():
             print("Couldn't read mqtt message")
 
     def handleMessage(self, qMessageMQTT, qI2CDataRecived,
-                      qSteering, qSpeed, qBreak, qCommand,
+                      qSteering, qSpeed, qBreak, qCommand, qCommandNode,
                       qPD, qOffsetData, status):
         """Handle messages from other processes."""
         print("In handleMessage autonomous!")
@@ -91,8 +91,11 @@ class SemiAutonomous():
                     print("Recived Kd data in autonomous")
                     qPD.put((1, message[1]/100))
                 elif message[0] == "command/turning":
-                    print("Recived command/turning data in autonomous")
+                    print("Recived command/turning data in semi autonomous")
                     qCommand.put(message[1])
+                elif message[0] == "command/node":
+                    print("Recived command/node data in semi autonomous")
+                    qCommandNode.put(message[1])
 
             if not qSteering.empty():
                 #                print("Recived steering")
@@ -194,6 +197,7 @@ class SemiAutonomous():
         self.qSpeed = multiprocessing.Queue()           # Speed data to motors
         self.qBreak = multiprocessing.Queue()
         self.qCommand = multiprocessing.Queue()
+        self.qCommandNode = multiprocessing.Queue()
         self.qPD = multiprocessing.Queue()
         self.qOffsetData = multiprocessing.Queue()
 
@@ -207,6 +211,7 @@ class SemiAutonomous():
                                                 self.qSpeed,
                                                 self.qBreak,
                                                 self.qCommand,
+                                                self.qCommandNode,
                                                 self.qPD,
                                                 self.qOffsetData,
                                                 self.statusHandleMessage))
@@ -217,6 +222,7 @@ class SemiAutonomous():
                                                 self.qSpeed,
                                                 self.qBreak,
                                                 self.qCommand,
+                                                self.qCommandNode,
                                                 self.qPD,
                                                 self.qOffsetData))
 
