@@ -194,7 +194,7 @@ class compVision:
             # Right node
             elif maxX > 400:
                 if ((time.time() - self.nodeTimeOut > 2) and
-                        (time.time() - self.nodeTimeOutStopLine > 2.5)):
+                        (time.time() - self.nodeTimeOutStopLine > 3)):
                     self.nodeTimeOut = time.time()
                     if not qCommand.empty():
                         self.getCommand = qCommand.get()
@@ -309,7 +309,7 @@ class compVision:
 
             self.img = cv2.cvtColor(self.img, cv2.COLOR_BGR2GRAY)
 
-            ret, self.img = cv2.threshold(self.img, 40, 255, cv2.THRESH_BINARY)
+            ret, self.img = cv2.threshold(self.img, 50, 255, cv2.THRESH_BINARY)
 
             # self.img = cv2.GaussianBlur(self.img, (3, 3), 0)  # Blur img
 
