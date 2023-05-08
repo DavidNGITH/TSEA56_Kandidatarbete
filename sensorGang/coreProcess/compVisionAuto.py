@@ -437,7 +437,7 @@ class compVision:
 
             if self.stopped and (time.time() - self.nodeStopTimer > 2):
                 print("Start driving again")
-                self.nodeTimeOut = time.time()
+                self.nodeTimeOut = time.time() - 1
                 qBreak.put(0)
                 self.stopAtNode = False
                 self.stopped = False
