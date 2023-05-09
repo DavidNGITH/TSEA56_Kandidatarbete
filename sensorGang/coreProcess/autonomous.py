@@ -195,7 +195,6 @@ class Autonomous():
                 return
 
             if self.lastNodeCounter != self.nodeCounter.value:
-                print(self.nodeCounter.value)
                 qI2CDataRecived.put(
                     (3, turningPath[0][self.nodeCounter.value]))
                 if len(turningPath[0]) - (1 + self.nodeCounter.value):
@@ -238,7 +237,7 @@ class Autonomous():
                     node = messageToSend[1]
                     # print("Obstacle: {} cm".format(obstacle))
                     self.mqttClient.publish("data/currentnode", node)
-                elif messageToSend[0] == 3:
+                elif messageToSend[0] == 4:
                     nextNode = messageToSend[1]
                     # print("Obstacle: {} cm".format(obstacle))
                     self.mqttClient.publish("data/nextnode", nextNode)
