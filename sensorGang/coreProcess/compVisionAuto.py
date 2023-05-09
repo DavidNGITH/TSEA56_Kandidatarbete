@@ -54,6 +54,8 @@ class compVision:
         self.stopped = False            # If car has stopped at node
         self.nodeCounter = 0
 
+        self.sendDataTimer = 0
+
     lineIntercept = lineInterceptFunction
     regionOfInterest = regionOfInterestFunction
     getDataFromLines = getDataFromLinesFunction
@@ -219,8 +221,8 @@ class compVision:
 
                 elif steering > 120:
                     steering = 120
-
-                qSteering.put(steering)  # Send steering data to car
+                if (time.time()-self.sendDataTimer > 1):
+                    qSteering.put(steering)  # Send steering data to car
 
             # If in intersection and > 3 s
             if (time.time()-self.intersectionTime > 3 and
