@@ -92,8 +92,8 @@ class Autonomous():
             print("Couldn't read mqtt message")
 
     def handleMessage(self, qMessageMQTT, qI2CDataRecived,
-                      qSteering, qSpeed, qBreak, qPD,
-                      qOffsetData, statusAutonomous, status):
+                      qSteering, qSpeed, qBreak, qPD, turningPath,
+                      statusAutonomous, status):
         """Handle messages from other processes."""
         print("In handleMessage autonomous!")
         I2C_proc = i2cHandle.I2C()
@@ -101,6 +101,9 @@ class Autonomous():
         i2cTimeElapsed = 0
         sendI2C = 0
         pingTime = time.time()
+
+        # Send current node
+        self.lastNodeCounter = None
 
         while status.value:
             if not qMessageMQTT.empty():
@@ -191,6 +194,11 @@ class Autonomous():
                 self.stop()
                 return
 
+            if self.lastNodeCounter != self.nodeCounter:
+                qI2CDataRecived.put((3, turningPath[self.nodeCounter]))
+                if not len(turningPath) - (1 + self.nodeCounter):
+                    qI2CDataRecived.put((4, turningPath[self.nodeCounter + 1]))
+
             time.sleep(0.01)
 
     def stop(self):
@@ -221,6 +229,14 @@ class Autonomous():
                     obstacle = messageToSend[1]
                     # print("Obstacle: {} cm".format(obstacle))
                     self.mqttClient.publish("data/obstacle", obstacle)
+                elif messageToSend[0] == 3:
+                    node = messageToSend[1]
+                    # print("Obstacle: {} cm".format(obstacle))
+                    self.mqttClient.publish("data/currentnode", node)
+                elif messageToSend[0] == 3:
+                    nextNode = messageToSend[1]
+                    # print("Obstacle: {} cm".format(obstacle))
+                    self.mqttClient.publish("data/nextnode", nextNode)
 
             if not self.qOffsetData.empty():
                 latPos = self.qOffsetData.get()
@@ -235,12 +251,10 @@ class Autonomous():
         """Initiate of processes."""
         self.qMessageMQTT = multiprocessing.Queue()     # Incoming MQTT message
         self.qSteering = multiprocessing.Queue()        # Steering data
-        # self.qMotors = multiprocessing.Queue()         # Speed data to motors
         self.qI2CDataRecived = multiprocessing.Queue()  # Recived I2C data
         self.qSpeed = multiprocessing.Queue()           # Speed data to motors
         self.qBreak = multiprocessing.Queue()
         self.qCommand = multiprocessing.Queue()
-        self.qPath = multiprocessing.Queue()
         self.qPD = multiprocessing.Queue()
         self.qOffsetData = multiprocessing.Queue()
 
@@ -248,10 +262,12 @@ class Autonomous():
         self.statusHandleMessage = multiprocessing.Value('i', 1)
         self.statusAutonomous = multiprocessing.Value('i', 1)
 
+        self.nodeCounter = multiprocessing.Value('i', 0)
+
         for instruct in self.turningInst:
             self.qCommand.put(instruct)
-        for path in self.turningPath:
-            self.qPath.put(instruct)
+        # for path in self.turningPath:
+        #    self.qPath.put(instruct)
 
         self.p1 = multiprocessing.Process(target=self.handleMessage,
                                           args=(self.qMessageMQTT,
@@ -260,7 +276,7 @@ class Autonomous():
                                                 self.qSpeed,
                                                 self.qBreak,
                                                 self.qPD,
-                                                self.qOffsetData,
+                                                self.turningPath,
                                                 self.statusAutonomous,
                                                 self.statusHandleMessage))
 
@@ -270,7 +286,7 @@ class Autonomous():
                                                 self.qSpeed,
                                                 self.qBreak,
                                                 self.qCommand,
-                                                self.qPath,
+                                                self.nodeCounter,
                                                 self.qPD,
                                                 self.qOffsetData,
                                                 self.statusAutonomous))

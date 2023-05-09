@@ -52,6 +52,7 @@ class compVision:
         self.nodeStopTimer = 0          # Wait timer at stop
         self.waitAtNode = 2             # Wait time at stop
         self.stopped = False            # If car has stopped at node
+        self.nodeCounter = 0
 
     lineIntercept = lineInterceptFunction
     regionOfInterest = regionOfInterestFunction
@@ -83,6 +84,7 @@ class compVision:
                 if ((time.time() - self.nodeTimeOut > 2) and
                         (time.time() - self.nodeTimeOutStopLine > 3)):
                     self.nodeTimeOut = time.time()
+                    self.nodeCounter += 1
                     if self.instructions:
                         self.getCommand = self.instructions.pop(0)
                     else:
@@ -95,7 +97,8 @@ class compVision:
             self.stopLine = False
 
     def getCenterOffset(self, qSteering, statusValue, qSpeed, qBreak,
-                        qCommand, qPath, qPD, qOffsetData, statusAutonomous):
+                        qCommand, nodeCounter, qPD, qOffsetData,
+                        statusAutonomous):
         """Calculate the center offset in frame."""
         threadStream = VideoStream(self.resolution)  # Creates Video stream
         threadStream.start()  # Starts Video stream
@@ -171,6 +174,8 @@ class compVision:
 
             self.lineIntercept(lineSegments, qCommand)  # Calc line equations
 
+            nodeCounter.value = self.nodeCounter
+
             self.lastSpeed = self.currentSpeed  # Set last speed to current
 
             self.getOffset()  # Get offset
@@ -236,6 +241,7 @@ class compVision:
 
                 if qCommand.empty() is False:
                     print("Get next command")
+                    self.nodeCounter = 0
                     self.instructions = qCommand.get()  # Get next assignment
                     self.getCommand = self.instructions.pop(0)
                     self.nodeStopTimer = time.time()

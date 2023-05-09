@@ -183,7 +183,7 @@ def getOffsetRightTurnFunction(self):
 
 
 def setupFunction(self):
-    """Settings and variables"""
+    """Set variables."""
     self.img = None
     self.lineCenter = None
     self.newOffset = 0
