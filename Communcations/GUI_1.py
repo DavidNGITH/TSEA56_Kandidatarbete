@@ -50,7 +50,7 @@ class Ui_Dialog(object):
         self.steering = 50
         self.breaking = 0
         self.obs_det_bool = False
-        self.crs_data = "A to B"
+
         self.lat_pos_data = 0
         self.route_plan_data = "A to B to D to F"
         self.map_node_dict = {"A": [799, 440], "B": [570, 500], "C": [720, 517], "D": [
@@ -68,6 +68,8 @@ class Ui_Dialog(object):
         self.save_obs_det_bool = []
         self.save_lat_pos_data = []
 
+        self.next_node = "-"
+        self.current_node = ""
         ################################## GUI LABEL AND BUTTONS ################################
         self.obst_det_head = QtWidgets.QLabel(Dialog)
         self.obst_det_head.setGeometry(QtCore.QRect(140, 20, 131, 16))
@@ -244,7 +246,7 @@ class Ui_Dialog(object):
         self.crs_display = QtWidgets.QTextBrowser(Dialog)
         self.crs_display.setGeometry(QtCore.QRect(670, 250, 301, 31))
         self.crs_display.setObjectName("crs_display")
-        self.crs_display.setText(str(self.crs_data))
+        self.crs_display.setText(str(self.next_node))
 
         self.lateral_pos_display = QtWidgets.QTextBrowser(Dialog)
         self.lateral_pos_display.setGeometry(QtCore.QRect(670, 290, 301, 31))
@@ -501,6 +503,7 @@ class Ui_Dialog(object):
             stringlist = (self.Command_input_box.toPlainText()).rsplit(": ")
             print("Topic: " + stringlist[0])
             print("Command: " + stringlist[1])
+            self.mqtt_client.publish(stringlist[0], stringlist[1])
         except IndexError:
             print("Error: Wrong input")
 
@@ -514,6 +517,8 @@ class Ui_Dialog(object):
         self.is_breaking = 0
         self.breaking = 0
         self.is_driving = True
+        if self.type_of_mode == "Semi-automatic" or self.type_of_mode == "Automatic":
+            self.mqtt_client.publish("command/nodes", "0")
         print("START")
 
     def on_stop_car_click(self):
@@ -551,9 +556,9 @@ class Ui_Dialog(object):
     def mqtt_init(self):
         # initate connection
         MQTT_TOPIC = [("data/distance", 0), ("data/speed", 0),
-                      ("data/crs", 0), ("data/lat_pos", 0), ("data/route_plan", 0), ("data/obstacle", 0)]
+                      ("data/crs", 0), ("data/lat_pos", 0), ("data/route_plan", 0), ("data/obstacle", 0), ("data/currentnode", 0), ("data/nextnode", 0)]
         try:
-            broker_ip = "10.241.215.114"
+            broker_ip = "10.241.239.117"
             broker_port = 1883
             self.mqtt_client = mqtt.Client()
             self.mqtt_client.username_pw_set("tsea56G09", "mindset")
@@ -570,6 +575,12 @@ class Ui_Dialog(object):
         self.qData.put((t, m))
 
     def updatedata(self):
+        _translate = QtCore.QCoreApplication.translate
+        if self.type_of_mode == "Manual":
+            self.bearing_label.setText(_translate("Dialog", "Bearing:"))
+        elif self.type_of_mode == "Semi-automatic" or self.type_of_mode == "Automatic":
+            self.bearing_label.setText(_translate("Dialog", "Current Node:"))
+
         if not self.qData.empty():
             message = self.qData.get()
             if message[0] == "data/distance":
@@ -620,6 +631,13 @@ class Ui_Dialog(object):
                 print(self.obs_det_bool)
                 self.obs_det_display.setText(str(self.obs_det_bool))
 
+            if message[0] == "data/currentnode":
+                self.current_node = str(message[1])
+                self.bearing_display.setText(self.current_node)
+
+            if message[0] == "data/nextnode":
+                self.next_node = str(message[1])
+                self.crs_display.setText(self.next_node)
         else:
             pass
 
