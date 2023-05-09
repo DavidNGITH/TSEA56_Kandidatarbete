@@ -222,6 +222,7 @@ class compVision:
                 elif steering > 120:
                     steering = 120
                 if (time.time()-self.sendDataTimer > 1):
+                    self.sendDataTimer = time.time()
                     qSteering.put(steering)  # Send steering data to car
 
             # If in intersection and > 3 s
