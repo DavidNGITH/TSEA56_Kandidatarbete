@@ -105,6 +105,7 @@ class Autonomous():
 
         # Send current node
         self.lastNodeCounter = None
+        self.lastAssignmentCounter = None
 
         while status.value:
             if not qMessageMQTT.empty():
