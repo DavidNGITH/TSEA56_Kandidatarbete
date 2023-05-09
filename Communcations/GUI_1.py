@@ -452,7 +452,7 @@ class Ui_Dialog(object):
         self.speed_label.setText(_translate("Dialog", "Speed (cm/s):"))
         self.throttle_label.setText(_translate("Dialog", "Throttle:"))
         self.bearing_label.setText(_translate("Dialog", "Bearing:"))
-        self.crs_label.setText(_translate("Dialog", "Current road segment:"))
+        self.crs_label.setText(_translate("Dialog", "Next Node:"))
         self.lat_pos_label.setText(_translate("Dialog", "Lateral position:"))
         self.routeplan_label.setText(_translate("Dialog", "Planned route:"))
         self.map_label.setText(_translate("Dialog", "Map:"))
@@ -517,7 +517,7 @@ class Ui_Dialog(object):
         self.is_breaking = 0
         self.breaking = 0
         self.is_driving = True
-        if self.type_of_mode == "Semi-automatic" or self.type_of_mode == "Automatic":
+        if self.type_of_mode == "Automatic":
             self.mqtt_client.publish("command/nodes", "0")
         print("START")
 
@@ -543,14 +543,15 @@ class Ui_Dialog(object):
         print("Next stop")
 
     def on_next_node_click(self):
+        self.mqtt_client.publish("command/stopnode", "1")
         print("Next node")
 
     def on_keep_right_click(self):
-        self.mqtt_client.publish("command/turning", "4")
+        self.mqtt_client.publish("command/turning", "2")
         print("Keep right")
 
     def on_keep_left_click(self):
-        self.mqtt_client.publish("command/turning", "3")
+        self.mqtt_client.publish("command/turning", "1")
         print("Keep left")
 
     def mqtt_init(self):
@@ -637,6 +638,7 @@ class Ui_Dialog(object):
 
             if message[0] == "data/nextnode":
                 self.next_node = str(message[1])
+                print(self.next_node)
                 self.crs_display.setText(self.next_node)
         else:
             pass
