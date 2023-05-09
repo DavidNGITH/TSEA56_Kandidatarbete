@@ -47,6 +47,8 @@ class compVision:
         # PD-Controller
         self.PD = PD
 
+        self.sendDataTimer = 0
+
     lineIntercept = lineInterceptFunction
     regionOfInterest = regionOfInterestFunction
     getDataFromLines = getDataFromLinesFunction
@@ -157,7 +159,9 @@ class compVision:
             self.getOffset()  # Get offset
 
             # Send offset data to computer
-            qOffsetData.put(str(self.newOffset))
+            if (time.time()-self.sendDataTimer > 1):
+                self.sendDataTimer = time.time()
+                qOffsetData.put(str(self.newOffset))
 
             # Checks if speed is updated
             # if self.currentSpeed is not self.lastSpeed:
