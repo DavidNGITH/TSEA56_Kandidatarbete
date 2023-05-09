@@ -52,7 +52,7 @@ class Ui_Dialog(object):
         self.obs_det_bool = False
 
         self.lat_pos_data = 0
-        self.route_plan_data = "A to B to D to F"
+        self.route_plan_data = "-"
         self.map_node_dict = {"A": [799, 440], "B": [570, 500], "C": [720, 517], "D": [
             570, 573], "E": [720, 555], "F": [638, 642], "G": [807, 642], "H": [862, 502]}
         self.previous_rs = "A"
@@ -622,10 +622,11 @@ class Ui_Dialog(object):
                 self.lateral_pos_display.setText(str(self.lat_pos_data))
 
             if message[0] == "data/route_plan":
+                self.route_plan_data = str(message[1])
                 print("route_plan recieved")
                 # self.route_plan_data = message[1]
                 # print(self.route_plan_data)
-                self.routeplan_display.setText(str(self.route_plan_data))
+                self.routeplan_display.setText(self.route_plan_data)
 
             if message[0] == "data/obstacle":
                 self.obs_det_bool = message[1]
