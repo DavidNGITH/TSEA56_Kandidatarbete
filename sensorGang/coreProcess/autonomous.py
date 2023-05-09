@@ -195,9 +195,10 @@ class Autonomous():
                 return
 
             if self.lastNodeCounter != self.nodeCounter:
-                qI2CDataRecived.put((3, turningPath[self.nodeCounter]))
-                if not len(turningPath) - (1 + self.nodeCounter):
-                    qI2CDataRecived.put((4, turningPath[self.nodeCounter + 1]))
+                qI2CDataRecived.put((3, turningPath[0][self.nodeCounter]))
+                if not len(turningPath[0]) - (1 + self.nodeCounter):
+                    qI2CDataRecived.put(
+                        (4, turningPath[0][self.nodeCounter + 1]))
                 else:
                     qI2CDataRecived.put((4, "-"))
 
