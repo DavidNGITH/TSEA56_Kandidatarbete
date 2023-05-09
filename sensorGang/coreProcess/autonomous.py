@@ -93,7 +93,7 @@ class Autonomous():
 
     def handleMessage(self, qMessageMQTT, qI2CDataRecived,
                       qSteering, qSpeed, qBreak, qPD, turningPath,
-                      statusAutonomous, status):
+                      nodeCounter, assignmentCounter, statusAutonomous, status):
         """Handle messages from other processes."""
         print("In handleMessage autonomous!")
         I2C_proc = i2cHandle.I2C()
@@ -194,17 +194,17 @@ class Autonomous():
                 self.stop()
                 return
 
-            if self.lastNodeCounter != self.nodeCounter.value:
-                self.lastNodeCounter = self.nodeCounter.value
+            if self.lastNodeCounter != nodeCounter.value:
+                self.lastNodeCounter = nodeCounter.value
                 print("current: ".format(
-                    turningPath[0][self.nodeCounter.value]))
+                    turningPath[assignmentCounter.value][nodeCounter.value]))
                 qI2CDataRecived.put(
-                    (3, turningPath[0][self.nodeCounter.value]))
-                if len(turningPath[0]) - (1 + self.nodeCounter.value):
+                    (3, turningPath[assignmentCounter.value][nodeCounter.value]))
+                if len(turningPath[0]) - (1 + nodeCounter.value):
                     print("next".format(
-                        turningPath[0][self.nodeCounter.value + 1]))
+                        turningPath[assignmentCounter.value][nodeCounter.value + 1]))
                     qI2CDataRecived.put(
-                        (4, turningPath[0][self.nodeCounter.value + 1]))
+                        (4, turningPath[assignmentCounter.value][nodeCounter.value + 1]))
                 else:
                     qI2CDataRecived.put((4, "-"))
 
@@ -272,6 +272,7 @@ class Autonomous():
         self.statusAutonomous = multiprocessing.Value('i', 1)
 
         self.nodeCounter = multiprocessing.Value('i', 0)
+        self.assignmentCounter = multiprocessing.Value('i', 0)
 
         for instruct in self.turningInst:
             self.qCommand.put(instruct)
@@ -286,6 +287,8 @@ class Autonomous():
                                                 self.qBreak,
                                                 self.qPD,
                                                 self.turningPath,
+                                                self.nodeCounter,
+                                                self.assignmentCounter,
                                                 self.statusAutonomous,
                                                 self.statusHandleMessage))
 
@@ -296,6 +299,7 @@ class Autonomous():
                                                 self.qBreak,
                                                 self.qCommand,
                                                 self.nodeCounter,
+                                                self.assignmentCounter,
                                                 self.qPD,
                                                 self.qOffsetData,
                                                 self.statusAutonomous))

@@ -99,8 +99,8 @@ class compVision:
             self.stopLine = False
 
     def getCenterOffset(self, qSteering, statusValue, qSpeed, qBreak,
-                        qCommand, nodeCounter, qPD, qOffsetData,
-                        statusAutonomous):
+                        qCommand, nodeCounter, assignmentCounter, qPD,
+                        qOffsetData, statusAutonomous):
         """Calculate the center offset in frame."""
         threadStream = VideoStream(self.resolution)  # Creates Video stream
         threadStream.start()  # Starts Video stream
@@ -246,6 +246,7 @@ class compVision:
                 if qCommand.empty() is False:
                     print("Get next command")
                     self.nodeCounter = 0
+                    assignmentCounter.value += 1
                     self.instructions = qCommand.get()  # Get next assignment
                     self.getCommand = self.instructions.pop(0)
                     self.nodeStopTimer = time.time()
