@@ -183,7 +183,9 @@ class compVision:
             self.getOffset()  # Get offset
 
             # Send offset data to computer
-            qOffsetData.put(str(self.newOffset))
+            if (time.time()-self.sendDataTimer > 1):
+                self.sendDataTimer = time.time()
+                qOffsetData.put(str(self.newOffset))
 
             # Checks if speed is updated
             # if self.currentSpeed is not self.lastSpeed:
@@ -221,9 +223,8 @@ class compVision:
 
                 elif steering > 120:
                     steering = 120
-                if (time.time()-self.sendDataTimer > 1):
-                    self.sendDataTimer = time.time()
-                    qSteering.put(steering)  # Send steering data to car
+
+                qSteering.put(steering)  # Send steering data to car
 
             # If in intersection and > 3 s
             if (time.time()-self.intersectionTime > 3 and
