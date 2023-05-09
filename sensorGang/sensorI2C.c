@@ -26,7 +26,7 @@ static volatile int i = 0;
 static volatile int pulse = 0; //Ska skickas pulsbredden från ultrasonic
 static volatile int ultraCnt = 0;
 
-uint8_t eadTWDR = 16;
+uint8_t readTWDR = 16;
 
 
 void i2c_init()
@@ -193,7 +193,7 @@ ISR(TWI_vect)
 			readTWDR = TWDR;
 			break;
 		case TW_ST_SLA_ACK:
-			switch(eadTWDR){
+			switch(readTWDR){
 				case 0:
 					TWDR = I2C_read_buffer[0];
 					break;
