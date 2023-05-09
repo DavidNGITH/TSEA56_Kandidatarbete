@@ -254,6 +254,7 @@ class compVision:
                 else:
                     print("No more commands")
                     qSpeed.put(0)
+                    time.sleep(1)
                     statusAutonomous.value = 0
                     status = 0
 
