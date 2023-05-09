@@ -93,7 +93,8 @@ class Autonomous():
 
     def handleMessage(self, qMessageMQTT, qI2CDataRecived,
                       qSteering, qSpeed, qBreak, qPD, turningPath,
-                      nodeCounter, assignmentCounter, statusAutonomous, status):
+                      nodeCounter, assignmentCounter, statusAutonomous,
+                      status):
         """Handle messages from other processes."""
         print("In handleMessage autonomous!")
         I2C_proc = i2cHandle.I2C()
@@ -193,16 +194,27 @@ class Autonomous():
                     print("Couldn't read i2c")
                 self.stop()
                 return
+            
+            if self.lastAssignmentCounter != assignmentCounter.value:
+                self.lastAssignmentCounter = assignmentCounter.value
+                string = ""
+                for i in range(0, len(turningPath[assignmentCounter.value])):
+                    if i != len(turningPath[assignmentCounter.value]) - 1:
+                        string += str(turningPath[assignmentCounter.value][i])
+                        string += " to "
 
+                    else:
+                        string += str(turningPath[assignmentCounter.value][i])
+
+                qI2CDataRecived.put((5, string))
+          
             if self.lastNodeCounter != nodeCounter.value:
                 self.lastNodeCounter = nodeCounter.value
                 print("current: ".format(
                     turningPath[assignmentCounter.value][nodeCounter.value]))
                 qI2CDataRecived.put(
                     (3, turningPath[assignmentCounter.value][nodeCounter.value]))
-                if len(turningPath[0]) - (1 + nodeCounter.value):
-                    print("next".format(
-                        turningPath[assignmentCounter.value][nodeCounter.value + 1]))
+                if len(turningPath[assignmentCounter.value]) - (1 + nodeCounter.value):
                     qI2CDataRecived.put(
                         (4, turningPath[assignmentCounter.value][nodeCounter.value + 1]))
                 else:
@@ -246,6 +258,10 @@ class Autonomous():
                     nextNode = messageToSend[1]
                     # print("Obstacle: {} cm".format(obstacle))
                     self.mqttClient.publish("data/nextnode", nextNode)
+                elif messageToSend[0] == 5:
+                    route = messageToSend[1]
+                    # print("Obstacle: {} cm".format(obstacle))
+                    self.mqttClient.publish("data/route_plan", route)
 
             if not self.qOffsetData.empty():
                 latPos = self.qOffsetData.get()
