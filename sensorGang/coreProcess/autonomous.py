@@ -195,6 +195,7 @@ class Autonomous():
                 return
 
             if self.lastNodeCounter != self.nodeCounter.value:
+                self.lastNodeCounter = self.nodeCounter.value
                 print("current: ".format(
                     turningPath[0][self.nodeCounter.value]))
                 qI2CDataRecived.put(
