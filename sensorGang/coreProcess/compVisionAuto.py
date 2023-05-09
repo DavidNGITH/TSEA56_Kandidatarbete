@@ -172,7 +172,7 @@ class compVision:
                                            minLineLength=self.minLineLength,
                                            maxLineGap=self.minLineLength)
 
-            self.lineIntercept(lineSegments, qCommand)  # Calc line equations
+            self.lineIntercept(lineSegments)  # Calc line equations
 
             nodeCounter.value = self.nodeCounter
 
