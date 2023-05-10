@@ -62,6 +62,8 @@ class SemiAutonomous():
         sendI2C = 0
         pingTime = time.time()
 
+        I2C_proc.send((2, 0))
+
         while status.value:
             if not qMessageMQTT.empty():
                 print("qMessage not empty")

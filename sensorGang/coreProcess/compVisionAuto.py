@@ -120,6 +120,7 @@ class compVision:
         self.nodeTimeOut = time.time()
 
         while status:
+            t1 = time.time()
             # Handles PD messages from computer
             if qPD.empty() is False:
                 message = qPD.get()
@@ -224,6 +225,10 @@ class compVision:
                 qBreak.put(0)
                 self.stopAtNode = False
                 self.stopped = False
+
+        t2 = time.time()
+
+        print("time: {}".format((t2-t1)*1000))
 
         print("CompVision stopped")
 
