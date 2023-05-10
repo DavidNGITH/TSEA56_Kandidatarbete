@@ -107,6 +107,8 @@ class Autonomous():
         self.lastNodeCounter = None
         self.lastAssignmentCounter = None
 
+        I2C_proc.send((2, 0))
+
         while status.value:
             if not qMessageMQTT.empty():
                 # print("qMessage not empty")

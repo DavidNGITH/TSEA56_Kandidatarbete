@@ -56,6 +56,8 @@ class Manual():
         pingTime = time.time()
         i2cTimeElapsed = time.time()
 
+        I2C_proc.send((2, 0))
+
         while status.value:
             if not qMQTT.empty():
                 print("qMessage not empty")
