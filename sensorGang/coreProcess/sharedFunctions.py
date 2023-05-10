@@ -164,7 +164,7 @@ def getOffsetLeftTurnFunction(self):
         if self.newOffset >= 0:
             return
         else:
-            self.newOffset *= 3.6
+            self.newOffset *= 3.8
     else:
         self.newOffset = - 150
 
@@ -173,11 +173,11 @@ def getOffsetRightTurnFunction(self):
     """Get offset on right turn."""
     self.currentSpeed = self.turningSpeed + 15
     if self.rightHistogram is not None:
-        self.newOffset = (self.rightHistogram - 560)
+        self.newOffset = (self.rightHistogram - 570)
         if self.newOffset <= 0:
             return
         else:
-            self.newOffset *= 3.5
+            self.newOffset *= 3.6
     else:
         self.newOffset = 150
 
