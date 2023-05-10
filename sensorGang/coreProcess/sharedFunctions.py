@@ -106,7 +106,7 @@ def getDataFromLinesFunction(self):
         elif self.slopeRight:
             casePrint = "Case 3"
             self.newOffset = (self.midpointHistogram -
-                              1/self.slopeRight * 380)
+                              1/self.slopeRight * 360)
 
         # Inga lutningar har hittats
         else:
@@ -173,7 +173,7 @@ def getOffsetRightTurnFunction(self):
     """Get offset on right turn."""
     self.currentSpeed = self.turningSpeed + 15
     if self.rightHistogram is not None:
-        self.newOffset = (self.rightHistogram - 530)
+        self.newOffset = (self.rightHistogram - 500)
         if self.newOffset <= 0:
             return
         else:
