@@ -117,6 +117,9 @@ class Autonomous():
                 if message[0] == "stop":
                     print("Recived stop in autonomous")
                     try:
+                        I2C_proc.send((0, 0))
+                        I2C_proc.send((2, 0))
+                        time.sleep(0.2)
                         I2C_proc.close()
                     except Exception:
                         print("Couldn't read i2c")
@@ -213,8 +216,6 @@ class Autonomous():
           
             if self.lastNodeCounter != nodeCounter.value:
                 self.lastNodeCounter = nodeCounter.value
-                print("current: ".format(
-                    turningPath[assignmentCounter.value][nodeCounter.value]))
                 qI2CDataRecived.put(
                     (3, turningPath[assignmentCounter.value][nodeCounter.value]))
                 if len(turningPath[assignmentCounter.value]) - (1 + nodeCounter.value):
