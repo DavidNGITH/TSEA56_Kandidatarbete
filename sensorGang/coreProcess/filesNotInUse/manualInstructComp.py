@@ -63,6 +63,7 @@ def main(key):
         else:
             speed = 255
         mqtt_client.publish("speed", "{}".format(speed))
+        mqtt_client.publish("breaking", "0")
 
     elif key == keyboard.KeyCode.from_char("s"):
         if speed > 4:
@@ -72,15 +73,15 @@ def main(key):
         mqtt_client.publish("speed", "{}".format(speed))
 
     elif key == keyboard.KeyCode.from_char("a"):
-        if steering > 4:
-            steering = steering - 5
+        if steering > 9:
+            steering = steering - 10
         else:
             steering = 0
         mqtt_client.publish("steering", "{}".format(steering))
 
     elif key == keyboard.KeyCode.from_char("d"):
-        if steering < 116:
-            steering = steering + 5
+        if steering < 110:
+            steering = steering + 10
         else:
             steering = 120
         mqtt_client.publish("steering", "{}".format(steering))

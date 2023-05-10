@@ -9,7 +9,7 @@ from queue import Queue
 q = Queue()
 MQTT_TOPIC = [("stop", 0), ("mode", 0)]
 MQTT_TOPIC_UNSUB = ["stop", "mode"]
-FRAME_RATE = 30
+FRAME_RATE = 8
 RESOLUTION = (640, 480)
 
 
@@ -59,7 +59,7 @@ while True:
             # Manual
             print("Manual")
             mode = Manual(mqttClient, TIME_OUT_TIME,
-                          RESOLUTION, FRAME_RATE, False)
+                          RESOLUTION, FRAME_RATE, True)
         elif modeSetting == 2:
             # Semi autonoumous
             print("SemiAutonomous")
