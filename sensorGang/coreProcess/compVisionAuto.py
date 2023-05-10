@@ -226,9 +226,9 @@ class compVision:
                 self.stopAtNode = False
                 self.stopped = False
 
-        t2 = time.time()
+            t2 = time.time()
 
-        print("time: {}".format((t2-t1)*1000))
+            print("time: {}".format((t2-t1)*1000))
 
         print("CompVision stopped")
 
