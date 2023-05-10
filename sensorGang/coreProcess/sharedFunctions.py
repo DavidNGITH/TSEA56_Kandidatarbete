@@ -164,7 +164,7 @@ def getOffsetLeftTurnFunction(self):
         if self.newOffset >= 0:
             return
         else:
-            self.newOffset *= 3.5
+            self.newOffset *= 3.6
     else:
         self.newOffset = - 150
 
