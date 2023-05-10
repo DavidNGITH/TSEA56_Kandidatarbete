@@ -248,8 +248,6 @@ def imageProcessingFunction(self):
 
     self.img = cv2.threshold(self.img, 50, 255, cv2.THRESH_BINARY)[1]
 
-    self.img = cv2.GaussianBlur(self.img, (5, 5), 0)
-
     # Apply canny
     self.img = cv2.Canny(self.img, self.lowerThreshold,
                          self.upperThreshold, self.appetureSize)
