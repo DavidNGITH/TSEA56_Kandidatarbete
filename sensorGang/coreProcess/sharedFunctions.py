@@ -259,7 +259,6 @@ def imageProcessingFunction(self):
 
     self.rightHistogram = None
     for i in range(self.width-1, self.center + 60, -1):
-        print(i)
         if histogram[i] != 0:
             self.rightHistogram = i
             break
