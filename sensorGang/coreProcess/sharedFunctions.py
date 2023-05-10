@@ -242,8 +242,6 @@ def setupFunction(self):
 
 
 def imageProcessingFunction(self):
-    self.img = cv2.warpAffine(self.img, self.rotMat, (640,480), flags=cv2.INTER_LINEAR, borderValue=(255,255,255))
-    
     self.img = cv2.cvtColor(self.img, cv2.COLOR_BGR2GRAY)
 
     self.img = cv2.threshold(self.img, 50, 255, cv2.THRESH_BINARY)[1]
