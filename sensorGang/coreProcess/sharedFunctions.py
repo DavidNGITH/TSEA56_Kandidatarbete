@@ -234,3 +234,73 @@ def setupFunction(self):
         1: self.getOffsetLeftTurn,
         2: self.getOffsetRightTurn
     }
+
+
+def imageProcessingFunction(self):
+    self.img = cv2.cvtColor(self.img, cv2.COLOR_BGR2GRAY)
+
+    self.img = cv2.threshold(self.img, 50, 255, cv2.THRESH_BINARY)[1]
+
+    # Apply canny
+    self.img = cv2.Canny(self.img, self.lowerThreshold,
+                         self.upperThreshold, self.appetureSize)
+
+    self.regionOfInterest()  # Apply ROI
+
+    histogram = np.sum(self.img[400:480, 0:640], axis=0)
+
+    self.leftHistogram = None
+    for i in range(0, self.center-60):
+        if histogram[i] != 0:
+            self.leftHistogram = i
+            break
+
+    self.rightHistogram = None
+    for i in range(self.width-1, self.center + 60, -1):
+        print(i)
+        if histogram[i] != 0:
+            self.rightHistogram = i
+            break
+    if (self.rightHistogram is not None and
+            self.leftHistogram is not None):
+        self.midpointHistogram = int((self.rightHistogram -
+                                      self.leftHistogram)
+                                     / 2 + self.leftHistogram)
+    else:
+        self.midpointHistogram = None
+
+    # Apply Hough transfrom
+    self.lineSegments = cv2.HoughLinesP(self.img, self.rho, self.angle,
+                                        self.minThreshold,
+                                        cv2.HOUGH_PROBABILISTIC,
+                                        minLineLength=self.minLineLength,
+                                        maxLineGap=self.minLineLength)
+        
+
+"""SEMI
+# Histogram calc from canny image
+            histogram = np.sum(self.img[400:480, 5:635], axis=0)
+
+            # Left histogram
+            self.leftHistogram = np.argmax(histogram[:int(self.center-60)]) + 5
+            if self.leftHistogram == 5:
+                self.leftHistogram = None
+
+            # Right histogram
+            self.rightHistogram = (np.argmax(histogram[int(self.center+60):]) +
+                                   self.center + 65)
+            if self.rightHistogram == self.center + 65:
+                self.rightHistogram = None
+
+            # Midpoint from histogram
+            if (self.rightHistogram is not None and
+                    self.leftHistogram is not None):
+                self.midpointHistogram = int((self.rightHistogram -
+                                              self.leftHistogram)
+                                             / 2 + self.leftHistogram)
+            else:
+                self.midpointHistogram = None """
+
+
+"""AUTO
+"""

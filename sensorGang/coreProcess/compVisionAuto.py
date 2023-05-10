@@ -9,7 +9,8 @@ from sharedFunctions import (lineInterceptFunction,
                              getDataFromLinesFunction,
                              getOffsetLeftTurnFunction,
                              getOffsetRightTurnFunction,
-                             setupFunction)
+                             setupFunction,
+                             imageProcessingFunction)
 
 from videoStreamFile import VideoStreamFile
 
@@ -56,12 +57,15 @@ class compVision:
 
         self.sendDataTimer = 0
 
+        self.lineSegments = None
+
     lineIntercept = lineInterceptFunction
     regionOfInterest = regionOfInterestFunction
     getDataFromLines = getDataFromLinesFunction
     getOffsetLeftTurn = getOffsetLeftTurnFunction
     getOffsetRightTurn = getOffsetRightTurnFunction
     setup = setupFunction
+    imageProcessing = imageProcessingFunction
 
     def makeStopLine(self, line, minX, maxX):
         """Create endpoints for stop line."""
@@ -122,59 +126,13 @@ class compVision:
                 if message[0] == 0:
                     self.PD.updateKp(message[1])
                 else:
-                    self.PD.updateKp(message[1])
+                    self.PD.updateKp(message[1])   
 
             self.img = threadStream.read()  # Retrive image
 
-            self.img = cv2.cvtColor(self.img, cv2.COLOR_BGR2GRAY)
+            self.imageProcessing()
 
-            # self.img = cv2.GaussianBlur(self.img, (5, 5), 5)
-
-            ret, self.img = cv2.threshold(self.img, 50, 255, cv2.THRESH_BINARY)
-
-            # self.img = cv2.GaussianBlur(self.img, (3, 3), 0)  # Blur img
-
-            # Apply canny
-            self.img = cv2.Canny(self.img, self.lowerThreshold,
-                                 self.upperThreshold, self.appetureSize)
-
-            self.regionOfInterest()  # Apply ROI
-
-            self.lastLeftHistogram = self.leftHistogram
-            self.lastRightHistogram = self.rightHistogram
-            self.lastMidpointHistogram = self.midpointHistogram
-
-            # Histogram calc from canny image
-            histogram = np.sum(self.img[400:480, 5:635], axis=0)
-
-            # Left histogram
-            self.leftHistogram = np.argmax(histogram[:int(self.center-60)]) + 5
-            if self.leftHistogram == 5:
-                self.leftHistogram = None
-
-            # Right histogram
-            self.rightHistogram = (np.argmax(histogram[int(self.center+60):]) +
-                                   self.center + 65)
-            if self.rightHistogram == self.center + 65:
-                self.rightHistogram = None
-
-            # Midpoint from histogram
-            if (self.rightHistogram is not None and
-                    self.leftHistogram is not None):
-                self.midpointHistogram = int((self.rightHistogram -
-                                              self.leftHistogram)
-                                             / 2 + self.leftHistogram)
-            else:
-                self.midpointHistogram = None
-
-            # Apply Hough transfrom
-            lineSegments = cv2.HoughLinesP(self.img, self.rho, self.angle,
-                                           self.minThreshold,
-                                           cv2.HOUGH_PROBABILISTIC,
-                                           minLineLength=self.minLineLength,
-                                           maxLineGap=self.minLineLength)
-
-            self.lineIntercept(lineSegments)  # Calc line equations
+            self.lineIntercept(self.lineSegments)  # Calc line equations
 
             nodeCounter.value = self.nodeCounter
 
