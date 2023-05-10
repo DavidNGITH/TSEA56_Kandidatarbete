@@ -48,11 +48,11 @@ def lineInterceptFunction(self, lineSegments):
                     if x2 > maxX:
                         maxX = x2
 
-    if len(leftFit) > 2:
+    if len(leftFit) > 4:
         leftFitAverage = np.average(leftFit, axis=0)
         self.slopeLeft = leftFitAverage[0]
 
-    if len(rightFit) > 2:
+    if len(rightFit) > 4:
         rightFitAverage = np.average(rightFit, axis=0)
         self.slopeRight = rightFitAverage[0]
 
@@ -240,6 +240,8 @@ def imageProcessingFunction(self):
     self.img = cv2.cvtColor(self.img, cv2.COLOR_BGR2GRAY)
 
     self.img = cv2.threshold(self.img, 50, 255, cv2.THRESH_BINARY)[1]
+
+    self.img = cv2.GaussianBlur(self.img, (5, 5), 0)
 
     # Apply canny
     self.img = cv2.Canny(self.img, self.lowerThreshold,
