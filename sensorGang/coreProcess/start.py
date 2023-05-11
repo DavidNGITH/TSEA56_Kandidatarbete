@@ -9,7 +9,7 @@ from queue import Queue
 q = Queue()
 MQTT_TOPIC = [("stop", 0), ("mode", 0)]
 MQTT_TOPIC_UNSUB = ["stop", "mode"]
-FRAME_RATE = 8
+FRAME_RATE = 60
 RESOLUTION = (640, 480)
 
 
