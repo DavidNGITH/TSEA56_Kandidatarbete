@@ -4,6 +4,7 @@ import numpy as np
 import cv2
 from datetime import datetime
 import matplotlib.pyplot as plt
+from sharedFunctions import imageProcessingFunction, lineInterceptFunction, regionOfInterestFunction, getDataFromLinesFunction
 
 from CTEvideoStreamFile import VideoStreamFile
 
@@ -38,26 +39,17 @@ class compVision:
                        (roiP3X, roiP3Y), (roiP4X, roiP4Y)]
 
         # Canny settings
-        self.lowerThreshold = 100
-        self.upperThreshold = 150
+        self.lowerThreshold = 135
+        self.upperThreshold = 195
         self.appetureSize = 3
 
         # Hough settings
         self.rho = 1
-        self.angle = np.pi / (180*2)
-        self.minThreshold = 0
-        self.minLineLength = 6
+        self.angle = np.pi / (180*1.8)
+        self.minThreshold = 3
+        self.minLineLength = 20
         self.maxLineGap = 3
 
-        # Undistort
-        self.my = np.load('distortionfiles/mapy.npy')
-        self.mx = np.load('distortionfiles/mapx.npy')
-        self.roiFile = np.load('distortionfiles/roiFile.npy')
-
-        self.roiFile[1] = int(self.roiFile[1] * self.width / 640)
-        self.roiFile[3] = int(self.roiFile[3] * self.width / 640)
-        self.roiFile[0] = int(self.roiFile[0] * self.height / 480)
-        self.roiFile[2] = int(self.roiFile[2] * self.height / 480)
 
         # Find lines
         self.laneLines = []
@@ -68,6 +60,7 @@ class compVision:
         self.slopeRight = None
         self.stopLineTimer = 0
         self.stopLineCoordinates = 0
+        self.lineSegments = 0
 
         # Stop
         self.stop = False
@@ -76,40 +69,28 @@ class compVision:
         self.stopRequired = True
 
         # Stop lines coordinates
-        self.widthStopLine = 250
-        self.widthNodeLine = 220
+        self.widthStopLine = 220
+        self.widthNodeLine = 170
         # self.heightMin = 200
         self.heightMax = 390
 
         self.gaussianKernelSize = 5
 
+        self.imageCenter = (320, 240)
+    
+        self.rotMat = cv2.getRotationMatrix2D(self.imageCenter,-3, 1.0)
+
+    imageProcessing = imageProcessingFunction
+    lineIntercept = lineInterceptFunction
+    regionOfInterest = regionOfInterestFunction
+    getDataFromLines = getDataFromLinesFunction
+
+
     def displayImage(self):
         """Display self.image on screen."""
-        cv2.imshow("Bild", self.img)
+        cv2.imshow("Bild", self.orgImg)
         cv2.waitKey()
         cv2.destroyAllWindows()
-
-    # Undistortioon
-    def undistortImage(self):
-        """Undistort self.img."""
-        self.img = cv2.remap(self.img, self.mx, self.my, cv2.INTER_LINEAR)
-        self.img = self.img[self.roiFile[1]:self.roiFile[1] +
-                            self.roiFile[3], self.roiFile[0]:self.roiFile[0] +
-                            self.roiFile[2]]
-
-    # Region of interest
-    def regionOfInterest(self):
-        """ROI on self.img."""
-        mask = np.zeros_like(self.img)
-
-        # (Left Top) (Right
-        #
-        # Top) (Right Bottom) (Left Bottom)
-        polygon = np.array([self.roiDim], np.int32)
-        cv2.fillPoly(mask, polygon, 255)
-        # applying mask on original image
-
-        self.img = cv2.bitwise_and(self.img, mask)
 
     def makePoints(self, line, which):
         """Create endpoints to detected lines."""
@@ -146,53 +127,20 @@ class compVision:
         width = maxX-minX
         height = (y1+y2)/2
 
-        # print("{}, {}, {}, {}".format(minX, maxX, y1, y2))
-        # print("Width: {}".format(maxX-minX))
-        # print("Height: {}".format(height))
-
-        if width > self.widthStopLine:
-            # print("Width for stopline OK")
-            pass
+        if width > self.widthStopLine and width < 300:
+            print("Yes, stopline")
+            #self.stopLineDistance = abs(self.height-y1)
+            #print("Stopline distance: {}".format(self.stopLineDistance)
+            self.stopLine = True
 
         elif width < self.widthNodeLine:
-            # print("Width for node OK")
-            pass
-
-        if height < self.heightMax:
-            # print("Height OK")
-            pass
-        else:
-            # print("Height not OK")
-            pass
-
-        if height < self.heightMax:
-            if width > self.widthStopLine:
-                print("Yes, stopline")
-                self.stopLineDistance = abs(self.height-y1)
-                print("Stopline distance: {}".format(self.stopLineDistance))
-
-                if self.stopLineDistance >= self.lastStopLineDistance:
-                    if self.stopRequired:
-                        print("Stopping")
-                        self.stop = True
-                        self.stopRequired = False
-                    else:
-                        print("Making stop required")
-                        self.stopRequired = True
-                else:
-                    print("Already stopped")
-                self.lastStopLineDistance = self.stopLineDistance
-
+            if minX < 200:
+                print("Node to the left")
                 self.stopLine = True
 
-            elif width < self.widthNodeLine:
-                if minX < 200:
-                    # print("Node to the left")
-                    self.stopLine = True
-
-                elif maxX > 400:
-                    # print("Node to the right")
-                    self.stopLine = True
+            elif maxX > 400:
+                print("Node to the right")
+                self.stopLine = True
 
         else:
             print("No stopline")
@@ -201,8 +149,8 @@ class compVision:
 
         self.stopLineCoordinates = [(x1, y1), (x2, y2)]
 
-    def lineIntercept(self, lineSegments):
-        """Handle detected lines from Hough transform."""
+    """def lineIntercept(self, lineSegments):
+        Handle detected lines from Hough transform.
         self.laneLines = []
         self.xPointLeft = None
         self.xPointRight = None
@@ -248,12 +196,12 @@ class compVision:
                         if x2 > maxX:
                             maxX = x2
 
-        if len(leftFit) > 2:
+        if len(leftFit) > 4:
             leftFitAverage = np.average(leftFit, axis=0)
             self.slopeLeft = leftFitAverage[0]
             self.laneLines.append(self.makePoints(leftFitAverage, 0))
 
-        if len(rightFit) > 2:
+        if len(rightFit) > 4:
             rightFitAverage = np.average(rightFit, axis=0)
             self.slopeRight = rightFitAverage[0]
             self.laneLines.append(self.makePoints(rightFitAverage, 1))
@@ -273,7 +221,7 @@ class compVision:
         except Exception:
             self.lineCenter = None
             # print("Not enough lines captured")
-            return
+            return"""
 
     def getCenterOffset(self):
         """Calculate the center offset in frame."""
@@ -287,34 +235,9 @@ class compVision:
 
             self.img = threadStream.read()  # Retrive image
 
-            # self.undistortImage()  # Undistort image
+            self.imageProcessing()
 
-            self.orgImg = self.img  # Save original image
-
-            # Apply gaussian blur
-
-            self.img = cv2.cvtColor(self.img, cv2.COLOR_BGR2GRAY)
-
-            self.img = cv2.GaussianBlur(self.img, (5, 5), 5)
-
-            # self.img = cv2.GaussianBlur(self.img, (self.gaussianKernelSize,
-            #                                       self.gaussianKernelSize),
-            #                            5)
-
-            ret, self.img = cv2.threshold(
-                self.img, 50, 255, cv2.THRESH_BINARY)
-
-            self.displayImage()  # Display image
-
-            # Apply canny
-            self.img = cv2.Canny(self.img, self.lowerThreshold,
-                                 self.upperThreshold, self.appetureSize)
-
-            self.regionOfInterest()  # Apply ROI
-
-            # self.displayImage()
-            # Histogram calc from canny image
-            histogram = np.sum(self.img[400:480, 5:635], axis=0)
+            """histogram = np.sum(self.img[400:480, 5:635], axis=0)
             histogram2 = np.sum(self.img[400:480, 0:640], axis=0)
             self.leftHistogram = np.argmax(histogram[:int(self.center-60)]) + 5
             self.rightHistogram = (np.argmax(histogram[int(self.center+60):]) +
@@ -338,37 +261,24 @@ class compVision:
                     self.leftHistogram2 is not None):
                 self.midpointHistogram2 = int((self.rightHistogram2 -
                                               self.leftHistogram2)
-                                              / 2 + self.leftHistogram2)
+                                              / 2 + self.leftHistogram2)"""
 
             y1 = [(self.leftHistogram, 0), (self.leftHistogram, self.height)]
 
             y2 = [(self.rightHistogram, 0),
                   (self.rightHistogram, self.height)]
 
-            plt.plot(histogram2)
+            """plt.plot(histogram)
             plt.vlines(self.leftHistogram, ymin=0,
                        ymax=self.height, colors='red')
             plt.vlines(self.rightHistogram, ymin=0,
                        ymax=self.height, colors='red')
             plt.vlines(self.midpointHistogram, ymin=0,
                        ymax=self.height, colors='red')
-            plt.vlines(self.leftHistogram2, ymin=0,
-                       ymax=self.height, colors='blue')
-            plt.vlines(self.rightHistogram2, ymin=0,
-                       ymax=self.height, colors='blue')
-            plt.vlines(self.midpointHistogram2, ymin=0,
-                       ymax=self.height, colors='blue')
 
-            plt.show()
+            plt.show()"""
 
-            # Apply Hough transfrom
-            lineSegments = cv2.HoughLinesP(self.img, self.rho, self.angle,
-                                           self.minThreshold,
-                                           cv2.HOUGH_PROBABILISTIC,
-                                           minLineLength=self.minLineLength,
-                                           maxLineGap=self.minLineLength)
-
-            self.lineIntercept(lineSegments)  # Calc line equations
+            self.lineIntercept(self.lineSegments)  # Calc line equations
 
             # t2 = time.time()
 
@@ -456,7 +366,7 @@ class compVision:
 
         cv2.line(lineImage, (int(self.center), 0),
                  (int(self.center), int(self.height)), (255, 0, 0), 2)
-        self.img = cv2.addWeighted(self.orgImg, 0.8, lineImage, 1, 1)
+        self.orgImg = cv2.addWeighted(self.orgImg, 0.8, lineImage, 1, 1)
 
     def displayROI(self):
         """Display ROI lines on image."""
@@ -474,10 +384,10 @@ class compVision:
 
     def drawLine(self, coordinates, color, width):
         """Draw line on image."""
-        self.img = cv2.line(
-            self.img, coordinates[0], coordinates[1], color, width)
+        self.orgImg = cv2.line(
+            self.orgImg, coordinates[0], coordinates[1], color, width)
 
-    def getDataFromLines(self):
+    #def getDataFromLines(self):
         """Get offset from lines."""
         # HISTOGRAM
         # self.leftHistogram
@@ -494,7 +404,7 @@ class compVision:
         # self.slopeRight
         # self.slopeLeft
 
-        # Histogrammet har hittat båda linjerna
+    """# Histogrammet har hittat båda linjerna
         if self.leftHistogram > 0 and self.leftHistogram < 640:
             # Båda linjernas lutning har hittats
             if self.slopeLeft and self.slopeRight:
@@ -641,4 +551,4 @@ class compVision:
     def straightJunction(self):
         # go straight at junction
 
-        return
+        return"""

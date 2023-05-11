@@ -127,12 +127,12 @@ class SemiAutonomous():
             if time.time() - i2cTimeElapsed > 0.1:
                 try:
                     data = I2C_proc.get()
-                    if (int(data[0][1]) < 40) & (self.object is False):
+                    if (int(data[0][1]) < 40) and (self.object is False):
                         print("Obstacle")
                         I2C_proc.send((2, 1))  # Break
                         qI2CDataRecived.put((2, "True"))
                         self.object = True
-                    elif (int(data[0][1]) >= 40) & (self.object):
+                    elif (int(data[0][1]) >= 40) and (self.object):
                         print("Release")
                         if self.breakingStatus == 0:
                             qI2CDataRecived.put((2, "False"))
