@@ -149,7 +149,7 @@ class compVision:
             if self.stopLine:
                 print("Stopline")
                 qSteering.put(52)  # Send steering data to car
-                #qBreak.put(1)  # Apply break
+                qBreak.put(1)  # Apply break
                 self.waitForCommand(qCommand)  # Get command
                 qBreak.put(0)  # Release break
                 self.stopLine = False
