@@ -28,6 +28,9 @@ class PDcontroller:
             self.steering = (self.PD_value * 0.7)
         elif self.PD_value > 0:
             self.steering = self.PD_value
+        else:
+            self.steering = 0
+
 
     def updateKp(self, Kp):
         self.Kp = Kp
