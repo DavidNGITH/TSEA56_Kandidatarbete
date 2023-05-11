@@ -17,7 +17,6 @@ class I2C():
 
     def send(self, offsetAndMessage):
         """Send I2C message, (offset, message)."""
-        print("in send")
         try:
             self.bus.write_byte_data(
                 self.motorAdress, offsetAndMessage[0], offsetAndMessage[1])

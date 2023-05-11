@@ -107,8 +107,6 @@ class Autonomous():
         self.lastNodeCounter = None
         self.lastAssignmentCounter = None
 
-        I2C_proc.send((2, 0))
-
         while status.value:
             if not qMessageMQTT.empty():
                 # print("qMessage not empty")
@@ -117,9 +115,6 @@ class Autonomous():
                 if message[0] == "stop":
                     print("Recived stop in autonomous")
                     try:
-                        I2C_proc.send((0, 0))
-                        I2C_proc.send((2, 0))
-                        time.sleep(0.2)
                         I2C_proc.close()
                     except Exception:
                         print("Couldn't read i2c")
