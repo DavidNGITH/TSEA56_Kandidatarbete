@@ -99,6 +99,11 @@ def getDataFromLinesFunction(self):
             print("MidpointHistogram = {}".format(self.newOffset))
             self.currentSpeed = self.normalSpeed
 
+            self.newOffset -= 290
+
+            self.newOffset = int(self.newOffset)
+            return
+
         # Endast vänstra linjens lutning har hittats
         elif self.slopeLeft:
             casePrint = "Case 2"
