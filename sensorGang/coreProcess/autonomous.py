@@ -211,9 +211,13 @@ class Autonomous():
           
             if self.lastNodeCounter != nodeCounter.value:
                 self.lastNodeCounter = nodeCounter.value
-                qI2CDataRecived.put(
-                    (3, turningPath[assignmentCounter.value][nodeCounter.value]))
-                if len(turningPath[assignmentCounter.value]) - (1 + nodeCounter.value):
+                try:
+                    qI2CDataRecived.put(
+                        (3, turningPath[assignmentCounter.value][nodeCounter.value]))
+                except Exception as e:
+                    print("index out of range")
+                    
+                if len(turningPath[assignmentCounter.value]) - (1 + nodeCounter.value) > 0:
                     qI2CDataRecived.put(
                         (4, turningPath[assignmentCounter.value][nodeCounter.value + 1]))
                 else:
