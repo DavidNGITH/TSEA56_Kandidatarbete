@@ -99,7 +99,7 @@ def getDataFromLinesFunction(self):
             print("MidpointHistogram = {}".format(self.newOffset))
             self.currentSpeed = self.normalSpeed
 
-            self.newOffset -= 290
+            self.newOffset -= 310
 
             self.newOffset = int(self.newOffset)
             return
