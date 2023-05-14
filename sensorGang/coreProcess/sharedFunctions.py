@@ -100,7 +100,7 @@ def getDataFromLinesFunction(self):
         elif self.slopeLeft:
             casePrint = "Case 2"
             self.newOffset = (self.midpointHistogram -
-                              1/self.slopeLeft * 420)
+                              1/self.slopeLeft * 390)
 
         # Endast högra linjens lutning har hittats
         elif self.slopeRight:
