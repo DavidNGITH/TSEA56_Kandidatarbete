@@ -151,7 +151,7 @@ def getDataFromLinesFunction(self):
 
     # print(casePrint)
 
-    self.newOffset -= (self.center+50)
+    self.newOffset -= (self.center)
 
     self.newOffset = int(self.newOffset)
 

@@ -183,7 +183,7 @@ class compVision:
                 qSteering.put(steering)  # Send steering data to car
 
             # If in intersection and > 3 s
-            if (time.time()-self.intersectionTime > 3 and
+            if (time.time()-self.intersectionTime > 3.5 and
                     not self.normalSteering):
                 print("normal")
                 self.getOffset = self.getDataFromLines
