@@ -94,6 +94,8 @@ def getDataFromLinesFunction(self):
             casePrint = "Case 1"
             self.newOffset = (0.6 * self.midpointHistogram +
                               0.5 * self.lineCrossing)
+            
+            self.currentSpeed = self.normalSpeed
 
         # Endast vänstra linjens lutning har hittats
         elif self.slopeLeft:
@@ -160,7 +162,7 @@ def getDataFromLinesFunction(self):
 
 def getOffsetLeftTurnFunction(self):
     """Get offset on left turn."""
-    self.currentSpeed = self.turningSpeed + 15
+    self.currentSpeed = self.normalSpeed
     if self.leftHistogram is not None:
         self.newOffset = (self.leftHistogram - 100)
         if self.newOffset >= 0:
@@ -173,7 +175,7 @@ def getOffsetLeftTurnFunction(self):
 
 def getOffsetRightTurnFunction(self):
     """Get offset on right turn."""
-    self.currentSpeed = self.turningSpeed + 15
+    self.currentSpeed = self.normalSpeed
     if self.rightHistogram is not None:
         self.newOffset = (self.rightHistogram - 515)
         if self.newOffset <= 0:
