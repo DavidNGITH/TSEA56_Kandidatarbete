@@ -61,11 +61,11 @@ def lineInterceptFunction(self, lineSegments):
         self.makeStopLine(stopFitAverage, minX, maxX)
 
     try:
-        self.lineCenter = ((rightFitAverage[1]-leftFitAverage[1]) /
+        self.lineCrossing = ((rightFitAverage[1]-leftFitAverage[1]) /
                            (leftFitAverage[0]-rightFitAverage[0]))
 
     except Exception:
-        self.lineCenter = None
+        self.lineCrossing = None
         # print("Not enough lines captured")
         return
 
@@ -93,7 +93,7 @@ def getDataFromLinesFunction(self):
         if self.slopeLeft and self.slopeRight:
             casePrint = "Case 1"
             self.newOffset = (0.6 * self.midpointHistogram +
-                              0.5 * self.lineCenter)
+                              0.5 * self.lineCrossing)
             self.currentSpeed = self.normalSpeed
 
         # Endast vänstra linjens lutning har hittats
@@ -185,7 +185,7 @@ def getOffsetRightTurnFunction(self):
 def setupFunction(self):
     """Set variables."""
     self.img = None
-    self.lineCenter = None
+    self.lineCrossing = None
     self.newOffset = 0
     self.lastOffset = 0
 

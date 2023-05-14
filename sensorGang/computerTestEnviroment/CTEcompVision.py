@@ -278,7 +278,15 @@ class compVision:
 
             plt.show()"""
 
+            self.stopLine = False
+            self.stop = False
+
             self.lineIntercept(self.lineSegments)  # Calc line equations
+
+
+            if self.lineCenter is not None:
+                y9 = [(int(self.lineCenter), 0),
+                    (int(self.lineCenter), self.height)]
 
             # t2 = time.time()
 
@@ -296,13 +304,15 @@ class compVision:
                 # self.drawLine(y4, (0,242,255), 2)
                 # print("y1:{} y2:{} y3:{} y4:{}".format(y1,y2,y3,y4))"""
 
-            self.drawLine(y1, (0, 242, 255), 2)  # Left line
-            self.drawLine(y2, (0, 242, 255), 2)  # Right line
+            #self.drawLine(y1, (0, 242, 255), 2)  # Left line
+            #self.drawLine(y2, (0, 242, 255), 2)  # Right line
+            if self.lineCenter is not None:
+                self.drawLine(y9, (255, 0, 0), 2)  # Right line
             # self.drawLine(y3, (128, 0, 128), 2)  # Midpoint line
 
             self.getDataFromLines()  # Get offset
-            y6 = [(self.newOffset, 0), (self.newOffset, self.height)]
-            self.drawLine(y6, (200, 144, 255), 2)  # Calculated offset
+            #y6 = [(self.newOffset, 0), (self.newOffset, self.height)]
+            #self.drawLine(y6, (200, 144, 255), 2)  # Calculated offset
 
             # y5 = [(self.newOffset + self.center, 0),
             #      (self.newOffset + self.center, self.height)]
@@ -364,8 +374,8 @@ class compVision:
             # cv2.line(lineImage, (int(self.lineCenter), 0),
             #         (int(self.lineCenter), int(self.height)), (0, 255, 0), 2)
 
-        cv2.line(lineImage, (int(self.center), 0),
-                 (int(self.center), int(self.height)), (255, 0, 0), 2)
+        #cv2.line(lineImage, (int(self.center), 0),
+        #         (int(self.center), int(self.height)), (255, 0, 0), 2)
         self.orgImg = cv2.addWeighted(self.orgImg, 0.8, lineImage, 1, 1)
 
     def displayROI(self):
