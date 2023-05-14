@@ -39,7 +39,7 @@ def lineInterceptFunction(self, lineSegments):
                             x2 > rightRegionBoundary):
                         rightFit.append((slope, intercept))
 
-                elif (slope < 0.4 and slope > -0.4 and
+                elif (slope < 0.3 and slope > -0.3 and
                       x1 > 0.15 * self.width and x2 < 0.85 * self.width):
 
                     stopFit.append((slope, intercept))

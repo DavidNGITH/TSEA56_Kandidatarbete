@@ -127,6 +127,8 @@ class compVision:
         width = maxX-minX
         height = (y1+y2)/2
 
+        print("Width = {}".format(width))
+
         if width > self.widthStopLine and width < 300:
             print("Yes, stopline")
             #self.stopLineDistance = abs(self.height-y1)
