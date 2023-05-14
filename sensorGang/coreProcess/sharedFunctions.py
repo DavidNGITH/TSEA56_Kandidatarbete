@@ -151,7 +151,10 @@ def getDataFromLinesFunction(self):
 
     # print(casePrint)
 
-    self.newOffset -= (self.center)
+    # Lägre värde => Tonny kör mer åt höger
+    # Högre värde => Tonny kör mer åt vänster
+
+    self.newOffset -= (self.center+25)
 
     self.newOffset = int(self.newOffset)
 
