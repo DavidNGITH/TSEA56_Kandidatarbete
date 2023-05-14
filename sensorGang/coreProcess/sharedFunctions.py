@@ -96,6 +96,7 @@ def getDataFromLinesFunction(self):
             #                  0.5 * self.lineCrossing)
 
             self.newOffset = self.midpointHistogram
+            print("MidpointHistogram = {}".format(self.newOffset))
             self.currentSpeed = self.normalSpeed
 
         # Endast vänstra linjens lutning har hittats
