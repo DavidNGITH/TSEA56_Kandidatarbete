@@ -92,8 +92,10 @@ def getDataFromLinesFunction(self):
         # Båda linjernas lutning har hittats
         if self.slopeLeft and self.slopeRight:
             casePrint = "Case 1"
-            self.newOffset = (0.6 * self.midpointHistogram +
-                              0.5 * self.lineCrossing)
+            # self.newOffset = (0.6 * self.midpointHistogram +
+            #                  0.5 * self.lineCrossing)
+
+            self.newOffset = self.midpointHistogram
             self.currentSpeed = self.normalSpeed
 
         # Endast vänstra linjens lutning har hittats
