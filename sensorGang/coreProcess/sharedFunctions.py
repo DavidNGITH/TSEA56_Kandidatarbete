@@ -151,7 +151,7 @@ def getDataFromLinesFunction(self):
 
     # print(casePrint)
 
-    self.newOffset -= (self.center+40)
+    self.newOffset -= (self.center+50)
 
     self.newOffset = int(self.newOffset)
 
@@ -160,7 +160,7 @@ def getOffsetLeftTurnFunction(self):
     """Get offset on left turn."""
     self.currentSpeed = self.turningSpeed + 15
     if self.leftHistogram is not None:
-        self.newOffset = (self.leftHistogram - 115)
+        self.newOffset = (self.leftHistogram - 100)
         if self.newOffset >= 0:
             return
         else:
