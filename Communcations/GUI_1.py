@@ -319,6 +319,10 @@ class Ui_Dialog(object):
             "right": self.set_steering_right,
             "vänsterpil": self.set_steering_left,
             "left": self.set_steering_left,
+            "i": self.set_speed_up,
+            "k": self.set_speed_down,
+            "j": self.set_steering_left,
+            "l": self.set_steering_right,
             "B": self.set_breaking_on,
             "b": self.set_breaking_on,
             "G": self.set_breaking_off,
@@ -555,7 +559,7 @@ class Ui_Dialog(object):
         print("Keep left")
 
     def mqtt_init(self):
-        # initate connection
+        # initate connectionmq
         MQTT_TOPIC = [("data/distance", 0), ("data/speed", 0),
                       ("data/crs", 0), ("data/lat_pos", 0), ("data/route_plan", 0), ("data/obstacle", 0), ("data/currentnode", 0), ("data/nextnode", 0)]
         try:
@@ -588,7 +592,7 @@ class Ui_Dialog(object):
                 self.distance_to_obj = message[1]
                 self.obs_dist_display.setText(str(self.distance_to_obj))
 
-            if message[0] == "data/speed":
+            elif message[0] == "data/speed":
                 # recieves speed and shows it on the gui
                 self.car_speed_data = float(message[1])
                 self.speed_display.setText(str(self.car_speed_data))
@@ -603,7 +607,7 @@ class Ui_Dialog(object):
 
             ################### Throttle and Bearing data given from gui #####################
 
-            if message[0] == "data/crs":
+            elif message[0] == "data/crs":
                 print("crs recieved")
                 self.crs_data = str(message[1])
                 # print(self.crs_data)
@@ -617,28 +621,39 @@ class Ui_Dialog(object):
                 ########################################### SENSOR GÄNGET MÅSTE SÄGA HUR DOM SKA SKICKA DATAT ############
                 ########################################### SENSOR GÄNGET MÅSTE SÄGA HUR DOM SKA SKICKA DATAT ############
 
-            if message[0] == "data/lat_pos":
+            elif message[0] == "data/lat_pos":
                 self.lat_pos_data = message[1]
                 self.lateral_pos_display.setText(str(self.lat_pos_data))
 
-            if message[0] == "data/route_plan":
+            elif message[0] == "data/route_plan":
                 self.route_plan_data = str(message[1])
                 print("route_plan recieved")
                 # self.route_plan_data = message[1]
                 # print(self.route_plan_data)
                 self.routeplan_display.setText(self.route_plan_data)
 
-            if message[0] == "data/obstacle":
+            elif message[0] == "data/obstacle":
                 self.obs_det_bool = message[1]
                 print(self.obs_det_bool)
                 self.obs_det_display.setText(str(self.obs_det_bool))
 
-            if message[0] == "data/currentnode":
+            elif message[0] == "data/currentnode":
                 self.current_node = str(message[1])
                 self.bearing_display.setText(self.current_node)
 
-            if message[0] == "data/nextnode":
+            elif message[0] == "data/nextnode":
                 self.next_node = str(message[1])
+                if self.next_node == "-":
+                    self.current_time = "0"
+                    self.update_time_bool = 0
+                    self.is_driving = False
+
+                    self.speed = 0  # reset speed
+                    self.steering = 50  # reset wheels
+                    self.is_breaking = 1
+                    self.throttle_display.setText(str(self.speed))
+                    self.bearing_display.setText(str(self.steering))
+
                 print(self.next_node)
                 self.crs_display.setText(self.next_node)
         else:
