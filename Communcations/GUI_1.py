@@ -40,7 +40,7 @@ class Uidialog(object):
         self.type_of_mode = ""
         self.qData = multiprocessing.Queue()
 
-        # bool for starting car
+        # bool for starting car and status variables
         self.is_driving = False
         self.distance_to_obj = "0"
         self.car_distance_driven = 0
@@ -48,12 +48,13 @@ class Uidialog(object):
         self.delta_t1_speed = 0
         self.delta_t2_speed = 0
 
-        # initate straight ahead and zero speed
+        # initate straight ahead, zero speed and no breaking
         self.speed = 0
         self.steering = 50
         self.breaking = 0
-        self.obs_det_bool = False
 
+        # Initiate multiple variables
+        self.obs_det_bool = False
         self.lat_pos_data = 0
         self.route_plan_data = "-"
         self.map_node_dict = {"A": [799, 440], "B": [570, 500], "C": [720, 517], "D": [
@@ -61,6 +62,7 @@ class Uidialog(object):
         self.previous_rs = "A"
         self.nodes = []
         self.setup_nodes(self.map_node_dict)
+
         # Log data lists
         self.save_car_speed_data = []
         self.save_distance_to_obj = []
@@ -70,9 +72,11 @@ class Uidialog(object):
         self.save_car_breaking = []
         self.save_obs_det_bool = []
         self.save_lat_pos_data = []
+       
 
         self.next_node = "-"
         self.current_node = ""
+
         ################################## GUI LABEL AND BUTTONS ################################
         self.obst_det_head = QtWidgets.QLabel(Dialog)
         self.obst_det_head.setGeometry(QtCore.QRect(140, 20, 131, 16))
@@ -288,13 +292,14 @@ class Uidialog(object):
 
         self.log_data_timer = QtCore.QTimer()
         self.log_data_timer.timeout.connect(self.log_data)
-        self.log_data_timer.start(1000)  # 1000 = every sec
+        self.log_data_timer.start(1000)
 
     def ping_raspberry(self):
         """Pings the Raspberry Pi, acts as a fail-safe."""
         self.mqtt_client.publish("ping", "1")
 
     def setup_nodes(self, node_dictionary):
+        '''Sets up the nodes on the map, and adds them to the QGraphicsScene'''
         for node, position in node_dictionary.items():
             node_item = QGraphicsEllipseItem(-5, -5, 10, 10)
             node_item.setBrush(Qt.red)
@@ -378,6 +383,7 @@ class Uidialog(object):
             self.bearing_display.setText(str(self.steering))
 
     def set_breaking_off(self):
+        '''Sets breaking to 0, and sends it to the Raspberry Pi.'''
         if self.type_of_mode == "Manual" and self.is_driving and self.breaking == 1:
             self.breaking = 0
             # self.speed = 0
@@ -387,6 +393,7 @@ class Uidialog(object):
             self.bearing_display.setText(str(self.steering))
 
     def set_speed_and_steering_zero(self):
+        '''Sets speed and steering to 0, and sends it to the Raspberry Pi.'''
         if self.type_of_mode == "Manual" and self.is_driving:
             self.speed = 0
             self.steering = 50
@@ -396,13 +403,14 @@ class Uidialog(object):
             self.mqtt_client.publish("steering", self.steering)
 
     def update_time(self):
-        # get the current time and format it as a string
+        # Get the current time and format it as a string
         if self.update_time_bool:
             self.current_time = (str(round(time.time() - self.start, 2)))
-        # set the text of the time_label widget to the current time
+        # Set the text of the time_label widget to the current time
         self.time_display.setText(self.current_time)
 
     def log_data(self):
+        '''Saves drive data to lists, which can be used for plotting.'''
         if self.update_time_bool:
             self.save_car_speed_data.append(
                 [self.car_speed_data, self.current_time])
@@ -417,10 +425,20 @@ class Uidialog(object):
                 [self.obs_det_bool, self.current_time])
             self.save_lat_pos_data.append(
                 [self.lat_pos_data, self.current_time])
+        else:
+            self.save_car_speed_data = []
+            self.save_distance_to_obj = []
+            self.save_car_distance_driven = []
+            self.save_speed = []
+            self.save_steering = []
+            self.save_car_breaking = []
+            self.save_obs_det_bool = []
+            self.save_lat_pos_data = []
+                
 
-            # print(self.save_car_speed_data)
 
     def plot_data(self, data_list):
+        '''Plots data from a list.'''
         i1 = 0
         x_values = []  # time
         y_values = []  # data
@@ -434,6 +452,7 @@ class Uidialog(object):
         print("plotted")
 
     def retranslateUi(self, Dialog):
+        '''Sets the text of the GUI button and labels'''
         _translate = QtCore.QCoreApplication.translate
         Dialog.setWindowTitle(_translate(
             "Dialog", "Very fast taxicar, vroom vroom"))
@@ -469,6 +488,7 @@ class Uidialog(object):
         self.map_label.setText(_translate("Dialog", "Map:"))
 
     def connect_buttons(self):
+        '''Connects the buttons to their respective functions.'''
         # hej
         self.manual_mode.clicked.connect(self.on_manual_mode_click)
         self.semi_auto_mode.clicked.connect(self.on_semi_auto_mode_click)
@@ -534,6 +554,7 @@ class Uidialog(object):
 
     def on_stop_car_click(self):
         # stops car
+        self.plot_data(self.save_car_speed_data)
         self.current_time = "0"
         self.update_time_bool = 0
         self.is_driving = False
@@ -547,7 +568,7 @@ class Uidialog(object):
         self.mqtt_client.publish("stop", "1")
         self.mqtt_client.publish("speed", self.speed)
         self.mqtt_client.publish("steering", self.steering)
-        self.plot_data(self.save_car_speed_data)
+        
         print("STOP")
 
     def on_next_stop_click(self):
@@ -566,7 +587,7 @@ class Uidialog(object):
         print("Keep left")
 
     def mqtt_init(self):
-        # initate connection
+        '''Initializes the MQTT connection.'''
         MQTT_TOPIC = [("data/distance", 0), ("data/speed", 0),
                       ("data/crs", 0), ("data/lat_pos", 0), ("data/route_plan", 0), ("data/obstacle", 0), ("data/currentnode", 0), ("data/nextnode", 0)]
         try:
@@ -581,12 +602,14 @@ class Uidialog(object):
         except:
             print("Failed to setup connection")
 
-    def on_message(self, client, userdata, message):
+    def on_message(self, message):
+        '''Callback function for MQTT messages.'''
         m = str(message.payload.decode("utf-8"))
         t = message.topic
         self.qData.put((t, m))
 
     def updatedata(self):
+        '''Updates the data on the GUI.'''
         _translate = QtCore.QCoreApplication.translate
         if self.type_of_mode == "Manual":
             self.bearing_label.setText(_translate("Dialog", "Bearing:"))
@@ -594,16 +617,18 @@ class Uidialog(object):
             self.bearing_label.setText(_translate("Dialog", "Current Node:"))
 
         if not self.qData.empty():
+            '''Checks if there is any new data in the queue.'''
             message = self.qData.get()
             if message[0] == "data/distance":
                 self.distance_to_obj = message[1]
                 self.obs_dist_display.setText(str(self.distance_to_obj))
 
             elif message[0] == "data/speed":
-                # recieves speed and shows it on the gui
+                '''Updates the speed data on the GUI.'''
                 self.car_speed_data = float(message[1])
                 self.speed_display.setText(str(self.car_speed_data))
-                # checks if car is driving and then prints distance based on a difference in time
+
+                '''Calculates the distance driven.'''
                 if self.is_driving:
                     self.delta_t2_speed = time.time()
                     delta_t = self.delta_t2_speed - self.delta_t1_speed
@@ -612,43 +637,40 @@ class Uidialog(object):
                     self.drive_distance_display.setText(
                         str(int(self.car_distance_driven)))
 
-            ################### Throttle and Bearing data given from gui #####################
 
-            elif message[0] == "data/crs":
-                print("crs recieved")
-                self.crs_data = str(message[1])
-                # print(self.crs_data)
-                self.crs_display.setText(
-                    str(self.previous_rs + " -> " + self.crs_data))
-                self.previous_rs = self.crs_data
-                ########################################### SENSOR GÄNGET MÅSTE SÄGA HUR DOM SKA SKICKA DATAT ############
-                ########################################### SENSOR GÄNGET MÅSTE SÄGA HUR DOM SKA SKICKA DATAT ############
-                self.car_pos_label.move(
-                    self.map_node_dict[self.crs_data][0], self.map_node_dict[self.crs_data][1])
-                ########################################### SENSOR GÄNGET MÅSTE SÄGA HUR DOM SKA SKICKA DATAT ############
-                ########################################### SENSOR GÄNGET MÅSTE SÄGA HUR DOM SKA SKICKA DATAT ############
+            # elif message[0] == "data/crs":
+            #     print("crs recieved")
+            #     self.crs_data = str(message[1])
+            #     self.crs_display.setText(
+            #         str(self.previous_rs + " -> " + self.crs_data))
+            #     self.previous_rs = self.crs_data
+            #     self.car_pos_label.move(
+            #         self.map_node_dict[self.crs_data][0], self.map_node_dict[self.crs_data][1])
 
             elif message[0] == "data/lat_pos":
+                '''Updates the lateral position data on the GUI.'''
                 self.lat_pos_data = message[1]
                 self.lateral_pos_display.setText(str(self.lat_pos_data))
 
             elif message[0] == "data/route_plan":
+                '''Updates the route plan data on the GUI.'''
                 self.route_plan_data = str(message[1])
                 print("route_plan recieved")
-                # self.route_plan_data = message[1]
-                # print(self.route_plan_data)
                 self.routeplan_display.setText(self.route_plan_data)
 
             elif message[0] == "data/obstacle":
+                '''Updates the obstacle detection data on the GUI.'''
                 self.obs_det_bool = message[1]
                 print(self.obs_det_bool)
                 self.obs_det_display.setText(str(self.obs_det_bool))
 
             elif message[0] == "data/currentnode":
+                '''Updates the current node data on the GUI.'''
                 self.current_node = str(message[1])
                 self.bearing_display.setText(self.current_node)
 
             elif message[0] == "data/nextnode":
+                '''Updates the next node data on the GUI.'''
                 self.next_node = str(message[1])
                 if self.next_node == "-":
                     self.current_time = "0"
@@ -665,13 +687,6 @@ class Uidialog(object):
                 self.crs_display.setText(self.next_node)
         else:
             pass
-
-            # print(self.qData.get()[1])
-
-
-def randomspeed():
-    return 10
-
 
 if __name__ == "__main__":
     """Runs the main program."""
