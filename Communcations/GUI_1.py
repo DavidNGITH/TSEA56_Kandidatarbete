@@ -9,9 +9,9 @@
 
 import sys
 import paho.mqtt.client as mqtt
-from PyQt5 import QtCore, QtWidgets, QtGui
-from PyQt5.QtGui import QIcon, QPixmap, QPainter, QPen
-from PyQt5.QtWidgets import QApplication, QGraphicsView, QGraphicsScene, QGraphicsEllipseItem, QGraphicsLineItem, QGraphicsTextItem
+from PyQt5 import QtCore, QtWidgets
+from PyQt5.QtGui import QPixmap, QPainter
+from PyQt5.QtWidgets import QGraphicsView, QGraphicsScene, QGraphicsEllipseItem, QGraphicsTextItem
 from PyQt5.QtCore import QPointF, Qt
 import time
 import multiprocessing
@@ -19,10 +19,11 @@ import keyboard
 import matplotlib.pyplot as plt
 
 
-class Ui_Dialog(object):
-    # Class for the GUI
+class Uidialog(object):
+    """Main class for the GUI."""
 
-    def setupUi(self, Dialog):
+    def setupui(self, Dialog):
+        """Initiates the GUI, defines all variables used in the program."""
         Dialog.setObjectName("Dialog")
         Dialog.resize(986, 672)
 
@@ -31,7 +32,8 @@ class Ui_Dialog(object):
         self.graphicsView.setObjectName("graphicsView")
         self.graphicsView.setScene(QGraphicsScene())
         self.graphicsView.setRenderHint(QPainter.Antialiasing)
-        # starts time
+
+        # starts time and the multiprocessing queue
         self.update_time_bool = False
         self.current_time = "0"
         self.start = time.time()
@@ -45,6 +47,7 @@ class Ui_Dialog(object):
         self.car_speed_data = 0
         self.delta_t1_speed = 0
         self.delta_t2_speed = 0
+
         # initate straight ahead and zero speed
         self.speed = 0
         self.steering = 50
@@ -56,7 +59,7 @@ class Ui_Dialog(object):
         self.map_node_dict = {"A": [799, 440], "B": [570, 500], "C": [720, 517], "D": [
             570, 573], "E": [720, 555], "F": [638, 642], "G": [807, 642], "H": [862, 502]}
         self.previous_rs = "A"
-        self.nodes = list()
+        self.nodes = []
         self.setup_nodes(self.map_node_dict)
         # Log data lists
         self.save_car_speed_data = []
@@ -288,7 +291,7 @@ class Ui_Dialog(object):
         self.log_data_timer.start(1000)  # 1000 = every sec
 
     def ping_raspberry(self):
-        # print("PING")
+        """Pings the Raspberry Pi, acts as a fail-safe."""
         self.mqtt_client.publish("ping", "1")
 
     def setup_nodes(self, node_dictionary):
@@ -296,7 +299,6 @@ class Ui_Dialog(object):
             node_item = QGraphicsEllipseItem(-5, -5, 10, 10)
             node_item.setBrush(Qt.red)
             node_item.setPos(position[0]-550, position[1]-390)
-            # self.scene().addItem(node_item)
             label_item = QGraphicsTextItem(str(node))
             label_item.setPos(
                 QPointF(position[0] + 10 - 550, position[1]-390-12))
@@ -309,6 +311,9 @@ class Ui_Dialog(object):
         print(f"Node: {node}, Pos: {position}")
 
     def drive_function(self):
+        """Defines all keys which a user can use when driving manual. 
+        It references functions and only triggers when a key is pressed, 
+        in order to increase performance."""
         hotkey = keyboard.get_hotkey_name()
         hotkey_functions = {
             "uppil": self.set_speed_up,
@@ -334,33 +339,35 @@ class Ui_Dialog(object):
             function()
 
     def set_speed_up(self):
+        """Increases speed, sends it to the Raspberry Pi, and updates the GUI."""
         if self.type_of_mode == "Manual" and self.is_driving and self.speed <= 251:
             self.speed += 4
             self.throttle_display.setText(str(self.speed))
             self.mqtt_client.publish("speed", self.speed)
 
     def set_speed_down(self):
+        """Decreases speed, sends it to the Raspberry Pi, and updates the GUI."""
         if self.type_of_mode == "Manual" and self.is_driving and self.speed > 4:
             self.speed -= 4
             self.throttle_display.setText(str(self.speed))
             self.mqtt_client.publish("speed", self.speed)
 
     def set_steering_right(self):
+        """Steers right, sends it to the Raspberry Pi, and updates the GUI."""
         if self.type_of_mode == "Manual" and self.is_driving and self.steering <= 120:
             self.steering += 4
             self.bearing_display.setText(str(self.steering))
             self.mqtt_client.publish("steering", self.steering)
 
     def set_steering_left(self):
+        """Steers left, sends it to the Raspberry Pi, and updates the GUI."""
         if self.type_of_mode == "Manual" and self.is_driving and self.steering >= 4:
             self.steering -= 4
             self.bearing_display.setText(str(self.steering))
             self.mqtt_client.publish("steering", self.steering)
 
     def set_breaking_on(self):
-        print(self.is_driving)
-        print(self.type_of_mode)
-        print(self.breaking)
+        """"""
         if self.type_of_mode == "Manual" and self.is_driving and self.breaking == 0:
             self.breaking = 1
             print("Breaking")
@@ -559,7 +566,7 @@ class Ui_Dialog(object):
         print("Keep left")
 
     def mqtt_init(self):
-        # initate connectionmq
+        # initate connection
         MQTT_TOPIC = [("data/distance", 0), ("data/speed", 0),
                       ("data/crs", 0), ("data/lat_pos", 0), ("data/route_plan", 0), ("data/obstacle", 0), ("data/currentnode", 0), ("data/nextnode", 0)]
         try:
@@ -667,9 +674,10 @@ def randomspeed():
 
 
 if __name__ == "__main__":
+    """Runs the main program."""
     app = QtWidgets.QApplication(sys.argv)
     Dialog = QtWidgets.QDialog()
-    ui = Ui_Dialog()
-    ui.setupUi(Dialog)
+    ui = Uidialog()
+    ui.setupui(Dialog)
     Dialog.show()
     sys.exit(app.exec_())
