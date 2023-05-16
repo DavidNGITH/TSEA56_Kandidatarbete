@@ -1,8 +1,6 @@
 /*
  * manueldrive_2.c
- *
- * Created: 2023-04-14 11:46:12
- *  Author: erida646
+ *  Author: erida646 Malst829
  */ 
 
 
@@ -25,17 +23,17 @@ void PWM_pwr()
 	DDRD = (1<<PD5); //sätter pin5 som output 
 	TCCR1A =  (1<<WGM11) | (1<<COM1A1) ;
 	TCCR1B = (1<<WGM12) | (1<<WGM13) | (1<<CS11); //fast PWM prescaler 8
-	ICR1=1000;
+	ICR1=1000; //signalerna får rätt frekvens
 	OCR1A = 0; //% av motorn krqaft
 }
 	
 void servo()
 {
-	DDRB= (1<<PB6);
+	DDRB= (1<<PB6); //sätter pin6 som output 
 	TCCR3A =  (1<<WGM31) | (1<<COM3A1) ;
-	TCCR3B = (1<<WGM32) | (1<<WGM33) | (1<<CS31);
+	TCCR3B = (1<<WGM32) | (1<<WGM33) | (1<<CS31); //fast PWM prescaler 8
 	
-	ICR3=40000;
+	ICR3=40000; //signalen får rätt periodlängd
 	OCR3A =3035; // ligger mellan 2023(max vänster) - 4046(max höger) 3035(raktfram)
 		
 }
@@ -55,11 +53,6 @@ void I2C_init()
 }
 
 
-ISR(ADC_vect)
-{
-	//External interrupt
-}
-
 int main(void)
 {
 	
@@ -78,14 +71,14 @@ ISR(TWI_vect)
 {
 	PORTA = TWSR; //Debugging
 
-
 	uint8_t status = TWSR & 0xF8;
 	static uint8_t bytecounter = 0;
+
 	switch (status) {
 		case TW_SR_SLA_ACK:
 		bytecounter = 0;
 			break;
-		case TW_SR_DATA_ACK:
+		case TW_SR_DATA_ACK: //typ av data och värdet på datan
 			if (bytecounter == 0)
 			{
 				typedata_recieved = TWDR;
@@ -99,29 +92,18 @@ ISR(TWI_vect)
 
 		case TW_SR_STOP:
 			bytecounter = 0;
-			if (typedata_recieved == 0)
+			if (typedata_recieved == 0) //gaspådrag
 			{
-				OCR1A = valuebyte * 4;
+				OCR1A = valuebyte * 4; 
 			}
-			else if (typedata_recieved == 1)
+			else if (typedata_recieved == 1) //styrservo
 			{
 				OCR3A = 2023 + (valuebyte * 20);
 			}
-			else if (typedata_recieved == 2)
+			else if (typedata_recieved == 2) //broms
 			{
 				PORTD |= (valuebyte<<PD4);
 			}
-				
-			
-			/*switch(typedata_recieved){
-				case 0:
-					OCR1A = TWDR * 4;
-					break;
-				case 1:
-					OCR3A = 2023 + (TWDR * 20);
-					break;
-				default:
-					break;}*/
 			break;
 		default:
 			break;
