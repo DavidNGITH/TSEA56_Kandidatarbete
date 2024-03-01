@@ -299,7 +299,8 @@ class compVision:
             #                                       self.gaussianKernelSize),
             #                            5)
 
-            ret, self.img = cv2.threshold(self.img, 50, 255, cv2.THRESH_BINARY)
+            ret, self.img = cv2.threshold(
+                self.img, 45, 255, cv2.THRESH_BINARY)
 
             self.displayImage()  # Display image
 
