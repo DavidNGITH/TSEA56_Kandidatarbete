@@ -1,17 +1,19 @@
 """Handles the autonomous driving."""
-from compVisionSemi import compVision
+from compVisionAuto import compVision
 import multiprocessing
 import time
 import paho.mqtt.client as mqtt
 import i2cHandle
 import numpy as np
 from PD_reg import PDcontroller
+import kortaste_vag as kv
 
 
 MQTT_TOPIC = [("stop", 0), ("ping", 0), ("speed", 0),
-              ("PD/Kp", 0), ("PD/Kd", 0), ("command", 0)]
+              ("PD/Kp", 0), ("PD/Kd", 0), ("command/turning", 0)]
 
-MQTT_TOPIC_UNSUB = ["stop", "ping", "speed", "PD/Kp", "PD/Kd", "command"]
+MQTT_TOPIC_UNSUB = ["stop", "ping", "speed",
+                    "PD/Kp", "PD/Kd", "command/turning"]
 
 
 class Autonomous():
@@ -20,6 +22,18 @@ class Autonomous():
     def __init__(self, mqttClient: mqtt.Client(),
                  timeOut, roiPerc, resolution=(640, 480)):
         """Set up variables and processes."""
+        # Calculate shortest path
+        self.road_map = 'road_map.txt'
+        self.graph = kv.read_graph_from_file(self.road_map)
+        self.start = str(input("STARTNODE:")[0])  # nån raw för att python 3
+        self.end = str(input("ENDNODE:")[0])
+
+        print(self.start)
+        print(self.end)
+
+        self.turningInstruct = kv.kortaste_vag(
+            self.graph, self.start, self.end)[1]
+
         self.timeOut = timeOut
 
         # PD-Controller        Kp  Kd
@@ -35,11 +49,12 @@ class Autonomous():
         self.mqttClient.on_message = self.onMessage
         self.mqttClient.subscribe(MQTT_TOPIC)
 
+        self.breakingStatus = 0
+
+        print(self.turningInstruct)
+
         # Init multiprocessing
         self.multiProcessing()
-
-        #
-        self.breakingStatus = 0
 
     def onMessage(self, client, userdata, message):
         """MQTT callback function."""
@@ -51,7 +66,8 @@ class Autonomous():
             print("Couldn't read mqtt message")
 
     def handleMessage(self, qMessageMQTT, qI2CDataRecived,
-                      qSteering, qSpeed, qBreak, qCommand, qPD, status):
+                      qSteering, qSpeed, qBreak, qCommand,
+                      qPD, qOffsetData, statusAutonomous, status):
         """Handle messages from other processes."""
         print("In handleMessage autonomous!")
         I2C_proc = i2cHandle.I2C()
@@ -59,9 +75,6 @@ class Autonomous():
         i2cTimeElapsed = 0
         sendI2C = 0
         pingTime = time.time()
-
-        # I2C_proc.send((0, 100))
-        print("speed")
 
         while status.value:
             if not qMessageMQTT.empty():
@@ -74,11 +87,10 @@ class Autonomous():
                         I2C_proc.close()
                     except Exception:
                         print("Couldn't read i2c")
-                    qCommand.put(10)
                     self.stop()
                     return
                 elif message[0] == "ping":
-                    print("Recived ping in autonomous")
+                    # print("Recived ping in autonomous")
                     pingTime = time.time()
 
                 elif message[0] == "speed":
@@ -92,8 +104,8 @@ class Autonomous():
                 elif message[0] == "PD/Kd":
                     print("Recived Kd data in autonomous")
                     qPD.put((1, message[1]/100))
-                elif message[0] == "command":
-                    print("Recived command data in autonomous")
+                elif message[0] == "command/turning":
+                    print("Recived command/turning data in autonomous")
                     qCommand.put(message[1])
 
             if not qSteering.empty():
@@ -127,12 +139,14 @@ class Autonomous():
                     data = I2C_proc.get()
                     if (int(data[0][1]) < 40) & (self.object is False):
                         print("Obstacle")
-                        I2C_proc.send((2, 1))
+                        I2C_proc.send((2, 1))  # Break
+                        qI2CDataRecived.put((2, "True"))
                         self.object = True
                     elif (int(data[0][1]) >= 40) & (self.object):
                         print("Release")
                         if self.breakingStatus == 0:
-                            I2C_proc.send((2, 0))
+                            qI2CDataRecived.put((2, "False"))
+                            I2C_proc.send((2, 0))  # Release break
                             self.object = False
                     if time.time() - sendI2C > 1:
                         qI2CDataRecived.put(data[0])
@@ -144,6 +158,15 @@ class Autonomous():
                     print(e)
 
                 i2cTimeElapsed = time.time()
+
+            if not statusAutonomous:
+                print("Recived stop in autonomous")
+                try:
+                    I2C_proc.close()
+                except Exception:
+                    print("Couldn't read i2c")
+                self.stop()
+                return
 
             time.sleep(0.01)
 
@@ -158,16 +181,28 @@ class Autonomous():
     def mainLoop(self):
         """Publish data to MQTT broker."""
         while self.statusHandleMessage.value:
+            # print("status: {}".format(self.statusHandleMessage))
             if not self.qI2CDataRecived.empty():
                 messageToSend = self.qI2CDataRecived.get()
-                if messageToSend[0]:
+                # Hall effect
+                if messageToSend[0] == 1:
                     speed = int((messageToSend[1]/10) * 8 * np.pi)
                     # print("Speed: {} cm/s".format(speed))
                     self.mqttClient.publish("data/speed", speed)
-                else:
+                # Distance
+                elif messageToSend[0] == 0:
                     distance = int(1.1 * messageToSend[1])
                     # print("Distance: {} cm".format(distance))
                     self.mqttClient.publish("data/distance", distance)
+                elif messageToSend[0] == 2:
+                    obstacle = messageToSend[1]
+                    # print("Obstacle: {} cm".format(obstacle))
+                    self.mqttClient.publish("data/obstacle", obstacle)
+
+            if not self.qOffsetData.empty():
+                latPos = self.qOffsetData.get()
+                # print("Lat_pos: {} cm".format(latPos))
+                self.mqttClient.publish("data/lat_pos", latPos)
 
             time.sleep(0.01)
 
@@ -183,9 +218,14 @@ class Autonomous():
         self.qBreak = multiprocessing.Queue()
         self.qCommand = multiprocessing.Queue()
         self.qPD = multiprocessing.Queue()
+        self.qOffsetData = multiprocessing.Queue()
 
         self.statusCenterOffset = multiprocessing.Value('i', 1)
         self.statusHandleMessage = multiprocessing.Value('i', 1)
+        self.statusAutonomous = multiprocessing.Value('i', 1)
+
+        for instruct in self.turningInstruct:
+            self.qCommand.put(instruct)
 
         self.p1 = multiprocessing.Process(target=self.handleMessage,
                                           args=(self.qMessageMQTT,
@@ -195,6 +235,8 @@ class Autonomous():
                                                 self.qBreak,
                                                 self.qCommand,
                                                 self.qPD,
+                                                self.qOffsetData,
+                                                self.statusAutonomous,
                                                 self.statusHandleMessage))
 
         self.p2 = multiprocessing.Process(target=self.laneData.getCenterOffset,
@@ -203,7 +245,9 @@ class Autonomous():
                                                 self.qSpeed,
                                                 self.qBreak,
                                                 self.qCommand,
-                                                self.qPD))
+                                                self.qPD,
+                                                self.qOffsetData,
+                                                self.statusAutonomous))
 
         self.p1.start()  # Starts handleMessage process
         self.p2.start()  # Starts getCenterOffset process

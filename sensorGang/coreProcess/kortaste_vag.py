@@ -14,7 +14,6 @@ def read_graph_from_file(road_map):
                 graph[node2] = {}
             graph[node1][node2] = [weight, int(direction)]
             # graph[node2][node1] = weight
-    print(graph)
     return graph
 
 
@@ -48,22 +47,14 @@ def kortaste_vag(graph, start, goal):
             return path[current_node], directionlist
 
         # Uppdaterar distans och kortaste väg för varje granne till nuvarande nod
-        for neighbor, weight_and_direction in graph[current_node].items():
-            new_distance = distance[current_node] + weight_and_direction[0]
+        for neighbor, weightdist in graph[current_node].items():
+            new_distance = distance[current_node] + weightdist[0]
             if new_distance < distance[neighbor]:
                 distance[neighbor] = new_distance
                 path[neighbor] = path[current_node] + [neighbor]
 
-                directions[neighbor] = weight_and_direction[1]
+                directions[neighbor] = weightdist[1]
                 # print(path)
 
     # Returnera None om det inte finns väg från start till slut
     return None
-
-
-road_map = 'road_map.txt'
-graph = read_graph_from_file(road_map)
-start = input('Enter start node: ')  # nån raw för att python 3
-end = input('Enter end node: ')
-
-print('kortaste_vag: ', kortaste_vag(graph, start, end))
